@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="io.acari.TestMainVerticle" tests="1" skipped="0" failures="0" errors="0" timestamp="2019-03-29T23:33:27" hostname="pringle" time="0.346">
-  <properties/>
-  <testcase name="start_http_server(Vertx, VertxTestContext)" classname="io.acari.TestMainVerticle" time="0.346"/>
-  <system-out><![CDATA[HTTP server started on port 8888
-]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>
