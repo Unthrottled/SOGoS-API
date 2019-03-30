@@ -23,7 +23,7 @@ application {
 }
 
 
-def mainVerticleName = 'io.acari.MainVerticle'
+def mainVerticleName = 'io.acari.DeploymentVerticle'
 def watchForChange = 'src/**/*'
 def doOnChange = './gradlew classes'
 

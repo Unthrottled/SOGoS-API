@@ -12,11 +12,11 @@ import org.junit.jupiter.api.extension.ExtendWith
 import java.util.concurrent.TimeUnit
 
 @ExtendWith(VertxExtension::class)
-class TestMainVerticle {
+class TestDeploymentVerticle {
 
   @BeforeEach
   fun deploy_verticle(vertx: Vertx, testContext: VertxTestContext) {
-    vertx.deployVerticle(MainVerticle(), testContext.succeeding<String> { _ -> testContext.completeNow() })
+    vertx.deployVerticle(DeploymentVerticle(), testContext.succeeding<String> { _ -> testContext.completeNow() })
   }
 
   @Test

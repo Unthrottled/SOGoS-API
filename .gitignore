@@ -157,6 +157,8 @@ buildNumber.properties
 .gradle
 /buildTool/
 
+.idea/
+
 # Ignore Gradle GUI config
 gradle-app.setting
 
