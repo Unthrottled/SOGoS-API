@@ -6,7 +6,6 @@ import io.vertx.core.Future
 class DeploymentVerticle : AbstractVerticle() {
 
   override fun start(startFuture: Future<Void>) {
-
     vertx.deployVerticle(HttpVerticle()) {
       if (it.succeeded()) {
         startFuture.complete()
@@ -14,7 +13,5 @@ class DeploymentVerticle : AbstractVerticle() {
         startFuture.fail(it.cause())
       }
     }
-
   }
-
 }

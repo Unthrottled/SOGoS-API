@@ -34,5 +34,4 @@ class HttpVerticle : AbstractVerticle() {
         .requestHandler(router)
         .listen(8888, handler)
     }
-
 }

@@ -15,7 +15,7 @@ import io.vertx.reactivex.SingleHelper
 
 fun createSecurityRouter(vertx: Vertx, oAuth2AuthProvider: OAuth2Auth): Router {
   val router = Router.router(vertx)
-  val authEngagmentRoute = router.route("/engage")
+  val authEngagementRoute = router.route("/engage")
   router.route()
     .handler(CookieHandler.create())
     .handler(SessionHandler.create(LocalSessionStore.create(vertx)))
@@ -23,7 +23,7 @@ fun createSecurityRouter(vertx: Vertx, oAuth2AuthProvider: OAuth2Auth): Router {
     .handler(UserSessionHandler.create(oAuth2AuthProvider))
     .handler(
       OAuth2AuthHandler.create(oAuth2AuthProvider, "http://pringle:8888/engage")
-        .setupCallback(authEngagmentRoute)
+        .setupCallback(authEngagementRoute)
         .addAuthorities(setOf("profile", "openid", "email"))
     )
   return router
