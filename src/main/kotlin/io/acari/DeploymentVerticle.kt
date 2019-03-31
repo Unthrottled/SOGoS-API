@@ -1,18 +1,20 @@
 package io.acari
 
+import io.vertx.core.AbstractVerticle
 import io.vertx.core.Future
-import io.vertx.reactivex.core.AbstractVerticle
-import io.vertx.reactivex.core.RxHelper.deployVerticle
 
 class DeploymentVerticle : AbstractVerticle() {
 
   override fun start(startFuture: Future<Void>) {
-    deployVerticle(vertx, HttpVerticle())
-      .subscribe({
+
+    vertx.deployVerticle(HttpVerticle()) {
+      if (it.succeeded()) {
         startFuture.complete()
-      }) {
-        startFuture.fail(it)
+      } else {
+        startFuture.fail(it.cause())
       }
+    }
+
   }
 
 }
