@@ -2,38 +2,37 @@ package io.acari
 
 import io.acari.http.mountAPIRoute
 import io.acari.security.createSecurityRouter
+import io.acari.security.setUpOAuth
+import io.reactivex.Single
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Future
-import io.vertx.ext.auth.oauth2.OAuth2ClientOptions
-import io.vertx.ext.auth.oauth2.providers.OpenIDConnectAuth
+import io.vertx.core.http.HttpServer
+import io.vertx.ext.web.Router
+import io.vertx.reactivex.SingleHelper
 
 class HttpVerticle : AbstractVerticle() {
+
   override fun start(startFuture: Future<Void>) {
-    OpenIDConnectAuth.discover(
-      vertx, OAuth2ClientOptions()
-        .setSite("http://pringle:8080/auth/realms/master")
-        .setClientID("sogos")
-        .setClientSecret(System.getenv("sogos.client.secret"))
-    ) { result ->
-      if (result.succeeded()) {
-        result.map { oauth2 ->
-          val securedRoute = createSecurityRouter(vertx, oauth2)
-          val apiRouter = mountAPIRoute(securedRoute)
-          vertx
-            .createHttpServer()
-            .requestHandler(apiRouter)
-            .listen(8888) {
-              if (it.succeeded()) {
-                startFuture.complete()
-                println("HTTP server started on port 8888")
-              } else {
-                startFuture.fail("Unable to start HTTP Verticle because ${it.cause().message}")
-              }
-            }
-        }
-      } else {
-        startFuture.fail(result.cause())
+    setUpOAuth(vertx)
+      .flatMap { oauth2 ->
+        val securedRoute = createSecurityRouter(vertx, oauth2)
+        val apiRouter = mountAPIRoute(securedRoute)
+        startServer(apiRouter)
       }
-    }
+      .subscribe({
+        startFuture.complete()
+        println("HTTP server started on port 8888")
+      }) {
+        startFuture.fail("Unable to start HTTP Verticle because ${it.message}")
+      }
   }
+
+  private fun startServer(router: Router): Single<HttpServer> =
+    SingleHelper.toSingle { handler ->
+      vertx
+        .createHttpServer()
+        .requestHandler(router)
+        .listen(8888, handler)
+    }
+
 }
