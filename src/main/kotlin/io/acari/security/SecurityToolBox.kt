@@ -26,6 +26,7 @@ fun createSecurityRouter(vertx: Vertx, oAuth2AuthProvider: OAuth2Auth): Router {
   // Callback Route MUST be BEFORE OAuth Handler
   val authEngagementRoute = router.route("/engage") // I am CallBack Route
 
+  println(oAuth2AuthProvider.flowType)
   router.route()
     .handler(
       OAuth2AuthHandler.create(oAuth2AuthProvider, // I am OAuth Handler

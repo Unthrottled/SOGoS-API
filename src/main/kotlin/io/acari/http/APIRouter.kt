@@ -16,6 +16,8 @@ fun mountAPIRoute(router: Router): Router =
                 |Hello from Vert.x: ${user.idToken()}!
                 |
                 |${user.accessToken()}
+                |
+                |${user.refreshToken()}
             """.trimMargin())
         }
       it
