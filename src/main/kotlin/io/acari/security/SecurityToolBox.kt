@@ -1,7 +1,9 @@
 package io.acari.security
 
+import io.acari.util.toOptional
 import io.reactivex.Single
 import io.vertx.core.Vertx
+import io.vertx.ext.auth.oauth2.AccessToken
 import io.vertx.ext.auth.oauth2.OAuth2Auth
 import io.vertx.ext.auth.oauth2.OAuth2ClientOptions
 import io.vertx.ext.auth.oauth2.providers.OpenIDConnectAuth
@@ -26,6 +28,20 @@ fun createSecurityRouter(vertx: Vertx, oAuth2AuthProvider: OAuth2Auth): Router {
         .setupCallback(authEngagementRoute)
         .addAuthorities(setOf("profile", "openid", "email"))
     )
+    .handler{context ->
+      val accessToken = context.user() as AccessToken
+      if(accessToken.expired()){
+          SingleHelper.toSingle<Void> {
+            accessToken.refresh(it)
+          }.subscribe({
+            context.next()
+          }){
+            context.fail(500)
+          }
+      }
+
+      context.next()
+    }
   return router
 }
 

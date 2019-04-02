@@ -12,7 +12,11 @@ fun mountAPIRoute(router: Router): Router =
           val user = req.user() as AccessToken
           req.response()
             .putHeader("content-type", "text/plain")
-            .end("Hello from Vert.x: ${user.idToken()}!")
+            .end("""
+                |Hello from Vert.x: ${user.idToken()}!
+                |
+                |${user.accessToken()}
+            """.trimMargin())
         }
       it
     }.orElse(router)
