@@ -2,6 +2,7 @@ package io.acari.security
 
 import io.reactivex.Single
 import io.vertx.core.Vertx
+import io.vertx.ext.auth.PubSecKeyOptions
 import io.vertx.ext.auth.oauth2.AccessToken
 import io.vertx.ext.auth.oauth2.OAuth2Auth
 import io.vertx.ext.auth.oauth2.OAuth2ClientOptions
@@ -26,7 +27,6 @@ fun createSecurityRouter(vertx: Vertx, oAuth2AuthProvider: OAuth2Auth): Router {
   // Callback Route MUST be BEFORE OAuth Handler
   val authEngagementRoute = router.route("/engage") // I am CallBack Route
 
-  println(oAuth2AuthProvider.flowType)
   router.route()
     .handler(
       OAuth2AuthHandler.create(oAuth2AuthProvider, // I am OAuth Handler
@@ -57,6 +57,10 @@ fun setUpOAuth(vertx: Vertx): Single<OAuth2Auth> =
       vertx, OAuth2ClientOptions()
         .setSite("http://pringle:8080/auth/realms/master")
         .setClientID("sogos")
+        .addPubSecKey(PubSecKeyOptions()
+          .setAlgorithm("HS256")
+          .setSymmetric(true)
+          .setPublicKey("aoeu"))
         .setClientSecret(System.getenv("sogos.client.secret")), handler
     )
   }
