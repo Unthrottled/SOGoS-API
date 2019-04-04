@@ -8,6 +8,7 @@ import io.vertx.ext.auth.oauth2.OAuth2Auth
 import io.vertx.ext.auth.oauth2.OAuth2ClientOptions
 import io.vertx.ext.auth.oauth2.providers.OpenIDConnectAuth
 import io.vertx.ext.web.Router
+import io.vertx.ext.web.RoutingContext
 import io.vertx.ext.web.handler.CookieHandler
 import io.vertx.ext.web.handler.OAuth2AuthHandler
 import io.vertx.ext.web.handler.SessionHandler
@@ -39,20 +40,7 @@ fun createSecurityRouter(
         .setupCallback(authEngagementRoute)
         .addAuthorities(setOf("profile", "openid", "email"))
     )
-    .handler{context ->
-      val accessToken = context.user() as AccessToken
-      if(accessToken.expired()){
-          SingleHelper.toSingle<Void> {
-            accessToken.refresh(it)
-          }.subscribe({
-            context.next()
-          }){
-            context.fail(500)
-          }
-      } else {
-        context.next()
-      }
-    }
+    .handler(refreshTokenHandler)
   return router
 }
 
@@ -66,3 +54,19 @@ fun setUpOAuth(vertx: Vertx, config: JsonObject): Single<OAuth2Auth> =
         .setClientSecret(config.getString("sogos.client.secret")), handler
     )
   }
+
+
+val refreshTokenHandler: (RoutingContext) -> Unit = { context ->
+  val accessToken = context.user() as AccessToken
+  if (accessToken.expired()) {
+    SingleHelper.toSingle<Void> {
+      accessToken.refresh(it)
+    }.subscribe({
+      context.next()
+    }) {
+      context.fail(500)
+    }
+  } else {
+    context.next()
+  }
+}
