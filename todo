@@ -1,1 +1,5 @@
-Refresh access token when expired.
+- Refresh Refresh token when expired.
+- Logout
+  - Revoke tokens
+- Config
+- User Profile Endpoint

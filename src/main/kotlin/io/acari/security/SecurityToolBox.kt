@@ -2,7 +2,6 @@ package io.acari.security
 
 import io.reactivex.Single
 import io.vertx.core.Vertx
-import io.vertx.ext.auth.PubSecKeyOptions
 import io.vertx.ext.auth.oauth2.AccessToken
 import io.vertx.ext.auth.oauth2.OAuth2Auth
 import io.vertx.ext.auth.oauth2.OAuth2ClientOptions
