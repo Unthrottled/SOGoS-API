@@ -1,0 +1,9 @@
+{
+  "port": 8888,
+  "security": {
+    "OpenId-Connect-Provider": "http://pringle:8080/auth/realms/master",
+    "Client-Id": "sogos",
+    "Callback-Path": "/engage",
+    "Callback-URL": "http://pringle:8888/engage"
+  }
+}

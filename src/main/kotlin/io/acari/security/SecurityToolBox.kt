@@ -2,6 +2,7 @@ package io.acari.security
 
 import io.reactivex.Single
 import io.vertx.core.Vertx
+import io.vertx.core.json.JsonObject
 import io.vertx.ext.auth.oauth2.AccessToken
 import io.vertx.ext.auth.oauth2.OAuth2Auth
 import io.vertx.ext.auth.oauth2.OAuth2ClientOptions
@@ -14,7 +15,11 @@ import io.vertx.ext.web.handler.UserSessionHandler
 import io.vertx.ext.web.sstore.LocalSessionStore
 import io.vertx.reactivex.SingleHelper
 
-fun createSecurityRouter(vertx: Vertx, oAuth2AuthProvider: OAuth2Auth): Router {
+fun createSecurityRouter(
+  vertx: Vertx,
+  oAuth2AuthProvider: OAuth2Auth,
+  config: JsonObject
+): Router {
   val router = Router.router(vertx)
 
   // Session Management MUST be registered BEFORE callback route
@@ -24,12 +29,13 @@ fun createSecurityRouter(vertx: Vertx, oAuth2AuthProvider: OAuth2Auth): Router {
     .handler(UserSessionHandler.create(oAuth2AuthProvider))
 
   // Callback Route MUST be BEFORE OAuth Handler
-  val authEngagementRoute = router.route("/engage") // I am CallBack Route
+  val securityConfig = config.getJsonObject("security")
+  val authEngagementRoute = router.route(securityConfig.getString("Callback-Path")) // I am CallBack Route
 
   router.route()
     .handler(
       OAuth2AuthHandler.create(oAuth2AuthProvider, // I am OAuth Handler
-        "http://pringle:8888/engage")
+        securityConfig.getString("Callback-URL"))
         .setupCallback(authEngagementRoute)
         .addAuthorities(setOf("profile", "openid", "email"))
     )
@@ -46,17 +52,17 @@ fun createSecurityRouter(vertx: Vertx, oAuth2AuthProvider: OAuth2Auth): Router {
       } else {
         context.next()
       }
-
     }
   return router
 }
 
-fun setUpOAuth(vertx: Vertx): Single<OAuth2Auth> =
+fun setUpOAuth(vertx: Vertx, config: JsonObject): Single<OAuth2Auth> =
   SingleHelper.toSingle { handler ->
+    val securityConfig = config.getJsonObject("security")
     OpenIDConnectAuth.discover(
       vertx, OAuth2ClientOptions()
-        .setSite("http://pringle:8080/auth/realms/master")
-        .setClientID("sogos")
-        .setClientSecret(System.getenv("sogos.client.secret")), handler
+        .setSite(securityConfig.getString("OpenId-Connect-Provider"))
+        .setClientID(securityConfig.getString("Client-Id"))
+        .setClientSecret(config.getString("sogos.client.secret")), handler
     )
   }

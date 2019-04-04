@@ -13,15 +13,15 @@ import io.vertx.reactivex.SingleHelper
 class HttpVerticle : AbstractVerticle() {
 
   override fun start(startFuture: Future<Void>) {
-    setUpOAuth(vertx)
+    setUpOAuth(vertx, config())
       .flatMap { oauth2 ->
-        val securedRoute = createSecurityRouter(vertx, oauth2)
+        val securedRoute = createSecurityRouter(vertx, oauth2, config())
         val apiRouter = mountAPIRoute(securedRoute)
         startServer(apiRouter)
       }
       .subscribe({
         startFuture.complete()
-        println("HTTP server started on port 8888")
+        println("HTTP server started on port ${config().getInteger("port")}")
       }) {
         startFuture.fail("Unable to start HTTP Verticle because ${it.message}")
       }
@@ -32,6 +32,6 @@ class HttpVerticle : AbstractVerticle() {
       vertx
         .createHttpServer()
         .requestHandler(router)
-        .listen(8888, handler)
+        .listen(config().getInteger("port"), handler)
     }
 }

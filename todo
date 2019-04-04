@@ -1,5 +1,5 @@
 - Refresh Refresh token when expired.
 - Logout
   - Revoke tokens
-- Config
 - User Profile Endpoint
+- SSL
