@@ -57,10 +57,6 @@ fun setUpOAuth(vertx: Vertx): Single<OAuth2Auth> =
       vertx, OAuth2ClientOptions()
         .setSite("http://pringle:8080/auth/realms/master")
         .setClientID("sogos")
-        .addPubSecKey(PubSecKeyOptions()
-          .setAlgorithm("HS256")
-          .setSymmetric(true)
-          .setPublicKey("aoeu"))
         .setClientSecret(System.getenv("sogos.client.secret")), handler
     )
   }
