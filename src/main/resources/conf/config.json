@@ -1,5 +1,10 @@
 {
-  "port": 8888,
+  "server": {
+    "port": 8888,
+    "Keystore-Path": "keystore.jks",
+    "Keystore-Password": "123456",
+    "SSL-Enabled": false
+  },
   "security": {
     "OpenId-Connect-Provider": "http://pringle:8080/auth/realms/master",
     "Client-Id": "sogos",
