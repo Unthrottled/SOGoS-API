@@ -44,9 +44,10 @@ fun createSecurityRouter(vertx: Vertx, oAuth2AuthProvider: OAuth2Auth): Router {
           }){
             context.fail(500)
           }
+      } else {
+        context.next()
       }
 
-      context.next()
     }
   return router
 }
