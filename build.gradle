@@ -8,6 +8,7 @@ group = 'io.acari'
 version = '1.0.0-BETA'
 
 repositories {
+  mavenLocal()
   mavenCentral()
   jcenter()
 }
@@ -30,7 +31,7 @@ def doOnChange = './gradlew classes'
 dependencies {
   implementation "io.vertx:vertx-core:$vertxVersion"
   implementation "io.vertx:vertx-web:$vertxVersion"
-  implementation "io.vertx:vertx-auth-oauth2:$vertxVersion"
+  implementation "io.vertx:vertx-auth-oauth2:3.6.3-SNIPSHOT"
   implementation "io.vertx:vertx-rx-java2:$vertxVersion"
   implementation "io.vertx:vertx-lang-kotlin:$vertxVersion"
 
