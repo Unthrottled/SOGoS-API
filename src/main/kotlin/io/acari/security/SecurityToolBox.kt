@@ -78,12 +78,9 @@ val refreshTokenHandler: (RoutingContext) -> Unit = { context ->
 val logoutHandler: (RoutingContext) -> Unit = { context ->
   val user = context.user() as AccessToken
   SingleHelper.toSingle<Void> {
-    user.revoke("refresh_token", it)
-  }.flatMap {
-    SingleHelper.toSingle<Void> {
-      user.logout(it)
-    }
+    user.logout(it)
   }.subscribe({
+    context.session().destroy()
     context.response()
       .setStatusCode(202)
       .end("K Bai!")
