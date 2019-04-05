@@ -2,6 +2,7 @@ package io.acari.http
 
 import io.acari.util.toOptional
 import io.reactivex.Maybe
+import io.reactivex.Single
 import io.reactivex.functions.BiFunction
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.auth.oauth2.AccessToken
@@ -42,9 +43,19 @@ fun mountAPIRoute(router: Router): Router =
             }
         }
 
+      it.get("/bruh").handler { context ->
+        context.session().get<String>("foo").toOptional()
+          .map { it.toOptional() }
+          .orElse("Dunno".toOptional())
+          .ifPresent{
+            context.response().setStatusCode(200).end(it)
+          }
+      }
+
       it.get("/")
         .handler { req ->
           val user = req.user() as AccessToken
+          req.session().put("foo","bar")
           req.response()
             .putHeader("content-type", "text/plain")
             .end(
