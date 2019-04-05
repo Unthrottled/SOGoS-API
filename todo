@@ -1,4 +1,3 @@
 - Refresh Refresh token when expired.
 - Logout
   - Revoke tokens
-- User Profile Endpoint

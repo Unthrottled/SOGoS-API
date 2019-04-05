@@ -35,12 +35,16 @@ fun createSecurityRouter(
 
   router.route()
     .handler(
-      OAuth2AuthHandler.create(oAuth2AuthProvider, // I am OAuth Handler
-        securityConfig.getString("Callback-URL"))
+      OAuth2AuthHandler.create(
+        oAuth2AuthProvider, // I am OAuth Handler
+        securityConfig.getString("Callback-URL")
+      )
         .setupCallback(authEngagementRoute)
         .addAuthorities(setOf("profile", "openid", "email"))
     )
     .handler(refreshTokenHandler)
+
+  router.get("/disengage").handler(logoutHandler)
   return router
 }
 
@@ -68,5 +72,24 @@ val refreshTokenHandler: (RoutingContext) -> Unit = { context ->
     }
   } else {
     context.next()
+  }
+}
+
+val logoutHandler: (RoutingContext) -> Unit = { context ->
+  val user = context.user() as AccessToken
+  SingleHelper.toSingle<Void> {
+    user.revoke("refresh_token", it)
+  }.flatMap {
+    SingleHelper.toSingle<Void> {
+      user.logout(it)
+    }
+  }.subscribe({
+    context.response()
+      .setStatusCode(202)
+      .end("K Bai!")
+  }) {
+    context.response()
+      .setStatusCode(404)
+      .end()
   }
 }
