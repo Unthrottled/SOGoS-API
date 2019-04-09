@@ -2,8 +2,8 @@ package io.acari.http
 
 import io.acari.util.toOptional
 import io.reactivex.Maybe
-import io.reactivex.Single
 import io.reactivex.functions.BiFunction
+import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.auth.oauth2.AccessToken
 import io.vertx.ext.web.Router
@@ -27,39 +27,26 @@ object UserService {
 
 }
 
-fun mountAPIRoute(router: Router): Router =
-  router.toOptional()
-    .map {
-      it.get("/user")
-        .handler { request ->
-          val accessToken = request.user() as AccessToken
-          UserService.createUser(accessToken)
-            .subscribe({
-              request.response()
-                .putHeader("content-type", "application/json")
-                .end(it)
-            }) {
-              request.fail(404)
-            }
-        }
+fun mountAPIRoute(vertx: Vertx, router: Router): Router {
+  router.mountSubRouter("/api", createAPIRoute(vertx))
 
-      it.get("/bruh").handler { context ->
-        context.session().get<String>("foo").toOptional()
-          .map { it.toOptional() }
-          .orElse("Dunno".toOptional())
-          .ifPresent{
-            context.response().setStatusCode(200).end(it)
-          }
+  router.get("/bruh").handler { context ->
+    context.session().get<String>("foo").toOptional()
+      .map { it.toOptional() }
+      .orElse("Dunno".toOptional())
+      .ifPresent {
+        context.response().setStatusCode(200).end(it)
       }
+  }
 
-      it.get("/")
-        .handler { req ->
-          val user = req.user() as AccessToken
-          req.session().put("foo","bar")
-          req.response()
-            .putHeader("content-type", "text/plain")
-            .end(
-              """
+  router.get("/")
+    .handler { req ->
+      val user = req.user() as AccessToken
+      req.session().put("foo", "bar")
+      req.response()
+        .putHeader("content-type", "text/plain")
+        .end(
+          """
                 |Hello from Vert.x:
                 |
                 |${user.idToken().encodePrettily()}
@@ -68,7 +55,24 @@ fun mountAPIRoute(router: Router): Router =
                 |
                 |${user.refreshToken().encodePrettily()}
             """.trimMargin()
-            )
+        )
+    }
+  return router
+}
+
+fun createAPIRoute(vertx: Vertx): Router {
+  val router = Router.router(vertx)
+  router.get("/user")
+    .handler { request ->
+      val accessToken = request.user() as AccessToken
+      UserService.createUser(accessToken)
+        .subscribe({
+          request.response()
+            .putHeader("content-type", "application/json")
+            .end(it)
+        }) {
+          request.fail(404)
         }
-      it
-    }.orElse(router)
+    }
+  return router
+}
