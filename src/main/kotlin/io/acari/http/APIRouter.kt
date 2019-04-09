@@ -3,14 +3,32 @@ package io.acari.http
 import io.acari.util.toOptional
 import io.reactivex.Maybe
 import io.reactivex.functions.BiFunction
+import io.vertx.codegen.annotations.Nullable
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
+import io.vertx.ext.auth.User
 import io.vertx.ext.auth.oauth2.AccessToken
+import io.vertx.ext.auth.oauth2.impl.OAuth2TokenImpl
 import io.vertx.ext.web.Router
+import io.vertx.reactivex.SingleHelper
 
 object UserService {
-  fun createUser(accessToken: AccessToken): Maybe<String> =
-    Maybe.just(accessToken.accessToken())
+  fun createUser(user: User): Maybe<String> =
+      Maybe.just(user)
+        .filter { it is AccessToken }
+        .map { it as AccessToken }
+        .flatMap {     accessToken ->
+          createUserFromAccessToken(accessToken)
+        }.switchIfEmpty(createUserFromOAuthToken(user))
+
+  private fun createUserFromOAuthToken(user: User): Maybe<String> =
+    Maybe.just(user)
+      .filter { it is OAuth2TokenImpl }
+      .map { it as OAuth2TokenImpl }
+      .map { "" }
+
+  private fun createUserFromAccessToken(accessToken: AccessToken): Maybe<String>? {
+    return Maybe.just(accessToken.accessToken())
       .zipWith(
         Maybe.just(accessToken.idToken()),
         BiFunction<JsonObject, JsonObject, Pair<JsonObject, JsonObject>> { t1, t2 -> Pair(t1, t2) })
@@ -24,7 +42,7 @@ object UserService {
           .put("email", idToken.getValue("email"))
           .encodePrettily()
       }
-
+  }
 }
 
 fun mountAPIRoute(vertx: Vertx, router: Router): Router {
@@ -64,13 +82,17 @@ fun createAPIRoute(vertx: Vertx): Router {
   val router = Router.router(vertx)
   router.get("/user")
     .handler { request ->
-      val accessToken = request.user() as AccessToken
-      UserService.createUser(accessToken)
+//      SingleHelper.toSingle<Boolean> {
+//        request.user().isAuthorized("sogos:view-user", it)
+//      }.filter { it }
+        Maybe.just("")
+        .flatMap { UserService.createUser(request.user()) }
+        .switchIfEmpty(Maybe.error {IllegalAccessException()})
         .subscribe({
           request.response()
             .putHeader("content-type", "application/json")
             .end(it)
-        }) {
+        }){
           request.fail(404)
         }
     }
