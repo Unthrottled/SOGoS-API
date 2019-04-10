@@ -3,7 +3,11 @@
     "port": 8888,
     "Keystore-Path": "keystore.jks",
     "Keystore-Password": "123456",
-    "SSL-Enabled": false
+    "SSL-Enabled": false,
+    "dev-server": {
+      "port": 3000,
+      "host": "localhost"
+    }
   },
   "security": {
     "OpenId-Connect-Provider": "http://pringle:8080/auth/realms/master",

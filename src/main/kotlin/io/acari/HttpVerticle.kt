@@ -18,7 +18,7 @@ class HttpVerticle : AbstractVerticle() {
     setUpOAuth(vertx, config())
       .flatMap { oauth2 ->
         val securedRoute = createSecurityRouter(vertx, oauth2, config())
-        val apiRouter = mountAPIRoute(vertx, securedRoute)
+        val apiRouter = mountAPIRoute(vertx, securedRoute, config())
         startServer(apiRouter)
       }
       .subscribe({
