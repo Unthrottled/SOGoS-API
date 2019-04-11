@@ -62,31 +62,32 @@ fun fetchStaticContentHandler(vertx: Vertx, configuration: JsonObject): Handler<
     val hostToProxy = devServerConfigurations.getString("host")
     val hostPortToProxy = devServerConfigurations.getInteger("port")
     Handler { request ->
-      val proxyRequest = request.request()
+      val requestToProxy = request.request()
+      val response = request.response()
       Single.create<HttpClientResponse> { sink ->
-        proxy.request(proxyRequest.method(), hostPortToProxy, hostToProxy, proxyRequest.uri())
+        proxy.request(requestToProxy.method(), hostPortToProxy, hostToProxy, requestToProxy.uri())
         { response ->
           sink.onSuccess(response)
-        }
-      }.subscribe({ proxyResponse ->
-        val response = request.response()
+        }.end()
+      }.flatMapPublisher { httpClientResponse ->
         response.isChunked = true
-        response.statusCode = proxyResponse.statusCode()
-        response.headers().setAll(proxyResponse.headers())
+        response.statusCode = httpClientResponse.statusCode()
+        response.headers().setAll(httpClientResponse.headers())
         Flowable.create<Buffer>({ flowSink ->
-          proxyResponse.handler { data ->
+          httpClientResponse.handler { data ->
             flowSink.onNext(data)
           }
           // todo: error handling?
-          proxyResponse.endHandler { flowSink.onComplete() }
-        }, BackpressureStrategy.BUFFER)
-          .subscribe({
-            response.end()
-          }) {
-            response.setStatusCode(404).end()
+          httpClientResponse.endHandler {
+            flowSink.onComplete()
           }
+        }, BackpressureStrategy.BUFFER)
+      }.subscribe({
+        response.write(it)
+      }, {
+        response.setStatusCode(404).end()
       }) {
-        request.response().setStatusCode(404).end()
+        response.end()
       }
 
     }
