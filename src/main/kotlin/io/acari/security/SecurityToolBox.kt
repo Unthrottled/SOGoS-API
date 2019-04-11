@@ -9,10 +9,7 @@ import io.vertx.ext.auth.oauth2.OAuth2ClientOptions
 import io.vertx.ext.auth.oauth2.providers.OpenIDConnectAuth
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.RoutingContext
-import io.vertx.ext.web.handler.CookieHandler
-import io.vertx.ext.web.handler.OAuth2AuthHandler
-import io.vertx.ext.web.handler.SessionHandler
-import io.vertx.ext.web.handler.UserSessionHandler
+import io.vertx.ext.web.handler.*
 import io.vertx.ext.web.sstore.LocalSessionStore
 import io.vertx.reactivex.SingleHelper
 
@@ -26,6 +23,7 @@ fun createSecurityRouter(
   // Session Management MUST be registered BEFORE callback route
   router.route()
     .handler(CookieHandler.create())
+    .handler(BodyHandler.create())
     .handler(SessionHandler.create(LocalSessionStore.create(vertx)))
     .handler(UserSessionHandler.create(oAuth2AuthProvider))
 
