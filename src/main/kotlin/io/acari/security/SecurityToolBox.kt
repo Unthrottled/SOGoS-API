@@ -44,7 +44,7 @@ fun createSecurityRouter(
     )
     .handler(refreshTokenHandler)
 
-  router.get("/disengage").handler(logoutHandler)
+  router.post("/logout").handler(logoutHandler)
   return router
 }
 

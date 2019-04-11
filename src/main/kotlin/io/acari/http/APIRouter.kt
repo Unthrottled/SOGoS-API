@@ -48,7 +48,8 @@ fun mountAPIRoute(vertx: Vertx, router: Router, configuration: JsonObject): Rout
 
 
   // Static content path must be mounted last, as a fall back
-  router.get("/*").handler(fetchStaticContentHandler(vertx, configuration))
+  router.get("/*")
+    .handler(fetchStaticContentHandler(vertx, configuration))
     .failureHandler { routingContext -> routingContext.reroute("/") }
 
   return router
