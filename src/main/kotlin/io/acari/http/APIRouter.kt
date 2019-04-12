@@ -41,6 +41,7 @@ fun fetchStaticContentHandler(vertx: Vertx, configuration: JsonObject): Handler<
 fun createAPIRoute(vertx: Vertx): Router {
   val router = Router.router(vertx)
   router.get("/user").handler(createUserHandler())
-  router.post("/action").handler(createActionsHandler())
+  router.post("/action").handler(createActionHandler())
+  router.post("/actions").handler(createActionsHandler())
   return router
 }
