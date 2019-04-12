@@ -17,34 +17,6 @@ private val logger = loggerFor("APIRouter")
 fun mountAPIRoute(vertx: Vertx, router: Router, configuration: JsonObject): Router {
   router.mountSubRouter("/api", createAPIRoute(vertx))
 
-  router.get("/bruh").handler { context ->
-    context.session().get<String>("foo").toOptional()
-      .map { it.toOptional() }
-      .orElse("Dunno".toOptional())
-      .ifPresent {
-        context.response().setStatusCode(200).end(it)
-      }
-  }
-
-  router.get("/testo")
-    .handler { req ->
-      val user = req.user() as AccessToken
-      req.session().put("foo", "bar")
-      req.response()
-        .putHeader("content-type", "text/plain")
-        .end(
-          """
-                |Hello from Vert.x:
-                |
-                |${user.idToken().encodePrettily()}
-                |
-                |${user.accessToken().encodePrettily()}
-                |
-                |${user.refreshToken().encodePrettily()}
-            """.trimMargin()
-        )
-    }
-
   // Static content path must be mounted last, as a fall back
   router.get("/*")
     .handler(fetchStaticContentHandler(vertx, configuration))
@@ -61,27 +33,6 @@ fun fetchStaticContentHandler(vertx: Vertx, configuration: JsonObject): Handler<
 
 fun createAPIRoute(vertx: Vertx): Router {
   val router = Router.router(vertx)
-  router.get("/user")
-    .handler { request ->
-      UserService.createUser(request.user())
-        .subscribe({
-          request.response()
-            .putHeader("content-type", "application/json")
-            .end(it)
-        }, {
-          logger.warn("Unable to get user", it)
-          request.fail(404)
-        }, createCompletionHandler(request))
-    }
+  router.get("/user").handler(createUserHandler())
   return router
-}
-
-private fun createCompletionHandler(request: RoutingContext): () -> Unit {
-  return {
-    val response = request.response()
-    if (!response.ended()) {
-      logger.warn("${request.currentRoute()}'s observable completed before response was ended!")
-      request.fail(404)
-    }
-  }
 }
