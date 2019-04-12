@@ -20,7 +20,14 @@ fun mountAPIRoute(vertx: Vertx, router: Router, configuration: JsonObject): Rout
   // Static content path must be mounted last, as a fall back
   router.get("/*")
     .handler(fetchStaticContentHandler(vertx, configuration))
-    .failureHandler { routingContext -> routingContext.reroute("/") }
+    .failureHandler { routingContext ->
+      val statusCode = routingContext.statusCode()
+      if(statusCode !=401 && statusCode != 403){
+        routingContext.reroute("/")
+      } else {
+        routingContext.response().setStatusCode(404).end()
+      }
+    }
 
   return router
 }
@@ -34,5 +41,6 @@ fun fetchStaticContentHandler(vertx: Vertx, configuration: JsonObject): Handler<
 fun createAPIRoute(vertx: Vertx): Router {
   val router = Router.router(vertx)
   router.get("/user").handler(createUserHandler())
+  router.post("/action").handler(createActionsHandler())
   return router
 }
