@@ -2,20 +2,23 @@ package io.acari.http
 
 import io.acari.util.toOptional
 import io.reactivex.Maybe
+import io.reactivex.MaybeObserver
+import io.reactivex.Single
 import io.reactivex.functions.BiFunction
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.auth.User
 import io.vertx.ext.auth.oauth2.AccessToken
 import io.vertx.reactivex.MaybeHelper
+import java.lang.IllegalStateException
 
 object UserService {
   fun createUser(user: User): Maybe<String> =
-      Maybe.just(user)
+      Single.just(user)
         .filter { it is AccessToken }
         .map { it as AccessToken }
         .flatMap {     accessToken ->
           createUserFromAccessToken(accessToken)
-        }
+        }.switchIfEmpty(Maybe.error(IllegalStateException("Unable to create user profile from user: $user")))
 
   private fun createUserFromAccessToken(accessToken: AccessToken): Maybe<String> {
     return Maybe.just(accessToken.accessToken())

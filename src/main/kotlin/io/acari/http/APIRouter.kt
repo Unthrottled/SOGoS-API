@@ -1,20 +1,18 @@
 package io.acari.http
 
 import io.acari.developer.createStaticContentProxy
+import io.acari.util.loggerFor
 import io.acari.util.toOptional
-import io.reactivex.BackpressureStrategy
-import io.reactivex.Flowable
 import io.reactivex.Maybe
-import io.reactivex.Single
 import io.vertx.core.Handler
 import io.vertx.core.Vertx
-import io.vertx.core.buffer.Buffer
-import io.vertx.core.http.HttpClientResponse
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.auth.oauth2.AccessToken
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.RoutingContext
 import io.vertx.ext.web.handler.StaticHandler
+
+private val logger = loggerFor("APIRouter")
 
 fun mountAPIRoute(vertx: Vertx, router: Router, configuration: JsonObject): Router {
   router.mountSubRouter("/api", createAPIRoute(vertx))
@@ -58,23 +56,32 @@ fun mountAPIRoute(vertx: Vertx, router: Router, configuration: JsonObject): Rout
 fun fetchStaticContentHandler(vertx: Vertx, configuration: JsonObject): Handler<RoutingContext> =
   createStaticContentProxy(vertx, configuration)
     .orElseGet {
-    StaticHandler.create()
-  }
+      StaticHandler.create()
+    }
 
 fun createAPIRoute(vertx: Vertx): Router {
   val router = Router.router(vertx)
   router.get("/user")
     .handler { request ->
-      Maybe.just("")// todo: authorization
-        .flatMap { UserService.createUser(request.user()) }
-        .switchIfEmpty(Maybe.error { IllegalAccessException() })
+      UserService.createUser(request.user())
         .subscribe({
           request.response()
             .putHeader("content-type", "application/json")
             .end(it)
-        }) {
+        }, {
+          logger.warn("Unable to get user", it)
           request.fail(404)
-        }
+        }, createCompletionHandler(request))
     }
   return router
+}
+
+private fun createCompletionHandler(request: RoutingContext): () -> Unit {
+  return {
+    val response = request.response()
+    if (!response.ended()) {
+      logger.warn("${request.currentRoute()}'s observable completed before response was ended!")
+      request.fail(404)
+    }
+  }
 }
