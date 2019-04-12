@@ -1,5 +1,6 @@
 package io.acari.http
 
+import io.acari.developer.createStaticContentProxy
 import io.acari.util.toOptional
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
@@ -46,7 +47,6 @@ fun mountAPIRoute(vertx: Vertx, router: Router, configuration: JsonObject): Rout
         )
     }
 
-
   // Static content path must be mounted last, as a fall back
   router.get("/*")
     .handler(fetchStaticContentHandler(vertx, configuration))
@@ -55,47 +55,11 @@ fun mountAPIRoute(vertx: Vertx, router: Router, configuration: JsonObject): Rout
   return router
 }
 
-fun fetchStaticContentHandler(vertx: Vertx, configuration: JsonObject): Handler<RoutingContext> {
-  val devServerConfigurations = configuration.getJsonObject("server").getJsonObject("dev-server")
-  val isDev = devServerConfigurations != null
-  return if (isDev) {
-    val proxy = vertx.createHttpClient()
-    val hostToProxy = devServerConfigurations.getString("host")
-    val hostPortToProxy = devServerConfigurations.getInteger("port")
-    Handler { request ->
-      val requestToProxy = request.request()
-      val response = request.response()
-      Single.create<HttpClientResponse> { sink ->
-        proxy.request(requestToProxy.method(), hostPortToProxy, hostToProxy, requestToProxy.uri())
-        { response ->
-          sink.onSuccess(response)
-        }.end()
-      }.flatMapPublisher { httpClientResponse ->
-        response.isChunked = true
-        response.statusCode = httpClientResponse.statusCode()
-        response.headers().setAll(httpClientResponse.headers())
-        Flowable.create<Buffer>({ flowSink ->
-          httpClientResponse.handler { data ->
-            flowSink.onNext(data)
-          }
-          // todo: error handling?
-          httpClientResponse.endHandler {
-            flowSink.onComplete()
-          }
-        }, BackpressureStrategy.BUFFER)
-      }.subscribe({
-        response.write(it)
-      }, {
-        response.setStatusCode(404).end()
-      }) {
-        response.end()
-      }
-
-    }
-  } else {
+fun fetchStaticContentHandler(vertx: Vertx, configuration: JsonObject): Handler<RoutingContext> =
+  createStaticContentProxy(vertx, configuration)
+    .orElseGet {
     StaticHandler.create()
   }
-}
 
 fun createAPIRoute(vertx: Vertx): Router {
   val router = Router.router(vertx)
