@@ -3,6 +3,7 @@ package io.acari
 import io.acari.http.mountAPIRoute
 import io.acari.security.createSecurityRouter
 import io.acari.security.setUpOAuth
+import io.acari.util.loggerFor
 import io.reactivex.Single
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Future
@@ -13,6 +14,9 @@ import io.vertx.ext.web.Router
 import io.vertx.reactivex.SingleHelper
 
 class HttpVerticle : AbstractVerticle() {
+  companion object {
+      private val logger = loggerFor(HttpVerticle::class.java)
+  }
 
   override fun start(startFuture: Future<Void>) {
     setUpOAuth(vertx, config())
@@ -24,7 +28,7 @@ class HttpVerticle : AbstractVerticle() {
       .subscribe({
         startFuture.complete()
         val jsonObject = config().getJsonObject("server")
-        println("HTTP${if(jsonObject.getBoolean("SSL-Enabled"))"S" else ""} server started on port ${jsonObject.getInteger("port")}")
+        logger.info("HTTP${if(jsonObject.getBoolean("SSL-Enabled"))"S" else ""} server started on port ${jsonObject.getInteger("port")}")
       }) {
         startFuture.fail("Unable to start HTTP Verticle because ${it.message}")
       }
