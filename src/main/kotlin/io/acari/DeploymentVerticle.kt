@@ -17,9 +17,9 @@ class DeploymentVerticle : AbstractVerticle() {
         vertx.deployVerticle(HttpVerticle(), DeploymentOptions().setConfig(config), it)
       }
     }.subscribe({
-        startFuture.complete()
-      }) {
-        startFuture.fail(it)
-      }
+      startFuture.complete()
+    }) {
+      startFuture.fail(it)
+    }
   }
 }

@@ -1,6 +1,7 @@
 package io.acari
 
 import io.acari.http.mountAPIRoute
+import io.acari.http.mountSupportingRoutes
 import io.acari.security.createSecurityRouter
 import io.acari.security.setUpOAuth
 import io.acari.util.loggerFor
@@ -22,7 +23,8 @@ class HttpVerticle : AbstractVerticle() {
     setUpOAuth(vertx, config())
       .flatMap { oauth2 ->
         val securedRoute = createSecurityRouter(vertx, oauth2, config())
-        val apiRouter = mountAPIRoute(vertx, securedRoute, config())
+        val supplementedRoutes = mountSupportingRoutes(vertx, securedRoute, config())
+        val apiRouter = mountAPIRoute(vertx, supplementedRoutes, config())
         startServer(apiRouter)
       }
       .subscribe({
