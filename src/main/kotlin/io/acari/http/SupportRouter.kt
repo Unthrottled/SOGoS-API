@@ -37,12 +37,24 @@ private fun attachTestRouter(vertx: Vertx, router: Router) {
     message.reply(TestObject("Very Nice!"))
   }
 
+  eventBus.consumer<TestObject>("test.message") { message ->
+    println("Holy Shit! A Message: ${message.body()}")
+    message.reply(TestObject("Interesting!"))
+  }
+
   router.get("/testo").handler {
     MaybeHelper.toMaybe<Message<TestObject>> {
       eventBus.send("test.message", TestObject("Gib de pussi b0ss"), it)
     }.subscribe { message ->
       println("I got a response! ${message.body()}")
     }
+    it.response().setStatusCode(200).end("Hey!\n")
+  }
+
+  router.get("/publisho").handler {
+
+      eventBus.publish("test.message", TestObject("Whaddup Pimps?"))
+
     it.response().setStatusCode(200).end("Hey!\n")
   }
 }
