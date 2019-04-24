@@ -24,8 +24,8 @@ fun createSecurityRouter(
   router.route()
     .handler(CookieHandler.create())
     .handler(BodyHandler.create())
-    .handler(SessionHandler.create(LocalSessionStore.create(vertx)))
-    .handler(UserSessionHandler.create(oAuth2AuthProvider))
+    .handler(SessionHandler.create(LocalSessionStore.create(vertx))
+      .setAuthProvider(oAuth2AuthProvider))
 
   // Callback Route MUST be BEFORE OAuth Handler
   val securityConfig = config.getJsonObject("security")
