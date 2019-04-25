@@ -14,5 +14,11 @@
     "Client-Id": "sogos",
     "Callback-Path": "/engage",
     "Callback-URL": "http://pringle:8888/engage"
+  },
+  "memory": {
+    "host": "127.0.0.1",
+    "port": 27017,
+    "maxPoolSize": 30,
+    "ssl": false
   }
 }

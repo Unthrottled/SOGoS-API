@@ -1,9 +1,9 @@
 version: "3"
 services:
   mongo:
-      image: alexsimons/sogos-mongo:0.0.1
-      build:
-        context: ./mongo
+      image: mongo
+#      build:
+#        context: ./mongo
       volumes:
         - "./dataDump/:/data/db"
       ports:

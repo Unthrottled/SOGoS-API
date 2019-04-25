@@ -15,8 +15,15 @@ class DeploymentVerticle : AbstractVerticle() {
     }.flatMap { config ->
       SingleHelper.toSingle<String> {
         vertx.deployVerticle(HttpVerticle(), DeploymentOptions().setConfig(config), it)
+      }.map {
+        config
       }
-    }.subscribe({
+    }.flatMap {config ->
+      SingleHelper.toSingle<String> {
+        vertx.deployVerticle(MemoryVerticle(), DeploymentOptions().setConfig(config), it)
+      }
+    }
+      .subscribe({
       startFuture.complete()
     }) {
       startFuture.fail(it)
