@@ -1,3 +1,11 @@
+# Security Stuffs
+
+*.crt
+*.key
+*.pem
+*.srl
+*.csr
+
 ### Vert.x ###
 .vertx/
 
