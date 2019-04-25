@@ -1,0 +1,7 @@
+net:
+  port: 27017
+  ssl:
+    mode: "requireSSL"
+    PEMKeyFile: "/etc/ssl/mongodb.pem"
+    disabledProtocols: "TLS1_0,TLS1_1"
+    allowConnectionsWithoutCertificates: true

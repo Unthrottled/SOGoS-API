@@ -6,6 +6,9 @@
 *.srl
 *.csr
 
+### Runtime Artifacts
+dataDump/
+
 ### Vert.x ###
 .vertx/
 
