@@ -8,6 +8,7 @@
 
 ### Runtime Artifacts
 dataDump/
+eventSource/
 
 ### Vert.x ###
 .vertx/
