@@ -3,7 +3,6 @@ package io.acari.service
 import io.acari.util.toOptional
 import io.reactivex.Maybe
 import io.reactivex.Single
-import io.reactivex.functions.BiFunction
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.auth.User
 import io.vertx.ext.auth.oauth2.AccessToken
@@ -19,20 +18,22 @@ object UserService {
           createUserFromAccessToken(accessToken)
         }.switchIfEmpty(Maybe.error{ IllegalStateException("Unable to create user profile from user: $user") })
 
-  private fun createUserFromAccessToken(accessToken: AccessToken): Maybe<String> {
-    return Maybe.just(accessToken.accessToken())
-      .zipWith(
-        accessToken.idToken().toOptional()
+  private fun createUserFromAccessToken(accessTokenAndStuff: AccessToken): Maybe<String> {
+    val accessToken = accessTokenAndStuff.accessToken()
+    return Maybe.just(accessToken)
+      .flatMap {
+        accessTokenAndStuff.idToken().toOptional()
           .map { Maybe.just(it) }
           .orElseGet {
             MaybeHelper.toMaybe {
-              accessToken.userInfo(it)
+              accessTokenAndStuff.userInfo(it)
             }
-          },
-        BiFunction<JsonObject, JsonObject, Pair<JsonObject, JsonObject>> { t1, t2 -> Pair(t1, t2) })
-      .map {
-        val idToken = it.second
+          }
+      }.map {
+        val idToken = it
         extractUser(idToken)
+      }.onErrorReturn {
+        extractUser(accessToken)
       }
   }
 
