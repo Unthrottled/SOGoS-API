@@ -8,20 +8,27 @@ services:
         - "./dataDump/:/data/db"
       ports:
         - "27017:27017"
-  zookeeper:
-    image: 'bitnami/zookeeper:latest'
+  keycloak:
+    image: jboss/keycloak
     ports:
-      - '2181:2181'
-    environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes
-  kafka:
-    image: 'bitnami/kafka:latest'
-    ports:
-      - '9092:9092'
-    volumes:
-      - "./eventSource/:/bitami/kafka"
-    environment:
-      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
-      - ALLOW_PLAINTEXT_LISTENER=yes
+      - "8080:8080"
     depends_on:
-      - zookeeper
+      - postgres
+    environment:
+      - KEYCLOAK_USER=alex
+      - KEYCLOAK_PASSWORD=simons
+      - DB_VENDOR=postgres
+      - DB_ADDR=postgres
+      - DB_USER=keycloak
+      - DB_PASSWORD=password
+  postgres:
+    image: postgres
+    environment:
+      - POSTGRES_USER=keycloak
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=keycloak
+    volumes:
+      - postgres-volume:/var/lib/postgresql/data
+
+volumes:
+  postgres-volume:
