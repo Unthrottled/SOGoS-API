@@ -11,9 +11,7 @@
   },
   "security": {
     "OpenId-Connect-Provider": "http://localhost:8080/auth/realms/master",
-    "Client-Id": "sogos",
-    "Callback-Path": "/engage",
-    "Callback-URL": "http://localhost:8888/engage"
+    "Client-Id": "sogos"
   },
   "memory": {
     "host": "127.0.0.1",

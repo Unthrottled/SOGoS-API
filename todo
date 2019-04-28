@@ -1,5 +1,4 @@
-- Stateless Authentication
-  - make sure that token introspection happens when necessary.
+- Better 404 Handling
 
 - Memory API
 - Story API
