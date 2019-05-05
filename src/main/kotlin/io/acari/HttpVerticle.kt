@@ -1,8 +1,9 @@
 package io.acari
 
+import io.acari.http.attachNonSecuredRoutes
 import io.acari.http.mountAPIRoute
 import io.acari.http.mountSupportingRoutes
-import io.acari.security.createSecurityRouter
+import io.acari.security.attachSecurityToRouter
 import io.acari.security.setUpOAuth
 import io.acari.util.loggerFor
 import io.reactivex.Single
@@ -20,16 +21,19 @@ class HttpVerticle : AbstractVerticle() {
   }
 
   override fun start(startFuture: Future<Void>) {
-    setUpOAuth(vertx, config())
+    val configuration = config()
+    setUpOAuth(vertx, configuration)
       .flatMap { oauth2 ->
-        val securedRoute = createSecurityRouter(vertx, oauth2, config())
-        val supplementedRoutes = mountSupportingRoutes(vertx, securedRoute, config())
-        val apiRouter = mountAPIRoute(vertx, supplementedRoutes, config())
+        val router = Router.router(vertx)
+        val configuredRouter = attachNonSecuredRoutes(router, configuration)
+        val securedRoute = attachSecurityToRouter(configuredRouter, oauth2, configuration)
+        val supplementedRoutes = mountSupportingRoutes(vertx, securedRoute, configuration)
+        val apiRouter = mountAPIRoute(vertx, supplementedRoutes, configuration)
         startServer(apiRouter)
       }
       .subscribe({
         startFuture.complete()
-        val jsonObject = config().getJsonObject("server")
+        val jsonObject = configuration.getJsonObject("server")
         logger.info("HTTP${if(jsonObject.getBoolean("SSL-Enabled"))"S" else ""} server started on port ${jsonObject.getInteger("port")}")
       }) {
         startFuture.fail("Unable to start HTTP Verticle because ${it.message}")

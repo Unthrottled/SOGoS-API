@@ -7,7 +7,8 @@
   },
   "security": {
     "OpenId-Connect-Provider": "http://localhost:8080/auth/realms/master",
-    "Client-Id": "sogos"
+    "Client-Id": "sogos",
+    "callbackURI": "http://localhost:3000"
   },
   "memory": {
     "host": "127.0.0.1",

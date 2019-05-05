@@ -13,13 +13,11 @@ import io.vertx.ext.web.handler.*
 import io.vertx.ext.web.sstore.LocalSessionStore
 import io.vertx.reactivex.SingleHelper
 
-fun createSecurityRouter(
-  vertx: Vertx,
+fun attachSecurityToRouter(
+  router: Router,
   oAuth2AuthProvider: OAuth2Auth,
   config: JsonObject
 ): Router {
-  val router = Router.router(vertx)
-
   router.route()
     .handler(BodyHandler.create())
 
