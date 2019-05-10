@@ -10,8 +10,9 @@ fun attachNonSecuredRoutes(router: Router, configuration: JsonObject): Router {
     it.response().end(
       jsonObjectOf(
         "callbackURI" to securityConfigurations.getString("callbackURI"),
-        "clientID" to securityConfigurations.getString("Client-Id"),
-        "openIDConnectURI" to securityConfigurations.getString("OpenId-Connect-Provider")
+        "clientID" to securityConfigurations.getString("App-Client-Id"),
+        "openIDConnectURI" to securityConfigurations.getString("OpenId-Connect-Provider"),
+        "provider" to securityConfigurations.getString("provider")
       ).encode() // todo: should consolidate configurations.
     )
   }
