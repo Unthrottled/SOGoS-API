@@ -1,14 +1,17 @@
 package io.acari.service
 
+import com.google.common.hash.Hashing
 import io.acari.util.loggerFor
 import io.acari.util.toOptional
 import io.reactivex.Maybe
 import io.reactivex.Single
+import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.auth.User
 import io.vertx.ext.auth.oauth2.AccessToken
 import io.vertx.reactivex.MaybeHelper
 import java.lang.IllegalStateException
+import java.util.*
 
 object UserService {
 
@@ -41,6 +44,8 @@ object UserService {
       }
   }
 
+  val hashingFunction = Hashing.sha256()
+
   private fun extractUser(idToken: JsonObject): String {
     return JsonObject()
       .put("fullName", idToken.getValue("name"))
@@ -48,6 +53,8 @@ object UserService {
       .put("firstName", idToken.getValue("given_name"))
       .put("lastName", idToken.getValue("family_name"))
       .put("email", idToken.getValue("email"))
-      .encodePrettily()
+      .put("key", hashingFunction.hashString(idToken.getString("email"), Charsets.UTF_16).toString())
+      .put("guid", UUID.randomUUID().toString())
+      .encode()
   }
 }
