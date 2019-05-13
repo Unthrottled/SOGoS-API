@@ -1,31 +1,52 @@
 package io.acari.service
 
 import com.google.common.hash.Hashing
+import io.acari.memory.user.USER_INFORMATION_CHANNEL
+import io.acari.memory.user.UserInfoRequest
+import io.acari.memory.user.UserInfoResponse
 import io.acari.util.loggerFor
 import io.acari.util.toOptional
 import io.reactivex.Maybe
 import io.reactivex.Single
-import io.vertx.core.json.Json
+import io.vertx.core.Vertx
+import io.vertx.core.eventbus.Message
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.auth.User
 import io.vertx.ext.auth.oauth2.AccessToken
+import io.vertx.kotlin.core.json.jsonObjectOf
 import io.vertx.reactivex.MaybeHelper
-import java.lang.IllegalStateException
-import java.util.*
+import io.vertx.reactivex.SingleHelper
 
 object UserService {
 
   private val log = loggerFor(javaClass)
 
-  fun findUserInformation(user: User): Maybe<String> =
-      Single.just(user)
-        .filter { it is AccessToken }
-        .map { it as AccessToken }
-        .flatMap {     accessToken ->
-          extractOAuthUserInformation(accessToken)
-        }
-        .map { extractUser(it) }
-        .switchIfEmpty(Maybe.error{ IllegalStateException("Unable to create user profile from user: $user") })
+  fun findUserInformation(vertx: Vertx, user: User): Single<String> =
+    Single.just(user)
+      .filter { it is AccessToken }
+      .map { it as AccessToken }
+      .flatMap { accessToken ->
+        extractOAuthUserInformation(accessToken)
+      }
+      .flatMapSingle { oauthUserInformation ->
+        val userIdentifier = hashingFunction.hashString(oauthUserInformation.getString("email"), Charsets.UTF_16).toString()
+        fetchUser(vertx, userIdentifier)
+          .map {  rememberedUser -> Triple(userIdentifier, rememberedUser, oauthUserInformation)}
+      }
+      .map { extractUser(it) }
+
+  private fun fetchUser(vertx: Vertx, userIdentifier: String): Single<JsonObject> =
+    SingleHelper.toSingle<Message<UserInfoResponse>> { handler ->
+      val eventBus = vertx.eventBus()
+      eventBus.send(
+        USER_INFORMATION_CHANNEL,
+        UserInfoRequest(userIdentifier), handler
+      )
+    }.map { userResponse ->
+      jsonObjectOf(
+        "guid" to userResponse.body().guid
+      )
+    }
 
   private fun extractOAuthUserInformation(accessTokenAndStuff: AccessToken): Maybe<JsonObject> {
     val accessToken = accessTokenAndStuff.accessToken()
@@ -46,15 +67,16 @@ object UserService {
 
   val hashingFunction = Hashing.sha256()
 
-  private fun extractUser(idToken: JsonObject): String {
+  private fun extractUser(userInformations: Triple<String, JsonObject, JsonObject>): String {
+    val idToken = userInformations.third
     return JsonObject()
       .put("fullName", idToken.getValue("name"))
       .put("userName", idToken.getValue("preferred_username"))
       .put("firstName", idToken.getValue("given_name"))
       .put("lastName", idToken.getValue("family_name"))
       .put("email", idToken.getValue("email"))
-      .put("key", hashingFunction.hashString(idToken.getString("email"), Charsets.UTF_16).toString())
-      .put("guid", UUID.randomUUID().toString())
+      .put("key", userInformations.first)
+      .put("guid", userInformations.second.getString("guid"))
       .encode()
   }
 }

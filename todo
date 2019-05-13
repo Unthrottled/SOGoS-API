@@ -1,3 +1,6 @@
+- Better message codec registration
+- Better Event Bus usage.
+
 - Better 404 Handling
 
 - Memory API
