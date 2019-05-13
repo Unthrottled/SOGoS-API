@@ -1,5 +1,6 @@
 package io.acari.service
 
+import io.acari.util.loggerFor
 import io.acari.util.toOptional
 import io.reactivex.Maybe
 import io.reactivex.Single
@@ -10,15 +11,20 @@ import io.vertx.reactivex.MaybeHelper
 import java.lang.IllegalStateException
 
 object UserService {
-  fun createUser(user: User): Maybe<String> =
+
+  private val log = loggerFor(javaClass)
+
+  fun findUserInformation(user: User): Maybe<String> =
       Single.just(user)
         .filter { it is AccessToken }
         .map { it as AccessToken }
         .flatMap {     accessToken ->
-          createUserFromAccessToken(accessToken)
-        }.switchIfEmpty(Maybe.error{ IllegalStateException("Unable to create user profile from user: $user") })
+          extractOAuthUserInformation(accessToken)
+        }
+        .map { extractUser(it) }
+        .switchIfEmpty(Maybe.error{ IllegalStateException("Unable to create user profile from user: $user") })
 
-  private fun createUserFromAccessToken(accessTokenAndStuff: AccessToken): Maybe<String> {
+  private fun extractOAuthUserInformation(accessTokenAndStuff: AccessToken): Maybe<JsonObject> {
     val accessToken = accessTokenAndStuff.accessToken()
     return Maybe.just(accessToken)
       .flatMap {
@@ -29,11 +35,9 @@ object UserService {
               accessTokenAndStuff.userInfo(it)
             }
           }
-      }.map {
-        val idToken = it
-        extractUser(idToken)
       }.onErrorReturn {
-        extractUser(accessToken)
+        log.warn("Unable to fetch user info, falling back to access token", it)
+        accessToken
       }
   }
 

@@ -8,7 +8,7 @@ import io.vertx.ext.web.RoutingContext
 private val logger = loggerFor("UserRoutes")
 
 fun createUserHandler(): Handler<RoutingContext> = Handler { request ->
-  UserService.createUser(request.user())
+  UserService.findUserInformation(request.user())
     .subscribe({
       request.response()
         .putHeader("content-type", "application/json")
