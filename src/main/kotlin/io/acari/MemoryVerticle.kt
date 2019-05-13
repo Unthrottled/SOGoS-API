@@ -15,7 +15,7 @@ class MemoryVerticle : AbstractVerticle() {
     val memoryConfiguration = config().getJsonObject("memory")
     val mongoClient = MongoClient.createShared(vertx, memoryConfiguration)
     MemoryInitializations.setUpCollections(mongoClient)
-      .andThen(MemoryInitializations.registerMemoryWorkers(vertx))
+      .andThen(MemoryInitializations.registerMemoryWorkers(vertx, mongoClient))
       .subscribe({
         startFuture.complete()
       }){

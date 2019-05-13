@@ -15,8 +15,8 @@ object MemoryInitializations {
       )
       ))
 
-  fun registerMemoryWorkers(vertx: Vertx): Completable =
-    UserMemoryWorkers.registerWorkers(vertx)
+  fun registerMemoryWorkers(vertx: Vertx, mongoClient: MongoClient): Completable =
+    UserMemoryWorkers.registerWorkers(vertx, mongoClient)
 
   private fun createCollection(mongoClient: MongoClient, collectionName: String): Completable =
     mongoClient.rxCreateCollection(collectionName)
