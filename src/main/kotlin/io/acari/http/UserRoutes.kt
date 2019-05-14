@@ -8,14 +8,15 @@ import io.vertx.ext.web.RoutingContext
 
 private val logger = loggerFor("UserRoutes")
 
-fun createUserHandler(vertx: Vertx): Handler<RoutingContext> = Handler { request ->
-  UserService.findUserInformation(vertx, request.user())
+// todo: break user functionality into a verticle
+fun createUserHandler(vertx: Vertx): Handler<RoutingContext> = Handler { routingContext ->
+  UserService.findUserInformation(vertx, routingContext.user())
     .subscribe({
-      request.response()
+      routingContext.response()
         .putHeader("content-type", "application/json")
         .end(it)
     }) {
       logger.warn("Unable to get user", it)
-      request.fail(404)
+      routingContext.fail(404)
     }
 }

@@ -76,7 +76,6 @@ object UserService {
       .put("firstName", idToken.getValue("given_name"))
       .put("lastName", idToken.getValue("family_name"))
       .put("email", idToken.getValue("email"))
-      .put("key", userInformations.first)
       .put(UserSchema.GLOBAL_IDENTIFIER, userInformations.second.getString(UserSchema.GLOBAL_IDENTIFIER))
       .encode()
   }
