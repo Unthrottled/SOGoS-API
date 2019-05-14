@@ -76,15 +76,15 @@ object UserService {
       }
   }
 
-  private fun extractUser(userInformations: Pair<JsonObject, JsonObject>): String {
-    val idToken = userInformations.second
+  private fun extractUser(userInformation: Pair<JsonObject, JsonObject>): String {
+    val idToken = userInformation.second
     return JsonObject()
       .put("fullName", idToken.getValue("name"))
       .put("userName", idToken.getValue("preferred_username"))
       .put("firstName", idToken.getValue("given_name"))
       .put("lastName", idToken.getValue("family_name"))
       .put("email", idToken.getValue("email"))
-      .put(UserSchema.GLOBAL_IDENTIFIER, userInformations.first.getString(UserSchema.GLOBAL_IDENTIFIER))
+      .put(UserSchema.GLOBAL_IDENTIFIER, userInformation.first.getString(UserSchema.GLOBAL_IDENTIFIER))
       .encode()
   }
 }
