@@ -10,7 +10,6 @@ fun <T> loggerFor(javaClass: Class<T>) = LoggerFactory.getLogger(javaClass)
 
 fun loggerFor(name: String) = LoggerFactory.getLogger(name)
 
-
 fun fetchConfiguredVertx(): Vertx =
 Vertx.vertx(
   vertxOptionsOf(

@@ -1,6 +1,7 @@
 package io.acari.service
 
 import com.google.common.hash.Hashing
+import io.acari.memory.UserSchema
 import io.acari.memory.user.USER_INFORMATION_CHANNEL
 import io.acari.memory.user.UserInfoRequest
 import io.acari.memory.user.UserInfoResponse
@@ -44,7 +45,7 @@ object UserService {
       )
     }.map { userResponse ->
       jsonObjectOf(
-        "guid" to userResponse.body().guid
+        UserSchema.GLOBAL_IDENTIFIER to userResponse.body().guid
       )
     }
 
@@ -76,7 +77,7 @@ object UserService {
       .put("lastName", idToken.getValue("family_name"))
       .put("email", idToken.getValue("email"))
       .put("key", userInformations.first)
-      .put("guid", userInformations.second.getString("guid"))
+      .put(UserSchema.GLOBAL_IDENTIFIER, userInformations.second.getString(UserSchema.GLOBAL_IDENTIFIER))
       .encode()
   }
 }

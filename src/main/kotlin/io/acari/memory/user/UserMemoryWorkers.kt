@@ -1,5 +1,6 @@
 package io.acari.memory.user
 
+import io.acari.memory.UserSchema
 import io.acari.util.POKOCodec
 import io.acari.util.loggerFor
 import io.reactivex.Completable
@@ -27,13 +28,13 @@ object UserMemoryWorkers {
       eventBus.consumer<UserInfoRequest>(USER_INFORMATION_CHANNEL){
           message ->
         val userInfoRequest = message.body()
-        mongoClient.rxFindOne("user", jsonObjectOf(
-          "userIdentifiers" to jsonArrayOf(userInfoRequest.userIdentifier)
+        mongoClient.rxFindOne(UserSchema.COLLECTION, jsonObjectOf(
+          UserSchema.OAUTH_IDENTIFIERS to jsonArrayOf(userInfoRequest.userIdentifier)
         ), jsonObjectOf( ))
           .switchIfEmpty (createUser(userInfoRequest, mongoClient))
           .subscribe({
             user->
-            message.reply(UserInfoResponse(user.getString("guid")))
+            message.reply(UserInfoResponse(user.getString(UserSchema.GLOBAL_IDENTIFIER)))
           }) {
             log.warn("Unable to fetch user for reasons.", it)
             message.fail(404, "Shit's broke yo")
@@ -48,10 +49,10 @@ object UserMemoryWorkers {
     mongoClient: MongoClient
   ): Maybe<JsonObject> {
     val userInformation = jsonObjectOf(
-      "guid" to UUID.randomUUID().toString(),
-      "userIdentifiers" to jsonArrayOf(userInfoRequest.userIdentifier)
+      UserSchema.GLOBAL_IDENTIFIER to UUID.randomUUID().toString(),
+      UserSchema.OAUTH_IDENTIFIERS to jsonArrayOf(userInfoRequest.userIdentifier)
     )
-    return mongoClient.rxInsert("user", userInformation)
+    return mongoClient.rxInsert(UserSchema.COLLECTION, userInformation)
       .map { userInformation }
   }
 
@@ -59,10 +60,10 @@ object UserMemoryWorkers {
     eventBus.delegate.registerDefaultCodec(UserInfoRequest::class.java,
       POKOCodec(
         { json, testObject ->
-          json.put("userIdentifier", testObject.userIdentifier)
+          json.put(UserSchema.OAUTH_IDENTIFIERS, testObject.userIdentifier)
         },
         { jsonObject ->
-          UserInfoRequest(jsonObject.getString("userIdentifier"))
+          UserInfoRequest(jsonObject.getString(UserSchema.OAUTH_IDENTIFIERS))
         },
         UserInfoRequest::class.java.name
       )
@@ -70,10 +71,10 @@ object UserMemoryWorkers {
     eventBus.delegate.registerDefaultCodec(UserInfoResponse::class.java,
       POKOCodec(
         { json, testObject ->
-          json.put("guid", testObject.guid)
+          json.put(UserSchema.GLOBAL_IDENTIFIER, testObject.guid)
         },
         { jsonObject ->
-          UserInfoResponse(jsonObject.getString("guid"))
+          UserInfoResponse(jsonObject.getString(UserSchema.GLOBAL_IDENTIFIER))
         },
         UserInfoResponse::class.java.name
       )

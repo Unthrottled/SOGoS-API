@@ -8,10 +8,10 @@ import io.vertx.reactivex.ext.mongo.MongoClient
 
 object MemoryInitializations {
   fun setUpCollections(mongoClient: MongoClient): Completable =
-    createCollection(mongoClient, "test")
-      .andThen(createCollection(mongoClient, "user"))
-      .andThen(mongoClient.rxCreateIndex("user", jsonObjectOf(
-        "identifiers" to 1
+    createCollection(mongoClient, UserSchema.COLLECTION)
+      .andThen(mongoClient.rxCreateIndex(
+        UserSchema.COLLECTION, jsonObjectOf(
+        UserSchema.OAUTH_IDENTIFIERS to 1
       )
       ))
 
