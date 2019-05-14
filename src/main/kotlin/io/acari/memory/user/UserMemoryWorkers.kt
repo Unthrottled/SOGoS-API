@@ -1,10 +1,9 @@
 package io.acari.memory.user
 
-import io.acari.model.TestObject
 import io.acari.util.POKOCodec
+import io.acari.util.loggerFor
 import io.reactivex.Completable
 import io.reactivex.Maybe
-import io.vertx.core.Handler
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.core.json.jsonArrayOf
 import io.vertx.kotlin.core.json.jsonObjectOf
@@ -20,22 +19,24 @@ const val USER_INFORMATION_CHANNEL = "user.information"
 
 object UserMemoryWorkers {
 
+  val log = loggerFor(javaClass)
 
   fun registerWorkers(vertx: Vertx, mongoClient: MongoClient): Completable {
     val eventBus = vertx.eventBus()
     registerCodecs(eventBus)
       eventBus.consumer<UserInfoRequest>(USER_INFORMATION_CHANNEL){
           message ->
-        val userKey = message.body()
+        val userInfoRequest = message.body()
         mongoClient.rxFindOne("user", jsonObjectOf(
-          "userIdentifiers" to jsonArrayOf(userKey)
+          "userIdentifiers" to jsonArrayOf(userInfoRequest.userIdentifier)
         ), jsonObjectOf( ))
-          .switchIfEmpty (createUser(userKey, mongoClient))
+          .switchIfEmpty (createUser(userInfoRequest, mongoClient))
           .subscribe({
             user->
             message.reply(UserInfoResponse(user.getString("guid")))
           }) {
-
+            log.warn("Unable to fetch user for reasons.", it)
+            message.fail(404, "Shit's broke yo")
           }
 
       }
@@ -43,12 +44,12 @@ object UserMemoryWorkers {
   }
 
   private fun createUser(
-      userKey: UserInfoRequest?,
-      mongoClient: MongoClient
+    userInfoRequest: UserInfoRequest,
+    mongoClient: MongoClient
   ): Maybe<JsonObject> {
     val userInformation = jsonObjectOf(
       "guid" to UUID.randomUUID().toString(),
-      "userIdentifiers" to jsonArrayOf(userKey)
+      "userIdentifiers" to jsonArrayOf(userInfoRequest.userIdentifier)
     )
     return mongoClient.rxInsert("user", userInformation)
       .map { userInformation }
