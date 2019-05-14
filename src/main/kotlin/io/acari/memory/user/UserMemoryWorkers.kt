@@ -14,6 +14,7 @@ import io.vertx.reactivex.core.eventbus.EventBus
 import io.vertx.reactivex.core.eventbus.Message
 import io.vertx.reactivex.ext.mongo.MongoClient
 import java.util.*
+import java.util.function.Consumer
 
 data class UserInfoRequest(val userIdentifier: String)
 data class UserInfoResponse(val guid: String)
@@ -59,14 +60,24 @@ class UserInformationListener(private val mongoClient: MongoClient): Handler<Mes
 
 }
 
+class MemoryWorker<T>(
+  val channelName: String,
+  val handlerCreator: (MongoClient) -> Handler<Message<T>>
+)
+
 object UserMemoryWorkers {
 
   val log = loggerFor(javaClass)
+  val workers: List<MemoryWorker<out Any>> = listOf(
+    MemoryWorker(USER_INFORMATION_CHANNEL) { mongoClient -> UserInformationListener(mongoClient)}
+  )
 
   fun registerWorkers(vertx: Vertx, mongoClient: MongoClient): Completable {
     val eventBus = vertx.eventBus()
     registerCodecs(eventBus)
-    eventBus.consumer(USER_INFORMATION_CHANNEL, UserInformationListener(mongoClient))
+    workers.forEach { worker ->
+      eventBus.consumer(worker.channelName, worker.handlerCreator(mongoClient))
+    }
     return Completable.complete()
   }
 
