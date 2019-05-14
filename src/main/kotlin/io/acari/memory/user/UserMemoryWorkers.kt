@@ -76,7 +76,7 @@ object UserMemoryWorkers {
     val eventBus = vertx.eventBus()
     registerCodecs(eventBus)
     workers.forEach { worker ->
-      eventBus.consumer(worker.channelName, worker.handlerCreator(mongoClient))
+//      eventBus.consumer(worker.channelName, worker.handlerCreator(mongoClient))
     }
     return Completable.complete()
   }
