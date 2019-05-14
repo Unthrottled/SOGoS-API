@@ -1,10 +1,10 @@
 package io.acari.user
 
-import com.google.common.hash.Hashing
 import io.acari.memory.UserSchema
 import io.acari.memory.user.USER_INFORMATION_CHANNEL
 import io.acari.memory.user.UserInfoRequest
 import io.acari.memory.user.UserInfoResponse
+import io.acari.security.hashString
 import io.acari.util.loggerFor
 import io.acari.util.toOptional
 import io.reactivex.Maybe
@@ -23,25 +23,35 @@ object UserService {
   private val log = loggerFor(javaClass)
 
   fun findUserInformation(vertx: Vertx, user: User): Single<String> =
+    findUser(user, vertx)
+      .map { extractUser(it) }
+
+  private fun findUser(
+    user: User,
+    vertx: Vertx
+  ): Single<Pair<JsonObject, JsonObject>> =
+    extractUserInformation(user)
+      .flatMapSingle { oauthUserInformation ->
+        val oauthUserIdentifier = hashString(oauthUserInformation.getString("email"))
+        fetchUserFromMemories(vertx, oauthUserIdentifier)
+          .map { rememberedUser ->
+            Pair(rememberedUser, oauthUserInformation) }
+      }
+
+  private fun extractUserInformation(user: User): Maybe<JsonObject> =
     Single.just(user)
       .filter { it is AccessToken }
       .map { it as AccessToken }
       .flatMap { accessToken ->
         extractOAuthUserInformation(accessToken)
       }
-      .flatMapSingle { oauthUserInformation ->
-        val userIdentifier = hashingFunction.hashString(oauthUserInformation.getString("email"), Charsets.UTF_16).toString()
-        fetchUser(vertx, userIdentifier)
-          .map {  rememberedUser -> Triple(userIdentifier, rememberedUser, oauthUserInformation)}
-      }
-      .map { extractUser(it) }
 
-  private fun fetchUser(vertx: Vertx, userIdentifier: String): Single<JsonObject> =
+  private fun fetchUserFromMemories(vertx: Vertx, oauthUserIdentifier: String): Single<JsonObject> =
     SingleHelper.toSingle<Message<UserInfoResponse>> { handler ->
       val eventBus = vertx.eventBus()
       eventBus.send(
         USER_INFORMATION_CHANNEL,
-        UserInfoRequest(userIdentifier), handler
+        UserInfoRequest(oauthUserIdentifier), handler
       )
     }.map { userResponse ->
       jsonObjectOf(
@@ -61,22 +71,20 @@ object UserService {
             }
           }
       }.onErrorReturn {
-        log.warn("Unable to fetch user info, falling back to access token", it)
+        log.warn("Unable to fetch user info from OpenID provider, falling back to access token", it)
         accessToken
       }
   }
 
-  val hashingFunction = Hashing.sha256()
-
-  private fun extractUser(userInformations: Triple<String, JsonObject, JsonObject>): String {
-    val idToken = userInformations.third
+  private fun extractUser(userInformations: Pair<JsonObject, JsonObject>): String {
+    val idToken = userInformations.second
     return JsonObject()
       .put("fullName", idToken.getValue("name"))
       .put("userName", idToken.getValue("preferred_username"))
       .put("firstName", idToken.getValue("given_name"))
       .put("lastName", idToken.getValue("family_name"))
       .put("email", idToken.getValue("email"))
-      .put(UserSchema.GLOBAL_IDENTIFIER, userInformations.second.getString(UserSchema.GLOBAL_IDENTIFIER))
+      .put(UserSchema.GLOBAL_IDENTIFIER, userInformations.first.getString(UserSchema.GLOBAL_IDENTIFIER))
       .encode()
   }
 }

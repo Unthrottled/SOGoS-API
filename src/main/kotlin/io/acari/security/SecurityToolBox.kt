@@ -1,5 +1,6 @@
 package io.acari.security
 
+import com.google.common.hash.Hashing
 import io.reactivex.Single
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
@@ -37,3 +38,9 @@ fun setUpOAuth(vertx: Vertx, config: JsonObject): Single<OAuth2Auth> =
         .setClientSecret(config.getString("sogos.client.secret")), handler
     )
   }
+
+val hashingFunction = Hashing.sha256()
+
+fun hashString(stringToHash: String): String =
+  hashingFunction.hashString(stringToHash, Charsets.UTF_16).toString()
+
