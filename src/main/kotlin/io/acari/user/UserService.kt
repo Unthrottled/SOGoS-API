@@ -1,4 +1,4 @@
-package io.acari.service
+package io.acari.user
 
 import com.google.common.hash.Hashing
 import io.acari.memory.UserSchema
