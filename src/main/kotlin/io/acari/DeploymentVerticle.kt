@@ -1,9 +1,12 @@
 package io.acari
 
+import io.acari.user.UserVerticle
+import io.reactivex.Single
 import io.vertx.config.ConfigRetriever
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.DeploymentOptions
 import io.vertx.core.Future
+import io.vertx.core.Verticle
 import io.vertx.core.json.JsonObject
 import io.vertx.reactivex.SingleHelper
 
@@ -13,20 +16,27 @@ class DeploymentVerticle : AbstractVerticle() {
     SingleHelper.toSingle<JsonObject> {
       ConfigRetriever.create(vertx).getConfig(it)
     }.flatMap { config ->
-      SingleHelper.toSingle<String> {
-        vertx.deployVerticle(HttpVerticle(), DeploymentOptions().setConfig(config), it)
-      }.map {
-        config
-      }
+      deployVerticle(HttpVerticle(), config)
     }.flatMap {config ->
-      SingleHelper.toSingle<String> {
-        vertx.deployVerticle(MemoryVerticle(), DeploymentOptions().setConfig(config), it)
-      }
+      deployVerticle(MemoryVerticle(), config)
+    }.flatMap {config ->
+      deployVerticle(UserVerticle(), config)
     }
       .subscribe({
       startFuture.complete()
     }) {
       startFuture.fail(it)
+    }
+  }
+
+  private fun deployVerticle(
+    verticleToDeploy: Verticle,
+    config: JsonObject
+  ): Single<JsonObject>? {
+    return SingleHelper.toSingle<String> {
+      vertx.deployVerticle(verticleToDeploy, DeploymentOptions().setConfig(config), it)
+    }.map {
+      config
     }
   }
 }
