@@ -1,5 +1,6 @@
 package io.acari.memory
 
+import io.acari.memory.user.UserCreatedEvent
 import io.acari.memory.user.UserInfoRequest
 import io.acari.memory.user.UserInfoResponse
 import io.acari.util.POKOCodec
@@ -37,6 +38,20 @@ object MemoryCodecs {
           UserInfoResponse(jsonObject.getString(UserSchema.GLOBAL_IDENTIFIER))
         },
         UserInfoResponse::class.java.name
+      )
+    )
+    eventBus.delegate.registerDefaultCodec(
+      UserCreatedEvent::class.java,
+      POKOCodec(
+        { json, testObject ->
+          json.put(UserSchema.GLOBAL_IDENTIFIER, testObject.guid)
+            .put(UserSchema.TIME_CREATED, testObject.timeCreated)
+        },
+        { jsonObject ->
+          UserCreatedEvent(jsonObject.getString(UserSchema.GLOBAL_IDENTIFIER),
+            jsonObject.getLong(UserSchema.TIME_CREATED))
+        },
+        UserCreatedEvent::class.java.name
       )
     )
   }

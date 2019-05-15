@@ -1,9 +1,14 @@
-- Better message codec registration
-- Better Event Bus usage.
+Recording time:
+  - Time of user creation
+  - Time spent on task
 
-- Better 404 Handling
 
 - Memory API
 - Story API
 
 Authorization
+
+Tech Debt:
+- Better message codec registration
+- Better Event Bus usage.
+- Better 404 Handling

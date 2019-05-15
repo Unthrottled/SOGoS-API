@@ -1,7 +1,8 @@
 package io.acari.memory
 
 object UserSchema {
-  val COLLECTION: String = "user"
-  val OAUTH_IDENTIFIERS: String = "identifiers"
-  val GLOBAL_IDENTIFIER: String = "guid"
+  const val TIME_CREATED: String = "timeCreated" // long
+  const val COLLECTION: String = "user" // string
+  const val OAUTH_IDENTIFIERS: String = "identifiers" // array of string
+  const val GLOBAL_IDENTIFIER: String = "guid" // string
 }
