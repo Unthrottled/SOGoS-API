@@ -16,6 +16,8 @@ object MemoryInitializations {
           )
         )
       )
+      .andThen(createCollection(mongoClient, "saga"))
+      .andThen(createCollection(mongoClient, "saga"))
 
   fun registerCodecs(vertx: Vertx): Completable =
     MemoryCodecs.attachCodecsToEventBus(vertx)
