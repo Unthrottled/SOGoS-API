@@ -30,5 +30,6 @@ fun createAPIRoute(vertx: Vertx): Router {
   router.get("/user").handler(createUserHandler(vertx))
   router.post("/action").handler(createActionHandler())
   router.post("/actions").handler(createActionsHandler())
+  router.mountSubRouter("/time", createTimeRoute(vertx))
   return router
 }
