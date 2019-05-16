@@ -7,15 +7,11 @@ object UserSchema {
   const val GLOBAL_IDENTIFIER: String = "guid" // string
 }
 
-object SagaSchema {
-  const val COLLECTION: String = "saga"
-  const val GLOBAL_IDENTIFIER: String = "guid" // string
-  const val TIME_MARKER: String = "timeMarker" // long
-  const val EVENTS: String = "events" // array of string
-}
-
 object EventSchema {
   const val COLLECTION: String = "event"
+  const val GLOBAL_IDENTIFIER: String = "guid" // string
   const val TIME_CREATED: String = "timeCreated"
-  const val TYPE: String = ""
+  const val TYPE: String = "type"
+  const val META: String = "meta"
+  const val CONTENT: String = "content"
 }
