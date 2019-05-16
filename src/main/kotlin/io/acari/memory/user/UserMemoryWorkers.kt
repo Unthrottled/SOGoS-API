@@ -2,19 +2,25 @@ package io.acari.memory.user
 
 import io.acari.util.loggerFor
 import io.reactivex.Completable
+import io.vertx.core.json.JsonObject
 import io.vertx.reactivex.core.Vertx
 import io.vertx.reactivex.ext.mongo.MongoClient
 
 data class UserInfoRequest(val userIdentifier: String)
 data class UserInfoResponse(override val guid: String): User
-data class UserCreatedEvent(override val guid: String, val timeCreated: Long): User
+
+data class Effect(val guid: String,
+                  val timeCreated: Long,
+                  val name: String,
+                  val content: JsonObject,
+                  val meta: JsonObject)
 
 interface User {
   val guid: String
 }
 
 const val USER_INFORMATION_CHANNEL = "user.information"
-const val NEW_USER_CHANNEL = "new.user"
+const val EFFECT_CHANNEL = "effects"
 
 object UserMemoryWorkers {
 

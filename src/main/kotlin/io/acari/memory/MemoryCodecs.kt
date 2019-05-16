@@ -1,6 +1,6 @@
 package io.acari.memory
 
-import io.acari.memory.user.UserCreatedEvent
+import io.acari.memory.user.Effect
 import io.acari.memory.user.UserInfoRequest
 import io.acari.memory.user.UserInfoResponse
 import io.acari.util.POKOCodec
@@ -41,17 +41,20 @@ object MemoryCodecs {
       )
     )
     eventBus.delegate.registerDefaultCodec(
-      UserCreatedEvent::class.java,
+      Effect::class.java,
       POKOCodec(
         { json, testObject ->
           json.put(UserSchema.GLOBAL_IDENTIFIER, testObject.guid)
             .put(UserSchema.TIME_CREATED, testObject.timeCreated)
         },
         { jsonObject ->
-          UserCreatedEvent(jsonObject.getString(UserSchema.GLOBAL_IDENTIFIER),
-            jsonObject.getLong(UserSchema.TIME_CREATED))
+          Effect(jsonObject.getString(EffectSchema.GLOBAL_IDENTIFIER),
+            jsonObject.getLong(EffectSchema.TIME_CREATED),
+            jsonObject.getString(EffectSchema.NAME),
+            jsonObject.getJsonObject(EffectSchema.CONTENT),
+            jsonObject.getJsonObject(EffectSchema.META))
         },
-        UserCreatedEvent::class.java.name
+        Effect::class.java.name
       )
     )
   }

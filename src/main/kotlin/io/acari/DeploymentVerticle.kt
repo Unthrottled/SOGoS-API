@@ -1,6 +1,6 @@
 package io.acari
 
-import io.acari.saga.SagaVerticle
+import io.acari.effect.EffectVerticle
 import io.acari.user.UserVerticle
 import io.reactivex.Single
 import io.vertx.config.ConfigRetriever
@@ -23,7 +23,7 @@ class DeploymentVerticle : AbstractVerticle() {
     }.flatMap {config ->
       deployVerticle(UserVerticle(), config)
     }.flatMap { config ->
-      deployVerticle(SagaVerticle(), config)
+      deployVerticle(EffectVerticle(), config)
     }
       .subscribe({
       startFuture.complete()

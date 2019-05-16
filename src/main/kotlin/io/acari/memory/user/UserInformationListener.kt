@@ -51,8 +51,9 @@ class UserInformationListener(private val mongoClient: MongoClient, private val 
     return mongoClient.rxInsert(UserSchema.COLLECTION, userInformation)
       .map { userInformation }
       .doAfterSuccess {
-        vertx.eventBus().publish(NEW_USER_CHANNEL, UserCreatedEvent(usersGiud, timeCreated))
+        vertx.eventBus().publish(EFFECT_CHANNEL, Effect(usersGiud, timeCreated, USER_CREATED, jsonObjectOf(), jsonObjectOf()))
       }
   }
-
 }
+
+const val USER_CREATED = "USER_CREATED"
