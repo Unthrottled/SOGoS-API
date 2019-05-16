@@ -7,7 +7,7 @@ import io.vertx.core.json.JsonObject
 import io.vertx.reactivex.core.Vertx
 import io.vertx.reactivex.ext.mongo.MongoClient
 
-data class UserInfoRequest(val userIdentifier: String)
+data class UserInfoRequest(val openIDInformation: JsonObject)
 data class UserInfoResponse(override val guid: String): User
 
 data class Effect(val guid: String,

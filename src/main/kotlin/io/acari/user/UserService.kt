@@ -4,7 +4,6 @@ import io.acari.memory.UserSchema
 import io.acari.memory.user.USER_INFORMATION_CHANNEL
 import io.acari.memory.user.UserInfoRequest
 import io.acari.memory.user.UserInfoResponse
-import io.acari.security.hashString
 import io.acari.util.loggerFor
 import io.acari.util.toOptional
 import io.reactivex.Maybe
@@ -32,8 +31,7 @@ object UserService {
   ): Single<Pair<JsonObject, JsonObject>> =
     extractUserInformation(user)
       .flatMapSingle { oauthUserInformation ->
-        val oauthUserIdentifier = hashString(oauthUserInformation.getString("email"))
-        fetchUserFromMemories(vertx, oauthUserIdentifier)
+        fetchUserFromMemories(vertx, oauthUserInformation)
           .map { rememberedUser ->
             Pair(rememberedUser, oauthUserInformation) }
       }
@@ -46,12 +44,12 @@ object UserService {
         extractOAuthUserInformation(accessToken)
       }
 
-  private fun fetchUserFromMemories(vertx: Vertx, oauthUserIdentifier: String): Single<JsonObject> =
+  private fun fetchUserFromMemories(vertx: Vertx, oauthUserInformation: JsonObject): Single<JsonObject> =
     SingleHelper.toSingle<Message<UserInfoResponse>> { handler ->
       val eventBus = vertx.eventBus()
       eventBus.send(
         USER_INFORMATION_CHANNEL,
-        UserInfoRequest(oauthUserIdentifier), handler
+        UserInfoRequest(oauthUserInformation), handler
       )
     }.map { userResponse ->
       jsonObjectOf(

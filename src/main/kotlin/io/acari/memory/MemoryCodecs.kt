@@ -20,10 +20,10 @@ object MemoryCodecs {
       UserInfoRequest::class.java,
       POKOCodec(
         { json, testObject ->
-          json.put(UserSchema.OAUTH_IDENTIFIERS, testObject.userIdentifier)
+          json.put("openIDInformation", testObject.openIDInformation)
         },
         { jsonObject ->
-          UserInfoRequest(jsonObject.getString(UserSchema.OAUTH_IDENTIFIERS))
+          UserInfoRequest(jsonObject.getJsonObject("openIDInformation"))
         },
         UserInfoRequest::class.java.name
       )

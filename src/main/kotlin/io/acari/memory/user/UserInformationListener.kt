@@ -1,6 +1,7 @@
 package io.acari.memory.user
 
 import io.acari.memory.UserSchema
+import io.acari.security.hashString
 import io.reactivex.Maybe
 import io.vertx.core.Handler
 import io.vertx.core.json.JsonObject
@@ -16,8 +17,10 @@ class UserInformationListener(private val mongoClient: MongoClient, private val 
   Handler<Message<UserInfoRequest>> {
   override fun handle(message: Message<UserInfoRequest>) {
     val userInfoRequest = message.body()
-    findUser(mongoClient, userInfoRequest)
-      .switchIfEmpty(createUser(userInfoRequest, mongoClient))
+    val openIDInformation = userInfoRequest.openIDInformation
+    val openIDUserIdentifier = hashString(openIDInformation.getString("email"))
+    findUser(mongoClient, openIDUserIdentifier)
+      .switchIfEmpty(createUser(openIDUserIdentifier, openIDInformation, mongoClient))
       .subscribe({ user ->
         message.reply(UserInfoResponse(user.getString(UserSchema.GLOBAL_IDENTIFIER)))
       }) {
@@ -28,30 +31,31 @@ class UserInformationListener(private val mongoClient: MongoClient, private val 
 
   private fun findUser(
     mongoClient: MongoClient,
-    userInfoRequest: UserInfoRequest
+    openIDUserIdentifier: String
   ): Maybe<JsonObject> {
     return mongoClient.rxFindOne(
       UserSchema.COLLECTION, jsonObjectOf(
-        UserSchema.OAUTH_IDENTIFIERS to jsonArrayOf(userInfoRequest.userIdentifier)
+        UserSchema.OAUTH_IDENTIFIERS to jsonArrayOf(openIDUserIdentifier)
       ), jsonObjectOf()
     )
   }
 
   private fun createUser(
-    userInfoRequest: UserInfoRequest,
+    openIDUserIdentifier: String,
+    openIDInformation: JsonObject,
     mongoClient: MongoClient
   ): Maybe<JsonObject> {
     val timeCreated = Instant.now().toEpochMilli()
     val usersGiud = UUID.randomUUID().toString()
     val userInformation = jsonObjectOf(
       UserSchema.GLOBAL_IDENTIFIER to usersGiud,
-      UserSchema.OAUTH_IDENTIFIERS to jsonArrayOf(userInfoRequest.userIdentifier),
+      UserSchema.OAUTH_IDENTIFIERS to jsonArrayOf(openIDUserIdentifier),
       UserSchema.TIME_CREATED to timeCreated
     )
     return mongoClient.rxInsert(UserSchema.COLLECTION, userInformation)
       .map { userInformation }
       .doAfterSuccess {
-        vertx.eventBus().publish(EFFECT_CHANNEL, Effect(usersGiud, timeCreated, USER_CREATED, jsonObjectOf(), jsonObjectOf()))
+        vertx.eventBus().publish(EFFECT_CHANNEL, Effect(usersGiud, timeCreated, USER_CREATED, openIDInformation, jsonObjectOf()))
       }
   }
 }
