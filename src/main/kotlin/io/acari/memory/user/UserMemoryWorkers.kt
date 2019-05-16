@@ -1,5 +1,6 @@
 package io.acari.memory.user
 
+import io.acari.memory.EffectListener
 import io.acari.util.loggerFor
 import io.reactivex.Completable
 import io.vertx.core.json.JsonObject

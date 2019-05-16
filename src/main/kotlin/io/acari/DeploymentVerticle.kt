@@ -1,6 +1,5 @@
 package io.acari
 
-import io.acari.user.UserVerticle
 import io.reactivex.Single
 import io.vertx.config.ConfigRetriever
 import io.vertx.core.AbstractVerticle
@@ -17,16 +16,14 @@ class DeploymentVerticle : AbstractVerticle() {
       ConfigRetriever.create(vertx).getConfig(it)
     }.flatMap { config ->
       deployVerticle(HttpVerticle(), config)
-    }.flatMap {config ->
+    }.flatMap { config ->
       deployVerticle(MemoryVerticle(), config)
-    }.flatMap {config ->
-      deployVerticle(UserVerticle(), config)
     }
       .subscribe({
-      startFuture.complete()
-    }) {
-      startFuture.fail(it)
-    }
+        startFuture.complete()
+      }) {
+        startFuture.fail(it)
+      }
   }
 
   private fun deployVerticle(
