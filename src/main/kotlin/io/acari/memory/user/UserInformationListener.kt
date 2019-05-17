@@ -22,7 +22,7 @@ class UserInformationListener(private val mongoClient: MongoClient, private val 
     findUser(mongoClient, openIDUserIdentifier)
       .switchIfEmpty(createUser(openIDUserIdentifier, openIDInformation, mongoClient))
       .subscribe({ user ->
-        message.reply(UserInfoResponse(user.getString(UserSchema.GLOBAL_IDENTIFIER)))
+        message.reply(UserInfoResponse(user.getString(UserSchema.GLOBAL_USER_IDENTIFIER)))
       }) {
         UserMemoryWorkers.log.warn("Unable to fetch user for reasons.", it)
         message.fail(404, "Shit's broke yo")
@@ -48,7 +48,7 @@ class UserInformationListener(private val mongoClient: MongoClient, private val 
     val timeCreated = Instant.now().toEpochMilli()
     val usersGiud = UUID.randomUUID().toString()
     val userInformation = jsonObjectOf(
-      UserSchema.GLOBAL_IDENTIFIER to usersGiud,
+      UserSchema.GLOBAL_USER_IDENTIFIER to usersGiud,
       UserSchema.OAUTH_IDENTIFIERS to jsonArrayOf(openIDUserIdentifier),
       UserSchema.TIME_CREATED to timeCreated
     )

@@ -32,10 +32,10 @@ object MemoryCodecs {
       UserInfoResponse::class.java,
       POKOCodec(
         { json, testObject ->
-          json.put(UserSchema.GLOBAL_IDENTIFIER, testObject.guid)
+          json.put(UserSchema.GLOBAL_USER_IDENTIFIER, testObject.guid)
         },
         { jsonObject ->
-          UserInfoResponse(jsonObject.getString(UserSchema.GLOBAL_IDENTIFIER))
+          UserInfoResponse(jsonObject.getString(UserSchema.GLOBAL_USER_IDENTIFIER))
         },
         UserInfoResponse::class.java.name
       )
@@ -44,11 +44,11 @@ object MemoryCodecs {
       Effect::class.java,
       POKOCodec(
         { json, testObject ->
-          json.put(UserSchema.GLOBAL_IDENTIFIER, testObject.guid)
+          json.put(UserSchema.GLOBAL_USER_IDENTIFIER, testObject.guid)
             .put(UserSchema.TIME_CREATED, testObject.timeCreated)
         },
         { jsonObject ->
-          Effect(jsonObject.getString(EffectSchema.GLOBAL_IDENTIFIER),
+          Effect(jsonObject.getString(EffectSchema.GLOBAL_USER_IDENTIFIER),
             jsonObject.getLong(EffectSchema.TIME_CREATED),
             jsonObject.getLong(EffectSchema.TIME_OF_ANTECEDENCE),
             jsonObject.getString(EffectSchema.NAME),

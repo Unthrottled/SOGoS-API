@@ -53,7 +53,7 @@ object UserService {
       )
     }.map { userResponse ->
       jsonObjectOf(
-        UserSchema.GLOBAL_IDENTIFIER to userResponse.body().guid
+        UserSchema.GLOBAL_USER_IDENTIFIER to userResponse.body().guid
       )
     }
 
@@ -82,7 +82,7 @@ object UserService {
       .put("firstName", idToken.getValue("given_name"))
       .put("lastName", idToken.getValue("family_name"))
       .put("email", idToken.getValue("email"))
-      .put(UserSchema.GLOBAL_IDENTIFIER, userInformation.first.getString(UserSchema.GLOBAL_IDENTIFIER))
+      .put(UserSchema.GLOBAL_USER_IDENTIFIER, userInformation.first.getString(UserSchema.GLOBAL_USER_IDENTIFIER))
       .encode()
   }
 }

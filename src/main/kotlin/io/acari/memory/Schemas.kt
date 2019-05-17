@@ -4,15 +4,22 @@ object UserSchema {
   const val COLLECTION: String = "user"
   const val TIME_CREATED: String = "timeCreated" // long
   const val OAUTH_IDENTIFIERS: String = "identifiers" // array of string
-  const val GLOBAL_IDENTIFIER: String = "guid" // string
+  const val GLOBAL_USER_IDENTIFIER: String = "guid" // string
 }
 
 object EffectSchema {
   const val COLLECTION: String = "effect"
-  const val GLOBAL_IDENTIFIER: String = "guid" // string
+  const val GLOBAL_USER_IDENTIFIER: String = "guid" // string
   const val TIME_CREATED: String = "timeCreated"
   const val TIME_OF_ANTECEDENCE: String = "antecedenceTime"
   const val NAME: String = "name"
   const val META: String = "meta"
   const val CONTENT: String = "content"
+}
+
+object ActivityScheme {
+  const val COLLECTION: String = "activity"
+  const val GLOBAL_USER_IDENTIFIER: String = "guid" // string
+  const val START_TIME: String = "startTime"
+  const val uuid: String = "uuid"
 }
