@@ -12,6 +12,7 @@ data class UserInfoResponse(override val guid: String): User
 
 data class Effect(val guid: String,
                   val timeCreated: Long,
+                  val antecedenceTime: Long,
                   val name: String,
                   val content: JsonObject,
                   val meta: JsonObject)

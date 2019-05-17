@@ -1,6 +1,5 @@
 package io.acari.http
 
-import com.sun.xml.internal.ws.client.RequestContext
 import io.acari.memory.user.EFFECT_CHANNEL
 import io.acari.memory.user.Effect
 import io.acari.util.loggerFor
@@ -24,6 +23,7 @@ fun createActivityRoutes(vertx: Vertx): Router {
     vertx.eventBus().publish(EFFECT_CHANNEL, Effect(
       bodyAsJson.getString("guid"),
       Instant.now().toEpochMilli(),
+      bodyAsJson.getLong("antecedenceTime"),
       STARTED_ACTIVITY,
       bodyAsJson.getJsonObject("activity"),
       extractValuableHeaders(requestContext)

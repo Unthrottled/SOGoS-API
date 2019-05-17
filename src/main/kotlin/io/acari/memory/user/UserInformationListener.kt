@@ -55,7 +55,7 @@ class UserInformationListener(private val mongoClient: MongoClient, private val 
     return mongoClient.rxInsert(UserSchema.COLLECTION, userInformation)
       .map { userInformation }
       .doAfterSuccess {
-        vertx.eventBus().publish(EFFECT_CHANNEL, Effect(usersGiud, timeCreated, USER_CREATED, openIDInformation, jsonObjectOf()))
+        vertx.eventBus().publish(EFFECT_CHANNEL, Effect(usersGiud, timeCreated, timeCreated, USER_CREATED, openIDInformation, jsonObjectOf()))
       }
   }
 }

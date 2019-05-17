@@ -11,6 +11,7 @@ object EffectSchema {
   const val COLLECTION: String = "effect"
   const val GLOBAL_IDENTIFIER: String = "guid" // string
   const val TIME_CREATED: String = "timeCreated"
+  const val TIME_OF_ANTECEDENCE: String = "antecedenceTime"
   const val NAME: String = "name"
   const val META: String = "meta"
   const val CONTENT: String = "content"

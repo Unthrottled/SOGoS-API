@@ -50,6 +50,7 @@ object MemoryCodecs {
         { jsonObject ->
           Effect(jsonObject.getString(EffectSchema.GLOBAL_IDENTIFIER),
             jsonObject.getLong(EffectSchema.TIME_CREATED),
+            jsonObject.getLong(EffectSchema.TIME_OF_ANTECEDENCE),
             jsonObject.getString(EffectSchema.NAME),
             jsonObject.getJsonObject(EffectSchema.CONTENT),
             jsonObject.getJsonObject(EffectSchema.META))
