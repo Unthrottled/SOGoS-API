@@ -15,6 +15,8 @@ import java.time.Instant
 private val logger = loggerFor("Activity Routes")
 
 const val STARTED_ACTIVITY = "STARTED_ACTIVITY"
+const val REMOVED_ACTIVITY = "REMOVED_ACTIVITY"
+const val COMPLETED_ACTIVITY = "COMPLETED_ACTIVITY"
 
 fun createActivityRoutes(vertx: Vertx): Router {
   val router = router(vertx)
@@ -50,6 +52,36 @@ fun createActivityRoutes(vertx: Vertx): Router {
     ))
     requestContext.response().setStatusCode(200).end()
   }
+
+  router.post("/stop").handler { requestContext ->
+    val bodyAsJson = requestContext.bodyAsJson
+    val timeCreated = Instant.now().toEpochMilli()
+    vertx.eventBus().publish(EFFECT_CHANNEL, Effect(
+      bodyAsJson.getString("guid"),
+      timeCreated,
+      timeCreated,
+      COMPLETED_ACTIVITY,
+      bodyAsJson.getJsonObject("activity"),
+      extractValuableHeaders(requestContext)
+    ))
+    requestContext.response().setStatusCode(200).end()
+  }
+
+  //prolly needs to have authorization (do not want others able to delete other's activities)
+  router.delete().handler {requestContext ->
+    val bodyAsJson = requestContext.bodyAsJson
+    val timeCreated = Instant.now().toEpochMilli()
+    vertx.eventBus().publish(EFFECT_CHANNEL, Effect(
+      bodyAsJson.getString("guid"),
+      timeCreated,
+      timeCreated, // todo: does this matter in all contexts?
+      REMOVED_ACTIVITY,
+      bodyAsJson.getJsonObject("activity"),
+      extractValuableHeaders(requestContext)
+    ))
+    requestContext.response().setStatusCode(200).end()
+  }
+
   return router
 }
 
