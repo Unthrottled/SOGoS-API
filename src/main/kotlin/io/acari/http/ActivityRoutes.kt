@@ -16,10 +16,13 @@ private val logger = loggerFor("Activity Routes")
 
 const val STARTED_ACTIVITY = "STARTED_ACTIVITY"
 const val REMOVED_ACTIVITY = "REMOVED_ACTIVITY"
+const val UPDATED_ACTIVITY = "UPDATED_ACTIVITY"
 const val COMPLETED_ACTIVITY = "COMPLETED_ACTIVITY"
 
 fun createActivityRoutes(vertx: Vertx): Router {
   val router = router(vertx)
+
+  // this should accept the model that I have not created yet ._.
   router.post("/bulk").handler { requestContext ->
     val bodyAsJsonArray = requestContext.bodyAsJsonArray
     bodyAsJsonArray.stream()
@@ -61,6 +64,20 @@ fun createActivityRoutes(vertx: Vertx): Router {
       timeCreated,
       timeCreated,
       COMPLETED_ACTIVITY,
+      bodyAsJson.getJsonObject("activity"),
+      extractValuableHeaders(requestContext)
+    ))
+    requestContext.response().setStatusCode(200).end()
+  }
+
+  router.put().handler {requestContext ->
+    val bodyAsJson = requestContext.bodyAsJson
+    val timeCreated = Instant.now().toEpochMilli()
+    vertx.eventBus().publish(EFFECT_CHANNEL, Effect(
+      bodyAsJson.getString("guid"),
+      timeCreated,
+      timeCreated, // todo: does this matter in all contexts?
+      UPDATED_ACTIVITY,
       bodyAsJson.getJsonObject("activity"),
       extractValuableHeaders(requestContext)
     ))
