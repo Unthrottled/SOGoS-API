@@ -28,6 +28,6 @@ fun mountAPIRoute(vertx: Vertx, router: Router, configuration: JsonObject): Rout
 fun createAPIRoute(vertx: Vertx): Router {
   val router = Router.router(vertx)
   router.get("/user").handler(createUserHandler(vertx))
-  router.mountSubRouter("/time", createTimeRoute(vertx))
+  router.mountSubRouter("/activity", createActivityRoutes(vertx))
   return router
 }

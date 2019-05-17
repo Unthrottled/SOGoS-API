@@ -13,13 +13,13 @@ import io.vertx.ext.web.RoutingContext
 import io.vertx.kotlin.core.json.jsonObjectOf
 import java.time.Instant
 
-private val logger = loggerFor("Time Routes")
+private val logger = loggerFor("Activity Routes")
 
 const val STARTED_ACTIVITY = "STARTED_ACTIVITY"
 
-fun createTimeRoute(vertx: Vertx): Router {
+fun createActivityRoutes(vertx: Vertx): Router {
   val router = router(vertx)
-  router.post("/test").handler { requestContext ->
+  router.post("/start").handler { requestContext ->
     val bodyAsJson = requestContext.bodyAsJson
     vertx.eventBus().publish(EFFECT_CHANNEL, Effect(
       bodyAsJson.getString("guid"),
