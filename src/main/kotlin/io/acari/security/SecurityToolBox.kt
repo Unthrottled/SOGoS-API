@@ -45,3 +45,5 @@ private val hashingFunction: HashFunction = Hashing.sha256()
 fun hashString(stringToHash: String): String =
   hashingFunction.hashString(stringToHash, Charsets.UTF_16).toString()
 
+fun extractUserVerificationKey(openIDInformation: JsonObject): String =
+  hashString(openIDInformation.getString("email"))

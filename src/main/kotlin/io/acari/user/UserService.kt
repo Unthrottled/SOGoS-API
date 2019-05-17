@@ -4,6 +4,7 @@ import io.acari.memory.UserSchema
 import io.acari.memory.user.USER_INFORMATION_CHANNEL
 import io.acari.memory.user.UserInfoRequest
 import io.acari.memory.user.UserInfoResponse
+import io.acari.security.extractUserVerificationKey
 import io.acari.util.loggerFor
 import io.acari.util.toOptional
 import io.reactivex.Maybe
@@ -83,6 +84,7 @@ object UserService {
       .put("lastName", idToken.getValue("family_name"))
       .put("email", idToken.getValue("email"))
       .put(UserSchema.GLOBAL_USER_IDENTIFIER, userInformation.first.getString(UserSchema.GLOBAL_USER_IDENTIFIER))
+      .put("verificationKey", extractUserVerificationKey(idToken))
       .encode()
   }
 }

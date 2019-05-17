@@ -1,6 +1,7 @@
 package io.acari.memory.user
 
 import io.acari.memory.UserSchema
+import io.acari.security.extractUserVerificationKey
 import io.acari.security.hashString
 import io.reactivex.Maybe
 import io.vertx.core.Handler
@@ -18,7 +19,7 @@ class UserInformationListener(private val mongoClient: MongoClient, private val 
   override fun handle(message: Message<UserInfoRequest>) {
     val userInfoRequest = message.body()
     val openIDInformation = userInfoRequest.openIDInformation
-    val openIDUserIdentifier = hashString(openIDInformation.getString("email"))
+    val openIDUserIdentifier = extractUserVerificationKey(openIDInformation)
     findUser(mongoClient, openIDUserIdentifier)
       .switchIfEmpty(createUser(openIDUserIdentifier, openIDInformation, mongoClient))
       .subscribe({ user ->
