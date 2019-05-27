@@ -34,7 +34,8 @@ object UserService {
       .flatMapSingle { oauthUserInformation ->
         fetchUserFromMemories(vertx, oauthUserInformation)
           .map { rememberedUser ->
-            Pair(rememberedUser, oauthUserInformation) }
+            Pair(rememberedUser, oauthUserInformation)
+          }
       }
 
   private fun extractUserInformation(user: User): Maybe<JsonObject> =
@@ -79,14 +80,18 @@ object UserService {
     val idToken = userInformation.second
     val globalUserIdentifier = userInformation.first.getString(UserSchema.GLOBAL_USER_IDENTIFIER)
     val userVerificationKey = extractUserValidationKey(idToken.getString("email"), globalUserIdentifier)
-    return JsonObject()
+    val userInfo = JsonObject()
       .put("fullName", idToken.getValue("name"))
       .put("userName", idToken.getValue("preferred_username"))
       .put("firstName", idToken.getValue("given_name"))
       .put("lastName", idToken.getValue("family_name"))
       .put("email", idToken.getValue("email"))
+    val security = JsonObject()
       .put(UserSchema.GLOBAL_USER_IDENTIFIER, globalUserIdentifier)
       .put("verificationKey", userVerificationKey)
-      .encode()
+    return jsonObjectOf(
+      "information" to userInfo,
+      "security" to security
+    ).encode()
   }
 }
