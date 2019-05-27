@@ -3,16 +3,17 @@ package io.acari.security
 import com.google.common.hash.HashFunction
 import com.google.common.hash.Hashing
 import io.reactivex.Single
+import io.vertx.core.Handler
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
-import io.vertx.ext.auth.oauth2.AccessToken
 import io.vertx.ext.auth.oauth2.OAuth2Auth
 import io.vertx.ext.auth.oauth2.OAuth2ClientOptions
+import io.vertx.ext.auth.oauth2.impl.OAuth2TokenImpl
 import io.vertx.ext.auth.oauth2.providers.OpenIDConnectAuth
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.RoutingContext
-import io.vertx.ext.web.handler.*
-import io.vertx.ext.web.sstore.LocalSessionStore
+import io.vertx.ext.web.handler.BodyHandler
+import io.vertx.ext.web.handler.OAuth2AuthHandler
 import io.vertx.reactivex.SingleHelper
 
 fun attachSecurityToRouter(
@@ -41,10 +42,23 @@ fun setUpOAuth(vertx: Vertx, config: JsonObject): Single<OAuth2Auth> =
   }
 
 private val hashingFunction: HashFunction = Hashing.hmacSha256(
-  System.getenv("sogos.hmac.key").toByteArray())
+  System.getenv("sogos.hmac.key").toByteArray()
+)
 
 fun hashString(stringToHash: String): String =
   hashingFunction.hashString(stringToHash, Charsets.UTF_16).toString()
 
 fun extractUserVerificationKey(openIDInformation: JsonObject): String =
   hashString(openIDInformation.getString("email"))
+
+
+fun createVerificationHandler(vertx: Vertx): Handler<RoutingContext> = Handler { routingContext ->
+  val user = routingContext.user() as OAuth2TokenImpl
+  val verificationKey = routingContext.request().headers().get("Verification")
+  val generatedVerificationKey = extractUserVerificationKey(user.accessToken())
+  if (verificationKey == generatedVerificationKey) {
+    routingContext.next()
+  } else {
+    routingContext.response().setStatusCode(403).end()
+  }
+}
