@@ -2,6 +2,7 @@ package io.acari.http
 
 import io.acari.memory.user.EFFECT_CHANNEL
 import io.acari.memory.user.Effect
+import io.acari.security.USER_IDENTIFIER
 import io.acari.util.loggerFor
 import io.acari.util.toOptional
 import io.vertx.core.Vertx
@@ -25,13 +26,14 @@ fun createActivityRoutes(vertx: Vertx): Router {
   // this should accept the model that I have not created yet ._.
   router.post("/bulk").handler { requestContext ->
     val bodyAsJsonArray = requestContext.bodyAsJsonArray
+    val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
     bodyAsJsonArray.stream()
       .map { it as JsonObject }
       .forEach { activity ->
         //todo: some type of sanitization?
         vertx.eventBus().publish(EFFECT_CHANNEL,
           Effect(
-            activity.getString("guid"),
+            userIdentifier,
             Instant.now().toEpochMilli(),
             activity.getLong("antecedenceTime"),
             STARTED_ACTIVITY,
@@ -45,8 +47,9 @@ fun createActivityRoutes(vertx: Vertx): Router {
   router.post("/start").handler { requestContext ->
     val bodyAsJson = requestContext.bodyAsJson
     val timeCreated = Instant.now().toEpochMilli()
+    val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
     vertx.eventBus().publish(EFFECT_CHANNEL, Effect(
-      bodyAsJson.getString("guid"),
+      userIdentifier,
       timeCreated,
       timeCreated,
       STARTED_ACTIVITY,
@@ -59,8 +62,9 @@ fun createActivityRoutes(vertx: Vertx): Router {
   router.post("/stop").handler { requestContext ->
     val bodyAsJson = requestContext.bodyAsJson
     val timeCreated = Instant.now().toEpochMilli()
+    val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
     vertx.eventBus().publish(EFFECT_CHANNEL, Effect(
-      bodyAsJson.getString("guid"),
+      userIdentifier,
       timeCreated,
       timeCreated,
       COMPLETED_ACTIVITY,
@@ -73,8 +77,9 @@ fun createActivityRoutes(vertx: Vertx): Router {
   router.put().handler {requestContext ->
     val bodyAsJson = requestContext.bodyAsJson
     val timeCreated = Instant.now().toEpochMilli()
+    val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
     vertx.eventBus().publish(EFFECT_CHANNEL, Effect(
-      bodyAsJson.getString("guid"),
+      userIdentifier,
       timeCreated,
       timeCreated, // todo: does this matter in all contexts?
       UPDATED_ACTIVITY,
@@ -84,12 +89,12 @@ fun createActivityRoutes(vertx: Vertx): Router {
     requestContext.response().setStatusCode(200).end()
   }
 
-  //prolly needs to have authorization (do not want others able to delete other's activities)
   router.delete().handler {requestContext ->
     val bodyAsJson = requestContext.bodyAsJson
     val timeCreated = Instant.now().toEpochMilli()
+    val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
     vertx.eventBus().publish(EFFECT_CHANNEL, Effect(
-      bodyAsJson.getString("guid"),
+      userIdentifier,
       timeCreated,
       timeCreated, // todo: does this matter in all contexts?
       REMOVED_ACTIVITY,

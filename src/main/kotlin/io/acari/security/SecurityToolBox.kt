@@ -54,12 +54,13 @@ fun extractUserIdentificationKey(openIDInformation: JsonObject): String =
 fun extractUserValidationKey(emailAddress: String, globalUserIdentifier: String): String =
   hashString("$emailAddress(◡‿◡✿)$globalUserIdentifier")
 
+const val USER_IDENTIFIER = "User-Identifier"
 
 fun createVerificationHandler(vertx: Vertx): Handler<RoutingContext> = Handler { routingContext ->
   val user = routingContext.user() as OAuth2TokenImpl
   val headers = routingContext.request().headers()
   val verificationKey = headers.get("Verification") ?: ""
-  val globalUserIdentifier = headers.get("User-Identifier") ?: ""
+  val globalUserIdentifier = headers.get(USER_IDENTIFIER) ?: ""
   val email = user.accessToken().getString("email") ?: ""
   val generatedVerificationKey = extractUserValidationKey(email, globalUserIdentifier)
   if (verificationKey == generatedVerificationKey) {
