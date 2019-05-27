@@ -4,7 +4,7 @@ import io.acari.memory.UserSchema
 import io.acari.memory.user.USER_INFORMATION_CHANNEL
 import io.acari.memory.user.UserInfoRequest
 import io.acari.memory.user.UserInfoResponse
-import io.acari.security.extractUserVerificationKey
+import io.acari.security.extractUserValidationKey
 import io.acari.util.loggerFor
 import io.acari.util.toOptional
 import io.reactivex.Maybe
@@ -77,14 +77,16 @@ object UserService {
 
   private fun extractUser(userInformation: Pair<JsonObject, JsonObject>): String {
     val idToken = userInformation.second
+    val globalUserIdentifier = userInformation.first.getString(UserSchema.GLOBAL_USER_IDENTIFIER)
+    val userVerificationKey = extractUserValidationKey(idToken.getString("email"), globalUserIdentifier)
     return JsonObject()
       .put("fullName", idToken.getValue("name"))
       .put("userName", idToken.getValue("preferred_username"))
       .put("firstName", idToken.getValue("given_name"))
       .put("lastName", idToken.getValue("family_name"))
       .put("email", idToken.getValue("email"))
-      .put(UserSchema.GLOBAL_USER_IDENTIFIER, userInformation.first.getString(UserSchema.GLOBAL_USER_IDENTIFIER))
-      .put("verificationKey", extractUserVerificationKey(idToken))
+      .put(UserSchema.GLOBAL_USER_IDENTIFIER, globalUserIdentifier)
+      .put("verificationKey", userVerificationKey)
       .encode()
   }
 }

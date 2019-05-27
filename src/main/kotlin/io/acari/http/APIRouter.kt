@@ -1,12 +1,9 @@
 package io.acari.http
 
 import io.acari.security.createVerificationHandler
-import io.acari.security.extractUserVerificationKey
-import io.acari.security.hashString
 import io.acari.util.loggerFor
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
-import io.vertx.ext.auth.oauth2.impl.OAuth2TokenImpl
 import io.vertx.ext.web.Router
 
 private val logger = loggerFor("APIRouter")

@@ -1,9 +1,5 @@
-Authorization:
-  - Code validation for activity uploads. (Disallow other user's to do things to other user's timelines.)
-
 Questions:
   - Are activities only stopped when another activity starts?
-
 
 Tech Debt:
 - Better message codec registration

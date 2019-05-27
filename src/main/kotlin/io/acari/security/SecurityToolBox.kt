@@ -48,14 +48,20 @@ private val hashingFunction: HashFunction = Hashing.hmacSha256(
 fun hashString(stringToHash: String): String =
   hashingFunction.hashString(stringToHash, Charsets.UTF_16).toString()
 
-fun extractUserVerificationKey(openIDInformation: JsonObject): String =
+fun extractUserIdentificationKey(openIDInformation: JsonObject): String =
   hashString(openIDInformation.getString("email"))
+
+fun extractUserValidationKey(emailAddress: String, globalUserIdentifier: String): String =
+  hashString("$emailAddress(◡‿◡✿)$globalUserIdentifier")
 
 
 fun createVerificationHandler(vertx: Vertx): Handler<RoutingContext> = Handler { routingContext ->
   val user = routingContext.user() as OAuth2TokenImpl
-  val verificationKey = routingContext.request().headers().get("Verification")
-  val generatedVerificationKey = extractUserVerificationKey(user.accessToken())
+  val headers = routingContext.request().headers()
+  val verificationKey = headers.get("Verification") ?: ""
+  val globalUserIdentifier = headers.get("User-Identifier") ?: ""
+  val email = user.accessToken().getString("email") ?: ""
+  val generatedVerificationKey = extractUserValidationKey(email, globalUserIdentifier)
   if (verificationKey == generatedVerificationKey) {
     routingContext.next()
   } else {
