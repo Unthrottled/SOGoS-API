@@ -86,8 +86,8 @@ object UserService {
       .put("firstName", idToken.getValue("given_name"))
       .put("lastName", idToken.getValue("family_name"))
       .put("email", idToken.getValue("email"))
-    val security = JsonObject()
       .put(UserSchema.GLOBAL_USER_IDENTIFIER, globalUserIdentifier)
+    val security = JsonObject()
       .put("verificationKey", userVerificationKey)
     return jsonObjectOf(
       "information" to userInfo,
