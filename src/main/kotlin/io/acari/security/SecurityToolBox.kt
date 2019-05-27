@@ -40,7 +40,8 @@ fun setUpOAuth(vertx: Vertx, config: JsonObject): Single<OAuth2Auth> =
     )
   }
 
-private val hashingFunction: HashFunction = Hashing.sha256()
+private val hashingFunction: HashFunction = Hashing.hmacSha256(
+  System.getenv("sogos.hmac.key").toByteArray())
 
 fun hashString(stringToHash: String): String =
   hashingFunction.hashString(stringToHash, Charsets.UTF_16).toString()
