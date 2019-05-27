@@ -1,3 +1,6 @@
+Activity API
+  - Offline Sync
+
 Questions:
   - Are activities only stopped when another activity starts?
 

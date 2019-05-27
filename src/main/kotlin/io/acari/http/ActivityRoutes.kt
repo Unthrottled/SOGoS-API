@@ -24,6 +24,11 @@ fun createActivityRoutes(vertx: Vertx): Router {
   val router = router(vertx)
 
   // this should accept the model that I have not created yet ._.
+
+  /**
+   * Should be used to assimilate any offline activities that may have
+   * been performed.
+   */
   router.post("/bulk").handler { requestContext ->
     val bodyAsJsonArray = requestContext.bodyAsJsonArray
     val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
