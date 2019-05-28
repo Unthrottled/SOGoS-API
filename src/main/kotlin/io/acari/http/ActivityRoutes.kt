@@ -58,7 +58,7 @@ fun createActivityRoutes(vertx: Vertx): Router {
       timeCreated,
       timeCreated,
       STARTED_ACTIVITY,
-      bodyAsJson.getJsonObject("activity"),
+      bodyAsJson.getJsonObject("activity") ?: JsonObject(),
       extractValuableHeaders(requestContext)
     ))
     requestContext.response().setStatusCode(200).end()
