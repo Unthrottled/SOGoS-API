@@ -18,7 +18,6 @@ private val logger = loggerFor("Activity Routes")
 const val STARTED_ACTIVITY = "STARTED_ACTIVITY"
 const val REMOVED_ACTIVITY = "REMOVED_ACTIVITY"
 const val UPDATED_ACTIVITY = "UPDATED_ACTIVITY"
-const val COMPLETED_ACTIVITY = "COMPLETED_ACTIVITY"
 
 fun createActivityRoutes(vertx: Vertx): Router {
   val router = router(vertx)
@@ -49,7 +48,7 @@ fun createActivityRoutes(vertx: Vertx): Router {
       }
     requestContext.response().setStatusCode(200).end()
   }
-  router.post("/start").handler { requestContext ->
+  router.post().handler { requestContext ->
     val bodyAsJson = requestContext.bodyAsJson
     val timeCreated = Instant.now().toEpochMilli()
     val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
@@ -59,21 +58,6 @@ fun createActivityRoutes(vertx: Vertx): Router {
       timeCreated,
       STARTED_ACTIVITY,
       bodyAsJson.getJsonObject("activity") ?: JsonObject(),
-      extractValuableHeaders(requestContext)
-    ))
-    requestContext.response().setStatusCode(200).end()
-  }
-
-  router.post("/stop").handler { requestContext ->
-    val bodyAsJson = requestContext.bodyAsJson
-    val timeCreated = Instant.now().toEpochMilli()
-    val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
-    vertx.eventBus().publish(EFFECT_CHANNEL, Effect(
-      userIdentifier,
-      timeCreated,
-      timeCreated,
-      COMPLETED_ACTIVITY,
-      bodyAsJson.getJsonObject("activity"),
       extractValuableHeaders(requestContext)
     ))
     requestContext.response().setStatusCode(200).end()

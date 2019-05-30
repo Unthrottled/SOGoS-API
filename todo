@@ -1,9 +1,6 @@
 Activity API
   - Offline Sync
 
-Questions:
-  - Are activities only stopped when another activity starts?
-
 Tech Debt:
 - Better message codec registration
 - Better Event Bus usage.
