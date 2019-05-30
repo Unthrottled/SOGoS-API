@@ -41,7 +41,7 @@ fun createActivityRoutes(vertx: Vertx): Router {
             Instant.now().toEpochMilli(),
             activity.getLong("antecedenceTime"),
             STARTED_ACTIVITY,
-            activity.getJsonObject("activity"),
+            activity.getJsonObject("content") ?: JsonObject(),
             extractValuableHeaders(requestContext)
           )
         )
@@ -55,9 +55,9 @@ fun createActivityRoutes(vertx: Vertx): Router {
     vertx.eventBus().publish(EFFECT_CHANNEL, Effect(
       userIdentifier,
       timeCreated,
-      timeCreated,
+      bodyAsJson.getLong("antecedenceTime"),
       STARTED_ACTIVITY,
-      bodyAsJson.getJsonObject("activity") ?: JsonObject(),
+      bodyAsJson.getJsonObject("content") ?: JsonObject(),
       extractValuableHeaders(requestContext)
     ))
     requestContext.response().setStatusCode(200).end()
@@ -70,9 +70,9 @@ fun createActivityRoutes(vertx: Vertx): Router {
     vertx.eventBus().publish(EFFECT_CHANNEL, Effect(
       userIdentifier,
       timeCreated,
-      timeCreated, // todo: does this matter in all contexts?
+      bodyAsJson.getLong("antecedenceTime"), // todo: does this matter in all contexts?
       UPDATED_ACTIVITY,
-      bodyAsJson.getJsonObject("activity"),
+      bodyAsJson.getJsonObject("content") ?: JsonObject(),
       extractValuableHeaders(requestContext)
     ))
     requestContext.response().setStatusCode(200).end()
@@ -85,9 +85,9 @@ fun createActivityRoutes(vertx: Vertx): Router {
     vertx.eventBus().publish(EFFECT_CHANNEL, Effect(
       userIdentifier,
       timeCreated,
-      timeCreated, // todo: does this matter in all contexts?
+      bodyAsJson.getLong("antecedenceTime"), // todo: does this matter in all contexts?
       REMOVED_ACTIVITY,
-      bodyAsJson.getJsonObject("activity"),
+      bodyAsJson.getJsonObject("content") ?: JsonObject(),
       extractValuableHeaders(requestContext)
     ))
     requestContext.response().setStatusCode(200).end()
