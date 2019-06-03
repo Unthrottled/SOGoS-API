@@ -22,6 +22,21 @@ const val UPDATED_ACTIVITY = "UPDATED_ACTIVITY"
 fun createActivityRoutes(vertx: Vertx): Router {
   val router = router(vertx)
 
+  router.get("/current").handler { requestContext ->
+    val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
+    requestContext.response()
+      .setStatusCode(200)
+      .end(
+        jsonObjectOf(
+          "antecedenceTime" to 1559556836772L,
+          "content" to jsonObjectOf(
+            "name" to "SOME_ACTIVITY",
+            "uuid" to "08d88b69-8330-4d4e-b52f-d2075da7398e"
+          )
+        ).encode()
+      )
+  }
+
   // this should accept the model that I have not created yet ._.
 
   /**
@@ -35,7 +50,8 @@ fun createActivityRoutes(vertx: Vertx): Router {
       .map { it as JsonObject }
       .forEach { activity ->
         //todo: some type of sanitization?
-        vertx.eventBus().publish(EFFECT_CHANNEL,
+        vertx.eventBus().publish(
+          EFFECT_CHANNEL,
           Effect(
             userIdentifier,
             Instant.now().toEpochMilli(),
@@ -52,44 +68,50 @@ fun createActivityRoutes(vertx: Vertx): Router {
     val bodyAsJson = requestContext.bodyAsJson
     val timeCreated = Instant.now().toEpochMilli()
     val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
-    vertx.eventBus().publish(EFFECT_CHANNEL, Effect(
-      userIdentifier,
-      timeCreated,
-      bodyAsJson.getLong("antecedenceTime"),
-      STARTED_ACTIVITY,
-      bodyAsJson.getJsonObject("content") ?: JsonObject(),
-      extractValuableHeaders(requestContext)
-    ))
+    vertx.eventBus().publish(
+      EFFECT_CHANNEL, Effect(
+        userIdentifier,
+        timeCreated,
+        bodyAsJson.getLong("antecedenceTime"),
+        STARTED_ACTIVITY,
+        bodyAsJson.getJsonObject("content") ?: JsonObject(),
+        extractValuableHeaders(requestContext)
+      )
+    )
     requestContext.response().setStatusCode(200).end()
   }
 
-  router.put().handler {requestContext ->
+  router.put().handler { requestContext ->
     val bodyAsJson = requestContext.bodyAsJson
     val timeCreated = Instant.now().toEpochMilli()
     val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
-    vertx.eventBus().publish(EFFECT_CHANNEL, Effect(
-      userIdentifier,
-      timeCreated,
-      bodyAsJson.getLong("antecedenceTime"), // todo: does this matter in all contexts?
-      UPDATED_ACTIVITY,
-      bodyAsJson.getJsonObject("content") ?: JsonObject(),
-      extractValuableHeaders(requestContext)
-    ))
+    vertx.eventBus().publish(
+      EFFECT_CHANNEL, Effect(
+        userIdentifier,
+        timeCreated,
+        bodyAsJson.getLong("antecedenceTime"), // todo: does this matter in all contexts?
+        UPDATED_ACTIVITY,
+        bodyAsJson.getJsonObject("content") ?: JsonObject(),
+        extractValuableHeaders(requestContext)
+      )
+    )
     requestContext.response().setStatusCode(200).end()
   }
 
-  router.delete().handler {requestContext ->
+  router.delete().handler { requestContext ->
     val bodyAsJson = requestContext.bodyAsJson
     val timeCreated = Instant.now().toEpochMilli()
     val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
-    vertx.eventBus().publish(EFFECT_CHANNEL, Effect(
-      userIdentifier,
-      timeCreated,
-      bodyAsJson.getLong("antecedenceTime"), // todo: does this matter in all contexts?
-      REMOVED_ACTIVITY,
-      bodyAsJson.getJsonObject("content") ?: JsonObject(),
-      extractValuableHeaders(requestContext)
-    ))
+    vertx.eventBus().publish(
+      EFFECT_CHANNEL, Effect(
+        userIdentifier,
+        timeCreated,
+        bodyAsJson.getLong("antecedenceTime"), // todo: does this matter in all contexts?
+        REMOVED_ACTIVITY,
+        bodyAsJson.getJsonObject("content") ?: JsonObject(),
+        extractValuableHeaders(requestContext)
+      )
+    )
     requestContext.response().setStatusCode(200).end()
   }
 
@@ -98,7 +120,9 @@ fun createActivityRoutes(vertx: Vertx): Router {
 
 fun extractValuableHeaders(requestContext: RoutingContext): JsonObject =
   requestContext.request().getHeader("User-Agent").toOptional()
-    .map { jsonObjectOf(
-      "userAgent" to it
-    ) }
+    .map {
+      jsonObjectOf(
+        "userAgent" to it
+      )
+    }
     .orElseGet { jsonObjectOf() }
