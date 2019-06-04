@@ -12,7 +12,7 @@ import io.vertx.reactivex.ext.mongo.MongoClient
 
 data class Activity(val antecedenceTime: Long, val content: JsonObject)
 data class CurrentActivityRequest(override val guid: String) : User
-data class CurrentActivityResponse(val activityEffect: Activity)
+data class CurrentActivityResponse(val activity: Activity)
 
 class CurrentActivityListener(private val mongoClient: MongoClient) :
   Handler<Message<CurrentActivityRequest>> {

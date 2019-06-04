@@ -1,16 +1,22 @@
 package io.acari.http
 
 import io.acari.memory.Effect
+import io.acari.memory.activity.CURRENT_ACTIVITY_CHANNEL
+import io.acari.memory.activity.CurrentActivityRequest
+import io.acari.memory.activity.CurrentActivityResponse
 import io.acari.memory.user.EFFECT_CHANNEL
 import io.acari.security.USER_IDENTIFIER
 import io.acari.util.loggerFor
 import io.acari.util.toOptional
 import io.vertx.core.Vertx
+import io.vertx.core.eventbus.Message
+import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.Router.router
 import io.vertx.ext.web.RoutingContext
 import io.vertx.kotlin.core.json.jsonObjectOf
+import io.vertx.reactivex.SingleHelper
 import java.time.Instant
 
 private val logger = loggerFor("Activity Routes")
@@ -24,20 +30,17 @@ fun createActivityRoutes(vertx: Vertx): Router {
 
   router.get("/current").handler { requestContext ->
     val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
-    requestContext.response()
-      .setStatusCode(200)
-      .end(
-        jsonObjectOf(
-          "antecedenceTime" to 1559556836772L,
-          "content" to jsonObjectOf(
-            "name" to "SOME_ACTIVITY",
-            "uuid" to "08d88b69-8330-4d4e-b52f-d2075da7398e"
-          )
-        ).encode()
-      )
+    SingleHelper.toSingle<Message<CurrentActivityResponse>> { handler ->
+      vertx.eventBus()
+        .send(CURRENT_ACTIVITY_CHANNEL, CurrentActivityRequest(userIdentifier), handler)
+    }.map { it.body().activity }
+      .subscribe({
+        requestContext.response().setStatusCode(200).end(Json.encode(it))
+      }) {
+        logger.warn("Unable to service current activity request for $userIdentifier", it)
+        requestContext.fail(500)
+      }
   }
-
-  // this should accept the model that I have not created yet ._.
 
   /**
    * Should be used to assimilate any offline activities that may have
