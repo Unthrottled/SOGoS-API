@@ -1,5 +1,6 @@
 package io.acari.memory.user
 
+import io.acari.memory.Effect
 import io.acari.memory.UserSchema
 import io.acari.security.extractUserIdentificationKey
 import io.reactivex.Maybe

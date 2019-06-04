@@ -1,6 +1,5 @@
 package io.acari.memory
 
-import io.acari.memory.user.Effect
 import io.acari.memory.user.UserMemoryWorkers
 import io.vertx.core.Handler
 import io.vertx.core.json.JsonObject

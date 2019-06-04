@@ -1,6 +1,5 @@
 package io.acari.memory
 
-import io.acari.memory.user.Effect
 import io.acari.memory.user.UserInfoRequest
 import io.acari.memory.user.UserInfoResponse
 import io.acari.util.POKOCodec

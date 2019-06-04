@@ -10,13 +10,6 @@ import io.vertx.reactivex.ext.mongo.MongoClient
 data class UserInfoRequest(val openIDInformation: JsonObject)
 data class UserInfoResponse(override val guid: String): User
 
-data class Effect(val guid: String,
-                  val timeCreated: Long,
-                  val antecedenceTime: Long,
-                  val name: String,
-                  val content: JsonObject,
-                  val meta: JsonObject)
-
 interface User {
   val guid: String
 }

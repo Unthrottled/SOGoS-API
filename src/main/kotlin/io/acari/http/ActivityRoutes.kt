@@ -1,7 +1,7 @@
 package io.acari.http
 
+import io.acari.memory.Effect
 import io.acari.memory.user.EFFECT_CHANNEL
-import io.acari.memory.user.Effect
 import io.acari.security.USER_IDENTIFIER
 import io.acari.util.loggerFor
 import io.acari.util.toOptional

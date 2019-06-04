@@ -20,6 +20,6 @@ object EffectSchema {
 object ActivityScheme {
   const val COLLECTION: String = "activity"
   const val GLOBAL_USER_IDENTIFIER: String = "guid" // string
-  const val START_TIME: String = "startTime"
-  const val uuid: String = "uuid"
+  const val TIME_OF_ANTECEDENCE: String = "antecedenceTime"
+  const val CONTENT: String = "content"
 }
