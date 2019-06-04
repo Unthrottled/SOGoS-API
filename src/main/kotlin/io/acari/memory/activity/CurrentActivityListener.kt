@@ -14,6 +14,12 @@ data class Activity(val antecedenceTime: Long, val content: JsonObject)
 data class CurrentActivityRequest(override val guid: String) : User
 data class CurrentActivityResponse(val activity: Activity)
 
+fun activityFromJson(activityJson: JsonObject): Activity =
+  Activity(
+    antecedenceTime = activityJson.getLong(ActivitySchema.TIME_OF_ANTECEDENCE),
+    content = activityJson.getJsonObject(ActivitySchema.CONTENT)
+  )
+
 class CurrentActivityListener(private val mongoClient: MongoClient) :
   Handler<Message<CurrentActivityRequest>> {
   val log = loggerFor(javaClass)
@@ -21,10 +27,7 @@ class CurrentActivityListener(private val mongoClient: MongoClient) :
     val (guid) = message.body()
     findCurrentActivity(mongoClient, guid)
       .map { activityJson ->
-        Activity(
-          antecedenceTime = activityJson.getLong(ActivitySchema.TIME_OF_ANTECEDENCE),
-          content = activityJson.getJsonObject(ActivitySchema.CONTENT)
-        )
+        activityFromJson(activityJson)
       }
       .subscribe({ currentActivity ->
         message.reply(CurrentActivityResponse(currentActivity))

@@ -1,9 +1,13 @@
 package io.acari.memory
 
+import io.acari.memory.activity.CurrentActivityRequest
+import io.acari.memory.activity.CurrentActivityResponse
+import io.acari.memory.activity.activityFromJson
 import io.acari.memory.user.UserInfoRequest
 import io.acari.memory.user.UserInfoResponse
 import io.acari.util.POKOCodec
 import io.reactivex.Completable
+import io.vertx.core.json.JsonObject
 import io.vertx.reactivex.core.Vertx
 import io.vertx.reactivex.core.eventbus.EventBus
 
@@ -28,6 +32,18 @@ object MemoryCodecs {
       )
     )
     eventBus.delegate.registerDefaultCodec(
+      CurrentActivityRequest::class.java,
+      POKOCodec(
+        { json, testObject ->
+          json.put("guid", testObject.guid)
+        },
+        { jsonObject ->
+          CurrentActivityRequest(jsonObject.getString("guid"))
+        },
+        CurrentActivityRequest::class.java.name
+      )
+    )
+    eventBus.delegate.registerDefaultCodec(
       UserInfoResponse::class.java,
       POKOCodec(
         { json, testObject ->
@@ -37,6 +53,18 @@ object MemoryCodecs {
           UserInfoResponse(jsonObject.getString(UserSchema.GLOBAL_USER_IDENTIFIER))
         },
         UserInfoResponse::class.java.name
+      )
+    )
+    eventBus.delegate.registerDefaultCodec(
+      CurrentActivityResponse::class.java,
+      POKOCodec(
+        { json, testObject ->
+          json.put("activity", JsonObject.mapFrom(testObject.activity))//todo: just uso jsonObject map from ._.
+        },
+        { jsonObject ->
+          CurrentActivityResponse(activityFromJson(jsonObject))
+        },
+        CurrentActivityResponse::class.java.name
       )
     )
     eventBus.delegate.registerDefaultCodec(
