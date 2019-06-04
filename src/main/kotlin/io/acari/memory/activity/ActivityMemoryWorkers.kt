@@ -1,10 +1,8 @@
 package io.acari.memory.activity
 
-import io.acari.memory.EffectListener
 import io.acari.memory.user.EFFECT_CHANNEL
 import io.acari.util.loggerFor
 import io.reactivex.Completable
-import io.vertx.core.json.JsonObject
 import io.vertx.reactivex.core.Vertx
 import io.vertx.reactivex.ext.mongo.MongoClient
 
@@ -17,7 +15,7 @@ object ActivityMemoryWorkers {
   fun registerWorkers(vertx: Vertx, mongoClient: MongoClient): Completable {
     val eventBus = vertx.eventBus()
     eventBus.consumer(CURRENT_ACTIVITY_CHANNEL, CurrentActivityListener(mongoClient))
-    eventBus.consumer(EFFECT_CHANNEL, EffectListener(mongoClient, vertx))
+    eventBus.consumer(EFFECT_CHANNEL, ActivityEffectListener(mongoClient, vertx))
     return Completable.complete()
   }
 }
