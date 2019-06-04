@@ -20,5 +20,4 @@ object ActivityMemoryWorkers {
     eventBus.consumer(EFFECT_CHANNEL, EffectListener(mongoClient, vertx))
     return Completable.complete()
   }
-
 }

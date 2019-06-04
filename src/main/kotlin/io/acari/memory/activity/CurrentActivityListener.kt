@@ -4,11 +4,13 @@ import io.acari.memory.ActivitySchema
 import io.acari.memory.user.User
 import io.acari.util.loggerFor
 import io.reactivex.Maybe
+import io.reactivex.MaybeObserver
 import io.vertx.core.Handler
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.core.json.jsonObjectOf
 import io.vertx.reactivex.core.eventbus.Message
 import io.vertx.reactivex.ext.mongo.MongoClient
+import java.lang.IllegalStateException
 
 data class Activity(val antecedenceTime: Long, val content: JsonObject)
 data class CurrentActivityRequest(override val guid: String) : User
@@ -28,7 +30,8 @@ class CurrentActivityListener(private val mongoClient: MongoClient) :
     findCurrentActivity(mongoClient, guid)
       .map { activityJson ->
         activityFromJson(activityJson)
-      }
+      }.switchIfEmpty { observer: MaybeObserver<in Activity> ->
+        observer.onError(IllegalStateException("$guid has no current activity!")) }
       .subscribe({ currentActivity ->
         message.reply(CurrentActivityResponse(currentActivity))
       }) {
