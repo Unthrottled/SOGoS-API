@@ -15,7 +15,7 @@ class ActivityEffectListener(private val mongoClient: MongoClient, private val v
   Handler<Message<Effect>> {
   override fun handle(message: Message<Effect>) {
     val effect = message.body()
-    if (effect.name == STARTED_ACTIVITY) {
+    if (isActivity(effect) && shouldTime(effect)) {
       mongoClient.rxReplaceDocumentsWithOptions(
         ActivitySchema.COLLECTION,
         jsonObjectOf(ActivitySchema.GLOBAL_USER_IDENTIFIER to effect.guid),
@@ -31,4 +31,13 @@ class ActivityEffectListener(private val mongoClient: MongoClient, private val v
         }
     }
   }
+
+  private fun shouldTime(effect: Effect): Boolean =
+    when (effect.content.getString("type") ?: "PASSIVE") {
+      "ACTIVE" -> true
+      else -> false
+    }
+
+  private fun isActivity(effect: Effect) =
+    effect.name == STARTED_ACTIVITY
 }
