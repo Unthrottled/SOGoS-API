@@ -1,5 +1,5 @@
 Activity API
-  - Offline Sync
+  - Offline Sync (bulk upload)
 
 Tech Debt:
 - Better message codec registration
