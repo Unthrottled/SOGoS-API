@@ -9,8 +9,7 @@
     "OpenId-Connect-Provider": "http://localhost:8080/auth/realms/master",
     "provider": "KEYCLOAK",
     "Client-Id": "sogos",
-    "App-Client-Id": "sogos-app",
-    "callbackURI": "http://localhost:3000"
+    "App-Client-Id": "sogos-app"
   },
   "memory": {
     "host": "127.0.0.1",
