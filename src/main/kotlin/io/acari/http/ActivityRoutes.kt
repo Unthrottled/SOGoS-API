@@ -8,6 +8,8 @@ import io.acari.memory.user.EFFECT_CHANNEL
 import io.acari.security.USER_IDENTIFIER
 import io.acari.util.loggerFor
 import io.acari.util.toOptional
+import io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE
+import io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON
 import io.vertx.core.Vertx
 import io.vertx.core.eventbus.Message
 import io.vertx.core.json.Json
@@ -35,7 +37,10 @@ fun createActivityRoutes(vertx: Vertx): Router {
         .send(CURRENT_ACTIVITY_CHANNEL, CurrentActivityRequest(userIdentifier), handler)
     }.map { it.body().activity }
       .subscribe({
-        requestContext.response().setStatusCode(200).end(Json.encode(it))
+        requestContext.response()
+          .putHeader(CONTENT_TYPE, APPLICATION_JSON)
+          .setStatusCode(200)
+          .end(Json.encode(it))
       }) {
         logger.warn("Unable to service current activity request for $userIdentifier", it)
         requestContext.fail(500)
@@ -65,7 +70,7 @@ fun createActivityRoutes(vertx: Vertx): Router {
           )
         )
       }
-    requestContext.response().setStatusCode(200).end()
+    requestContext.response().putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(200).end()
   }
   router.post().handler { requestContext ->
     val bodyAsJson = requestContext.bodyAsJson
@@ -81,7 +86,7 @@ fun createActivityRoutes(vertx: Vertx): Router {
         extractValuableHeaders(requestContext)
       )
     )
-    requestContext.response().setStatusCode(200).end()
+    requestContext.response().putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(200).end()
   }
 
   router.put().handler { requestContext ->
@@ -98,7 +103,7 @@ fun createActivityRoutes(vertx: Vertx): Router {
         extractValuableHeaders(requestContext)
       )
     )
-    requestContext.response().setStatusCode(200).end()
+    requestContext.response().putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(200).end()
   }
 
   router.delete().handler { requestContext ->
@@ -115,7 +120,7 @@ fun createActivityRoutes(vertx: Vertx): Router {
         extractValuableHeaders(requestContext)
       )
     )
-    requestContext.response().setStatusCode(200).end()
+    requestContext.response().putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(200).end()
   }
 
   return router
