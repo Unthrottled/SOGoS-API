@@ -1,5 +1,6 @@
 package io.acari.http
 
+import com.sun.org.apache.regexp.internal.RE
 import io.acari.memory.Effect
 import io.acari.memory.activity.CURRENT_ACTIVITY_CHANNEL
 import io.acari.memory.activity.CurrentActivityRequest
@@ -27,6 +28,10 @@ const val STARTED_ACTIVITY = "STARTED_ACTIVITY"
 const val REMOVED_ACTIVITY = "REMOVED_ACTIVITY"
 const val UPDATED_ACTIVITY = "UPDATED_ACTIVITY"
 
+const val CREATED = "CREATED"
+const val UPDATED = "UPDATED"
+const val DELETED = "DELETED"
+
 fun createActivityRoutes(vertx: Vertx): Router {
   val router = router(vertx)
 
@@ -47,6 +52,8 @@ fun createActivityRoutes(vertx: Vertx): Router {
       }
   }
 
+  val uploadStatus = setOf(CREATED, UPDATED, DELETED)
+
   /**
    * Should be used to assimilate any offline activities that may have
    * been performed.
@@ -56,15 +63,18 @@ fun createActivityRoutes(vertx: Vertx): Router {
     val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
     bodyAsJsonArray.stream()
       .map { it as JsonObject }
-      .forEach { activity ->
-        //todo: some type of sanitization?
+      .filter { cachedActivity ->
+        uploadStatus.contains(cachedActivity.getString("uploadType"))
+      }
+      .forEach { cachedActivity ->
+        val activity = cachedActivity.getJsonObject("activity")
         vertx.eventBus().publish(
           EFFECT_CHANNEL,
           Effect(
             userIdentifier,
             Instant.now().toEpochMilli(),
             activity.getLong("antecedenceTime"),
-            STARTED_ACTIVITY,
+            mapTypeToEffect(cachedActivity.getString("uploadType")),
             activity.getJsonObject("content") ?: JsonObject(),
             extractValuableHeaders(requestContext)
           )
@@ -125,6 +135,14 @@ fun createActivityRoutes(vertx: Vertx): Router {
 
   return router
 }
+
+val mappings = mapOf(
+  CREATED to STARTED_ACTIVITY,
+  UPDATED to UPDATED_ACTIVITY,
+  DELETED to REMOVED_ACTIVITY
+)
+fun mapTypeToEffect(uploadType: String): String =
+  mappings[uploadType] ?: STARTED_ACTIVITY
 
 fun extractValuableHeaders(requestContext: RoutingContext): JsonObject =
   requestContext.request().getHeader("User-Agent").toOptional()

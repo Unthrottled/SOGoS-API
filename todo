@@ -1,5 +1,12 @@
+Data Sanitization
+  - Enforce Required Properties
+
+Return 401 & 403 when appropriate.
+
 Activity API
   - Offline Sync (bulk upload)
+  - Update
+  - Delete
 
 Tech Debt:
 - Better message codec registration
