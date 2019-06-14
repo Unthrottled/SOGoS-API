@@ -31,5 +31,6 @@ fun createAPIRoute(vertx: Vertx): Router {
   router.get("/user").handler(createUserHandler(vertx))
   router.route().handler(createVerificationHandler(vertx))
   router.mountSubRouter("/activity", createActivityRoutes(vertx))
+  router.mountSubRouter("/history", createHistoryRoutes(vertx))
   return router
 }
