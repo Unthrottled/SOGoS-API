@@ -20,6 +20,7 @@ private val logger = loggerFor("History Routes")
 
 fun createHistoryRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
   val router = Router.router(vertx)
+  //todo: path params
   router.get("/feed").handler { requestContext ->
     val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
     val response = requestContext.response()
