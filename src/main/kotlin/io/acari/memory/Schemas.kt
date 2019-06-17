@@ -23,3 +23,10 @@ object CurrentActivitySchema {
   const val TIME_OF_ANTECEDENCE: String = "antecedenceTime"
   const val CONTENT: String = "content"
 }
+
+object ActivityHistorySchema {
+  const val COLLECTION: String = "history"
+  const val GLOBAL_USER_IDENTIFIER: String = "guid" // string
+  const val TIME_OF_ANTECEDENCE: String = "antecedenceTime"
+  const val CONTENT: String = "content"
+}
