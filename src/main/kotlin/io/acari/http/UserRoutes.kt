@@ -7,10 +7,11 @@ import io.netty.handler.codec.http.HttpHeaderValues
 import io.vertx.core.Handler
 import io.vertx.core.Vertx
 import io.vertx.ext.web.RoutingContext
+import io.vertx.reactivex.ext.mongo.MongoClient
 
 private val logger = loggerFor("UserRoutes")
 
-fun createUserHandler(vertx: Vertx): Handler<RoutingContext> = Handler { routingContext ->
+fun createUserHandler(vertx: Vertx, mongoClient: MongoClient): Handler<RoutingContext> = Handler { routingContext ->
   UserService.findUserInformation(vertx, routingContext.user())
     .subscribe({
       routingContext.response()

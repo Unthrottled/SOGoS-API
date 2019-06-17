@@ -28,9 +28,9 @@ fun mountAPIRoute(vertx: Vertx, mongoClient: MongoClient, router: Router): Route
 
 fun createAPIRoute(vertx: Vertx, mongoClient: MongoClient): Router {
   val router = Router.router(vertx)
-  router.get("/user").handler(createUserHandler(vertx))
-  router.route().handler(createVerificationHandler(vertx))
-  router.mountSubRouter("/activity", createActivityRoutes(vertx))
+  router.get("/user").handler(createUserHandler(vertx, mongoClient))
   router.mountSubRouter("/history", createHistoryRoutes(vertx, mongoClient))
+  router.route().handler(createVerificationHandler())
+  router.mountSubRouter("/activity", createActivityRoutes(vertx, mongoClient))
   return router
 }

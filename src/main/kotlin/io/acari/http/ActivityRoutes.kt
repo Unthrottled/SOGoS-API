@@ -1,6 +1,5 @@
 package io.acari.http
 
-import com.sun.org.apache.regexp.internal.RE
 import io.acari.memory.Effect
 import io.acari.memory.activity.CURRENT_ACTIVITY_CHANNEL
 import io.acari.memory.activity.CurrentActivityRequest
@@ -20,6 +19,7 @@ import io.vertx.ext.web.Router.router
 import io.vertx.ext.web.RoutingContext
 import io.vertx.kotlin.core.json.jsonObjectOf
 import io.vertx.reactivex.SingleHelper
+import io.vertx.reactivex.ext.mongo.MongoClient
 import java.time.Instant
 
 private val logger = loggerFor("Activity Routes")
@@ -32,7 +32,7 @@ const val CREATED = "CREATED"
 const val UPDATED = "UPDATED"
 const val DELETED = "DELETED"
 
-fun createActivityRoutes(vertx: Vertx): Router {
+fun createActivityRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
   val router = router(vertx)
 
   router.get("/current").handler { requestContext ->

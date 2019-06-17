@@ -56,7 +56,7 @@ fun extractUserValidationKey(emailAddress: String, globalUserIdentifier: String)
 
 const val USER_IDENTIFIER = "User-Identifier"
 
-fun createVerificationHandler(vertx: Vertx): Handler<RoutingContext> = Handler { routingContext ->
+fun createVerificationHandler(): Handler<RoutingContext> = Handler { routingContext ->
   val user = routingContext.user() as OAuth2TokenImpl
   val headers = routingContext.request().headers()
   val verificationKey = headers.get("Verification") ?: ""
