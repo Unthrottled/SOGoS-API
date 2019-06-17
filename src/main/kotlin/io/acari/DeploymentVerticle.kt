@@ -16,8 +16,6 @@ class DeploymentVerticle : AbstractVerticle() {
       ConfigRetriever.create(vertx).getConfig(it)
     }.flatMap { config ->
       deployVerticle(HttpVerticle(), config)
-    }.flatMap { config ->
-      deployVerticle(MemoryVerticle(), config)
     }
       .subscribe({
         startFuture.complete()
