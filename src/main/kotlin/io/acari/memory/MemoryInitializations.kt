@@ -19,7 +19,7 @@ object MemoryInitializations {
       )
       //todo: indexing
       .andThen(createCollection(mongoClient, EffectSchema.COLLECTION))
-      .andThen(createCollection(mongoClient, ActivitySchema.COLLECTION))
+      .andThen(createCollection(mongoClient, CurrentActivitySchema.COLLECTION))
 
   fun registerCodecs(vertx: Vertx): Completable =
     MemoryCodecs.attachCodecsToEventBus(vertx)

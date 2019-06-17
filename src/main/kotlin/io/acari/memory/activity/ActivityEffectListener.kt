@@ -1,7 +1,7 @@
 package io.acari.memory.activity
 
 import io.acari.http.STARTED_ACTIVITY
-import io.acari.memory.ActivitySchema
+import io.acari.memory.CurrentActivitySchema
 import io.acari.memory.Effect
 import io.acari.memory.user.UserMemoryWorkers
 import io.reactivex.Completable
@@ -31,12 +31,12 @@ class ActivityEffectListener(private val mongoClient: MongoClient, private val v
   private fun writeCurrentActivity(effect: Effect): Completable =
     if (isActivity(effect) && shouldTime(effect)) {
       mongoClient.rxReplaceDocumentsWithOptions(
-        ActivitySchema.COLLECTION,
-        jsonObjectOf(ActivitySchema.GLOBAL_USER_IDENTIFIER to effect.guid),
+        CurrentActivitySchema.COLLECTION,
+        jsonObjectOf(CurrentActivitySchema.GLOBAL_USER_IDENTIFIER to effect.guid),
         jsonObjectOf(
-          ActivitySchema.GLOBAL_USER_IDENTIFIER to effect.guid,
-          ActivitySchema.CONTENT to effect.content,
-          ActivitySchema.TIME_OF_ANTECEDENCE to effect.antecedenceTime
+          CurrentActivitySchema.GLOBAL_USER_IDENTIFIER to effect.guid,
+          CurrentActivitySchema.CONTENT to effect.content,
+          CurrentActivitySchema.TIME_OF_ANTECEDENCE to effect.antecedenceTime
         ), UpdateOptions(true)
       )
         .ignoreElement()

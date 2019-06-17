@@ -17,7 +17,7 @@ object EffectSchema {
   const val CONTENT: String = "content"
 }
 
-object ActivitySchema {
+object CurrentActivitySchema {
   const val COLLECTION: String = "activity"
   const val GLOBAL_USER_IDENTIFIER: String = "guid" // string
   const val TIME_OF_ANTECEDENCE: String = "antecedenceTime"

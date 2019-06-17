@@ -1,6 +1,6 @@
 package io.acari.memory.activity
 
-import io.acari.memory.ActivitySchema
+import io.acari.memory.CurrentActivitySchema
 import io.acari.memory.user.User
 import io.acari.util.loggerFor
 import io.reactivex.Maybe
@@ -18,8 +18,8 @@ data class CurrentActivityResponse(val activity: Activity)
 
 fun activityFromJson(activityJson: JsonObject): Activity =
   Activity(
-    antecedenceTime = activityJson.getLong(ActivitySchema.TIME_OF_ANTECEDENCE),
-    content = activityJson.getJsonObject(ActivitySchema.CONTENT)
+    antecedenceTime = activityJson.getLong(CurrentActivitySchema.TIME_OF_ANTECEDENCE),
+    content = activityJson.getJsonObject(CurrentActivitySchema.CONTENT)
   )
 
 class CurrentActivityListener(private val mongoClient: MongoClient) :
@@ -45,8 +45,8 @@ class CurrentActivityListener(private val mongoClient: MongoClient) :
     globalUserIdentifier: String
   ): Maybe<JsonObject> {
     return mongoClient.rxFindOne(
-      ActivitySchema.COLLECTION, jsonObjectOf(
-        ActivitySchema.GLOBAL_USER_IDENTIFIER to globalUserIdentifier
+      CurrentActivitySchema.COLLECTION, jsonObjectOf(
+        CurrentActivitySchema.GLOBAL_USER_IDENTIFIER to globalUserIdentifier
       ), jsonObjectOf()
     )
   }
