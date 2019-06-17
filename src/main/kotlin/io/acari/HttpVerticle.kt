@@ -32,12 +32,12 @@ class HttpVerticle : AbstractVerticle() {
       .zipWith(setUpDB(mongoClient).toSingle { mongoClient },
         BiFunction<OAuth2Auth, MongoClient, Pair<OAuth2Auth, MongoClient>> { oauth2, mongoClientComplet -> Pair(oauth2, mongoClientComplet)})
       .flatMap { pair ->
-        val (oauth2, mongoClient) = pair
+        val (oauth2, reactiveMongoClient) = pair
         val router = Router.router(vertx.delegate)
         val configuredRouter = attachNonSecuredRoutes(router, configuration)
         val securedRoute = attachSecurityToRouter(configuredRouter, oauth2, configuration)
         val supplementedRoutes = mountSupportingRoutes(vertx.delegate, securedRoute, configuration)
-        val apiRouter = mountAPIRoute(vertx.delegate, supplementedRoutes, configuration)
+        val apiRouter = mountAPIRoute(vertx.delegate, reactiveMongoClient, supplementedRoutes)
         startServer(apiRouter)
       }
       .subscribe({

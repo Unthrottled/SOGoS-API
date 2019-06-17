@@ -12,10 +12,11 @@ import io.vertx.core.eventbus.Message
 import io.vertx.core.json.Json
 import io.vertx.ext.web.Router
 import io.vertx.reactivex.SingleHelper
+import io.vertx.reactivex.ext.mongo.MongoClient
 
 private val logger = loggerFor("History Routes")
 
-fun createHistoryRoutes(vertx: Vertx): Router {
+fun createHistoryRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
   val router = Router.router(vertx)
   router.get("/feed").handler { requestContext ->
     val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
