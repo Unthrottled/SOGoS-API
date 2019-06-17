@@ -4,6 +4,8 @@ import io.acari.http.STARTED_ACTIVITY
 import io.acari.memory.ActivitySchema
 import io.acari.memory.Effect
 import io.acari.memory.user.UserMemoryWorkers
+import io.reactivex.Completable
+import io.reactivex.CompletableSource
 import io.vertx.core.Handler
 import io.vertx.ext.mongo.UpdateOptions
 import io.vertx.kotlin.core.json.jsonObjectOf
@@ -15,6 +17,18 @@ class ActivityEffectListener(private val mongoClient: MongoClient, private val v
   Handler<Message<Effect>> {
   override fun handle(message: Message<Effect>) {
     val effect = message.body()
+    writeCurrentActivity(effect)
+      .andThen(writeActivityLog(effect))
+      .subscribe({}) {
+        UserMemoryWorkers.log.warn("Unable to save user for reasons.", it)
+      }
+  }
+
+  private fun writeActivityLog(effect: Effect): CompletableSource {
+    return Completable.complete()
+  }
+
+  private fun writeCurrentActivity(effect: Effect): Completable =
     if (isActivity(effect) && shouldTime(effect)) {
       mongoClient.rxReplaceDocumentsWithOptions(
         ActivitySchema.COLLECTION,
@@ -26,11 +40,9 @@ class ActivityEffectListener(private val mongoClient: MongoClient, private val v
         ), UpdateOptions(true)
       )
         .ignoreElement()
-        .subscribe({}) {
-          UserMemoryWorkers.log.warn("Unable to save user for reasons.", it)
-        }
+    } else {
+      Completable.complete()
     }
-  }
 
   private fun shouldTime(effect: Effect): Boolean =
     when (effect.content.getString("type") ?: "PASSIVE") {

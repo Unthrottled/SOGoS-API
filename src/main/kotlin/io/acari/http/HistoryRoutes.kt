@@ -33,5 +33,19 @@ fun createHistoryRoutes(vertx: Vertx): Router {
         requestContext.fail(500)
       }
   }
+  router.get("/feed/stream").handler { requestContext ->
+
+    val response = requestContext.response()
+    response.isChunked = true
+    0.until(11).forEach {
+      //language=JSON
+      response.write(
+        """{
+  "ayy": "lmao",
+  "count": $it
+}"""
+      )
+    }
+  }
   return router
 }
