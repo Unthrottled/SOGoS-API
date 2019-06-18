@@ -1,3 +1,6 @@
+Activity Feed
+  - Limit it by time range and not all the things.
+
 Data Sanitization
   - Enforce Required Properties
 
