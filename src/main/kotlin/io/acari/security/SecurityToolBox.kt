@@ -4,17 +4,17 @@ import com.google.common.hash.HashFunction
 import com.google.common.hash.Hashing
 import io.reactivex.Single
 import io.vertx.core.Handler
-import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
-import io.vertx.ext.auth.oauth2.OAuth2Auth
 import io.vertx.ext.auth.oauth2.OAuth2ClientOptions
 import io.vertx.ext.auth.oauth2.impl.OAuth2TokenImpl
-import io.vertx.ext.auth.oauth2.providers.OpenIDConnectAuth
-import io.vertx.ext.web.Router
-import io.vertx.ext.web.RoutingContext
-import io.vertx.ext.web.handler.BodyHandler
-import io.vertx.ext.web.handler.OAuth2AuthHandler
 import io.vertx.reactivex.SingleHelper
+import io.vertx.reactivex.core.Vertx
+import io.vertx.reactivex.ext.auth.oauth2.OAuth2Auth
+import io.vertx.reactivex.ext.auth.oauth2.providers.OpenIDConnectAuth
+import io.vertx.reactivex.ext.web.Router
+import io.vertx.reactivex.ext.web.RoutingContext
+import io.vertx.reactivex.ext.web.handler.BodyHandler
+import io.vertx.reactivex.ext.web.handler.OAuth2AuthHandler
 
 fun attachSecurityToRouter(
   router: Router,

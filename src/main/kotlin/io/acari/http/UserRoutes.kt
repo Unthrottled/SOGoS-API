@@ -5,9 +5,9 @@ import io.acari.util.loggerFor
 import io.netty.handler.codec.http.HttpHeaderNames
 import io.netty.handler.codec.http.HttpHeaderValues
 import io.vertx.core.Handler
-import io.vertx.core.Vertx
-import io.vertx.ext.web.RoutingContext
+import io.vertx.reactivex.core.Vertx
 import io.vertx.reactivex.ext.mongo.MongoClient
+import io.vertx.reactivex.ext.web.RoutingContext
 
 private val logger = loggerFor("UserRoutes")
 

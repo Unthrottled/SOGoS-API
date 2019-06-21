@@ -4,11 +4,11 @@ import io.acari.memory.ActivityHistorySchema
 import io.acari.memory.activity.activityFromJson
 import io.acari.util.loggerFor
 import io.netty.handler.codec.http.HttpHeaderNames
-import io.vertx.core.Vertx
 import io.vertx.core.json.Json
-import io.vertx.ext.web.Router
 import io.vertx.kotlin.core.json.jsonObjectOf
+import io.vertx.reactivex.core.Vertx
 import io.vertx.reactivex.ext.mongo.MongoClient
+import io.vertx.reactivex.ext.web.Router
 
 private val logger = loggerFor("History Routes")
 

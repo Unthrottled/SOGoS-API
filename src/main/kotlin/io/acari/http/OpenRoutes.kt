@@ -3,8 +3,8 @@ package io.acari.http
 import io.netty.handler.codec.http.HttpHeaderNames
 import io.netty.handler.codec.http.HttpHeaderValues
 import io.vertx.core.json.JsonObject
-import io.vertx.ext.web.Router
 import io.vertx.kotlin.core.json.jsonObjectOf
+import io.vertx.reactivex.ext.web.Router
 
 fun attachNonSecuredRoutes(router: Router, configuration: JsonObject): Router {
   router.get("/configurations").handler {

@@ -13,11 +13,11 @@ import io.vertx.core.Future
 import io.vertx.core.http.HttpServer
 import io.vertx.core.http.HttpServerOptions
 import io.vertx.core.net.JksOptions
-import io.vertx.ext.auth.oauth2.OAuth2Auth
-import io.vertx.ext.web.Router
 import io.vertx.reactivex.SingleHelper
 import io.vertx.reactivex.core.AbstractVerticle
+import io.vertx.reactivex.ext.auth.oauth2.OAuth2Auth
 import io.vertx.reactivex.ext.mongo.MongoClient
+import io.vertx.reactivex.ext.web.Router
 
 class HttpVerticle : AbstractVerticle() {
   companion object {
@@ -28,16 +28,16 @@ class HttpVerticle : AbstractVerticle() {
     val memoryConfiguration = config().getJsonObject("memory")
     val mongoClient = MongoClient.createShared(vertx, memoryConfiguration)
     val configuration = config()
-    setUpOAuth(vertx.delegate, configuration)
+    setUpOAuth(vertx, configuration)
       .zipWith(setUpDB(mongoClient).toSingle { mongoClient },
         BiFunction<OAuth2Auth, MongoClient, Pair<OAuth2Auth, MongoClient>> { oauth2, mongoClientComplet -> Pair(oauth2, mongoClientComplet)})
       .flatMap { pair ->
         val (oauth2, reactiveMongoClient) = pair
-        val router = Router.router(vertx.delegate)
+        val router = Router.router(vertx)
         val configuredRouter = attachNonSecuredRoutes(router, configuration)
         val securedRoute = attachSecurityToRouter(configuredRouter, oauth2, configuration)
-        val supplementedRoutes = mountSupportingRoutes(vertx.delegate, securedRoute, configuration)
-        val apiRouter = mountAPIRoute(vertx.delegate, reactiveMongoClient, supplementedRoutes)
+        val supplementedRoutes = mountSupportingRoutes(vertx, securedRoute, configuration)
+        val apiRouter = mountAPIRoute(vertx, reactiveMongoClient, supplementedRoutes)
         startServer(apiRouter)
       }
       .subscribe({

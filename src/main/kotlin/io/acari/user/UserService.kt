@@ -9,14 +9,12 @@ import io.acari.util.loggerFor
 import io.acari.util.toOptional
 import io.reactivex.Maybe
 import io.reactivex.Single
-import io.vertx.core.Vertx
-import io.vertx.core.eventbus.Message
 import io.vertx.core.json.JsonObject
-import io.vertx.ext.auth.User
-import io.vertx.ext.auth.oauth2.AccessToken
 import io.vertx.kotlin.core.json.jsonObjectOf
 import io.vertx.reactivex.MaybeHelper
-import io.vertx.reactivex.SingleHelper
+import io.vertx.reactivex.core.Vertx
+import io.vertx.reactivex.ext.auth.User
+import io.vertx.reactivex.ext.auth.oauth2.AccessToken
 
 object UserService {
 
@@ -47,17 +45,16 @@ object UserService {
       }
 
   private fun fetchUserFromMemories(vertx: Vertx, oauthUserInformation: JsonObject): Single<JsonObject> =
-    SingleHelper.toSingle<Message<UserInfoResponse>> { handler ->
-      val eventBus = vertx.eventBus()
-      eventBus.send(
+    vertx.eventBus()
+      .rxSend<UserInfoResponse>(
         USER_INFORMATION_CHANNEL,
-        UserInfoRequest(oauthUserInformation), handler
+        UserInfoRequest(oauthUserInformation)
       )
-    }.map { userResponse ->
-      jsonObjectOf(
-        UserSchema.GLOBAL_USER_IDENTIFIER to userResponse.body().guid
-      )
-    }
+      .map { userResponse ->
+        jsonObjectOf(
+          UserSchema.GLOBAL_USER_IDENTIFIER to userResponse.body().guid
+        )
+      }
 
   private fun extractOAuthUserInformation(accessTokenAndStuff: AccessToken): Maybe<JsonObject> {
     val accessToken = accessTokenAndStuff.accessToken()

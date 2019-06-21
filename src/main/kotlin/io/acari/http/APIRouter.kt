@@ -2,9 +2,9 @@ package io.acari.http
 
 import io.acari.security.createVerificationHandler
 import io.acari.util.loggerFor
-import io.vertx.core.Vertx
-import io.vertx.ext.web.Router
+import io.vertx.reactivex.core.Vertx
 import io.vertx.reactivex.ext.mongo.MongoClient
+import io.vertx.reactivex.ext.web.Router
 
 private val logger = loggerFor("APIRouter")
 
