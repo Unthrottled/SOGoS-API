@@ -34,5 +34,6 @@ fun createAPIRoute(vertx: Vertx, mongoClient: MongoClient): Router {
   router.mountSubRouter("/history", createHistoryRoutes(vertx, mongoClient))
   router.route().handler(createVerificationHandler())
   router.mountSubRouter("/activity", createActivityRoutes(vertx, mongoClient))
+  router.mountSubRouter("/strategy", createStrategyRoutes(vertx, mongoClient))
   return router
 }
