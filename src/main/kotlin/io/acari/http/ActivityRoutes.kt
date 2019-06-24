@@ -34,7 +34,6 @@ const val DELETED = "DELETED"
 
 fun createActivityRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
   val router = router(vertx)
-
   router.get("/current").handler { requestContext ->
     val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
     SingleHelper.toSingle<Message<CurrentActivityResponse>> { handler ->
