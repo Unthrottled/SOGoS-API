@@ -10,11 +10,11 @@ import io.acari.util.toOptional
 import io.reactivex.Maybe
 import io.reactivex.Single
 import io.vertx.core.json.JsonObject
+import io.vertx.ext.auth.oauth2.AccessToken
 import io.vertx.kotlin.core.json.jsonObjectOf
 import io.vertx.reactivex.MaybeHelper
 import io.vertx.reactivex.core.Vertx
 import io.vertx.reactivex.ext.auth.User
-import io.vertx.reactivex.ext.auth.oauth2.AccessToken
 
 object UserService {
 
@@ -37,7 +37,7 @@ object UserService {
       }
 
   private fun extractUserInformation(user: User): Maybe<JsonObject> =
-    Single.just(user)
+    Single.just(user.delegate)
       .filter { it is AccessToken }
       .map { it as AccessToken }
       .flatMap { accessToken ->
