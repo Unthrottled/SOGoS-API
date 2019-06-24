@@ -55,7 +55,7 @@ class HttpVerticle : AbstractVerticle() {
 
   private fun startServer(router: Router): Single<HttpServer>{
     val serverConfig = config().getJsonObject("server")
-    return vertx //todo: moar rxjs
+    return vertx
       .createHttpServer(
         HttpServerOptions()
         .setSsl(serverConfig.getBoolean("SSL-Enabled"))
