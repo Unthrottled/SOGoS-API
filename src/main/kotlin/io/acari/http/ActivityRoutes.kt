@@ -1,9 +1,7 @@
 package io.acari.http
 
 import io.acari.memory.Effect
-import io.acari.memory.activity.CURRENT_ACTIVITY_CHANNEL
-import io.acari.memory.activity.CurrentActivityRequest
-import io.acari.memory.activity.CurrentActivityResponse
+import io.acari.memory.activity.CurrentActivityFinder
 import io.acari.memory.user.EFFECT_CHANNEL
 import io.acari.security.USER_IDENTIFIER
 import io.acari.util.loggerFor
@@ -15,8 +13,6 @@ import io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON
 import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.core.json.jsonObjectOf
-import io.vertx.reactivex.SingleHelper
-import io.vertx.reactivex.core.eventbus.Message
 import io.vertx.reactivex.ext.mongo.MongoClient
 import io.vertx.reactivex.ext.web.Router
 import io.vertx.reactivex.ext.web.Router.router
@@ -34,12 +30,10 @@ const val DELETED = "DELETED"
 
 fun createActivityRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
   val router = router(vertx)
+  val currentActivityListener = CurrentActivityFinder(mongoClient)
   router.get("/current").handler { requestContext ->
     val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
-    SingleHelper.toSingle<Message<CurrentActivityResponse>> { handler ->
-      vertx.eventBus()
-        .send(CURRENT_ACTIVITY_CHANNEL, CurrentActivityRequest(userIdentifier), handler)
-    }.map { it.body().activity }
+    currentActivityListener.handle(userIdentifier)
       .subscribe({
         requestContext.response()
           .putHeader(CONTENT_TYPE, APPLICATION_JSON)

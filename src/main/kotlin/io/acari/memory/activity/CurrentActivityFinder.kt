@@ -3,12 +3,9 @@ package io.acari.memory.activity
 import io.acari.memory.CurrentActivitySchema
 import io.acari.memory.user.User
 import io.acari.util.loggerFor
-import io.reactivex.Maybe
-import io.reactivex.MaybeObserver
-import io.vertx.core.Handler
+import io.reactivex.*
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.core.json.jsonObjectOf
-import io.vertx.reactivex.core.eventbus.Message
 import io.vertx.reactivex.ext.mongo.MongoClient
 import java.lang.IllegalStateException
 
@@ -22,22 +19,15 @@ fun activityFromJson(activityJson: JsonObject): Activity =
     content = activityJson.getJsonObject(CurrentActivitySchema.CONTENT)
   )
 
-class CurrentActivityListener(private val mongoClient: MongoClient) :
-  Handler<Message<CurrentActivityRequest>> {
+class CurrentActivityFinder(private val mongoClient: MongoClient) {
   val log = loggerFor(javaClass)
-  override fun handle(message: Message<CurrentActivityRequest>) {
-    val (guid) = message.body()
-    findCurrentActivity(mongoClient, guid)
+
+  fun handle(userIdentifier: String): Single<Activity> {
+    return findCurrentActivity(mongoClient, userIdentifier)
       .map { activityJson ->
         activityFromJson(activityJson)
-      }.switchIfEmpty { observer: MaybeObserver<in Activity> ->
-        observer.onError(IllegalStateException("$guid has no current activity!")) }
-      .subscribe({ currentActivity ->
-        message.reply(CurrentActivityResponse(currentActivity))
-      }) {
-        log.warn("Unable to fetch current activity for $guid because reasons.", it)
-        message.fail(404, "Shit's broke yo")
-      }
+      }.switchIfEmpty { observer: SingleObserver<in Activity> ->
+        observer.onError(IllegalStateException("$userIdentifier has no current activity!")) }
   }
 
   private fun findCurrentActivity(
