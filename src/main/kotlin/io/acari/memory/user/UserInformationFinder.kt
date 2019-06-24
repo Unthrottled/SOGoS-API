@@ -18,7 +18,7 @@ class UserInformationFinder(private val mongoClient: MongoClient, private val ve
 
   fun handle(openIDInformation: JsonObject): Single<String> {
     val openIDUserIdentifier = extractUserIdentificationKey(openIDInformation)
-    return findUser(mongoClient, openIDUserIdentifier)
+    return findUser(openIDUserIdentifier)
       .switchIfEmpty(createUser(openIDUserIdentifier, openIDInformation, mongoClient))
       .switchIfEmpty { singleObserver: SingleObserver<in JsonObject> ->
         singleObserver.onError(IllegalStateException("Unable to find user for $openIDUserIdentifier"))
@@ -28,7 +28,6 @@ class UserInformationFinder(private val mongoClient: MongoClient, private val ve
   }
 
   private fun findUser(
-    mongoClient: MongoClient,
     openIDUserIdentifier: String
   ): Maybe<JsonObject> {
     return mongoClient.rxFindOne(

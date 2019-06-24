@@ -14,7 +14,6 @@ interface User {
   val guid: String
 }
 
-const val USER_INFORMATION_CHANNEL = "user.information"
 const val EFFECT_CHANNEL = "effects"
 
 object UserMemoryWorkers {

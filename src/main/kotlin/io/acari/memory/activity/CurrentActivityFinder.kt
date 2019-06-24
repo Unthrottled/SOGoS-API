@@ -1,7 +1,6 @@
 package io.acari.memory.activity
 
 import io.acari.memory.CurrentActivitySchema
-import io.acari.memory.user.User
 import io.acari.util.loggerFor
 import io.reactivex.*
 import io.vertx.core.json.JsonObject
@@ -10,8 +9,6 @@ import io.vertx.reactivex.ext.mongo.MongoClient
 import java.lang.IllegalStateException
 
 data class Activity(val antecedenceTime: Long, val content: JsonObject)
-data class CurrentActivityRequest(override val guid: String) : User
-data class CurrentActivityResponse(val activity: Activity)
 
 fun activityFromJson(activityJson: JsonObject): Activity =
   Activity(
