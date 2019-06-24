@@ -6,8 +6,6 @@ import io.reactivex.Completable
 import io.vertx.reactivex.core.Vertx
 import io.vertx.reactivex.ext.mongo.MongoClient
 
-const val CURRENT_ACTIVITY_CHANNEL = "activity.current"
-
 object ActivityMemoryWorkers {
 
   val log = loggerFor(javaClass)

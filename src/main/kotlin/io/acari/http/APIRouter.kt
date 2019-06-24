@@ -1,6 +1,8 @@
 package io.acari.http
 
+import io.acari.memory.user.UserInformationFinder
 import io.acari.security.createVerificationHandler
+import io.acari.user.UserService
 import io.acari.util.loggerFor
 import io.vertx.reactivex.core.Vertx
 import io.vertx.reactivex.ext.mongo.MongoClient
@@ -28,7 +30,7 @@ fun mountAPIRoute(vertx: Vertx, mongoClient: MongoClient, router: Router): Route
 
 fun createAPIRoute(vertx: Vertx, mongoClient: MongoClient): Router {
   val router = Router.router(vertx)
-  router.get("/user").handler(createUserHandler(vertx, mongoClient))
+  router.get("/user").handler(createUserHandler(UserService(UserInformationFinder(mongoClient, vertx))))
   router.mountSubRouter("/history", createHistoryRoutes(vertx, mongoClient))
   router.route().handler(createVerificationHandler())
   router.mountSubRouter("/activity", createActivityRoutes(vertx, mongoClient))

@@ -23,7 +23,6 @@ object UserMemoryWorkers {
 
   fun registerWorkers(vertx: Vertx, mongoClient: MongoClient): Completable {
     val eventBus = vertx.eventBus()
-    eventBus.consumer(USER_INFORMATION_CHANNEL, UserInformationListener(mongoClient, vertx))
     eventBus.consumer(EFFECT_CHANNEL, EffectListener(mongoClient, vertx))
     return Completable.complete()
   }

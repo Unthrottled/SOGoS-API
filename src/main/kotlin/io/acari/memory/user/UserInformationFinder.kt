@@ -4,29 +4,26 @@ import io.acari.memory.Effect
 import io.acari.memory.UserSchema
 import io.acari.security.extractUserIdentificationKey
 import io.reactivex.Maybe
-import io.vertx.core.Handler
+import io.reactivex.Single
+import io.reactivex.SingleObserver
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.core.json.jsonArrayOf
 import io.vertx.kotlin.core.json.jsonObjectOf
 import io.vertx.reactivex.core.Vertx
-import io.vertx.reactivex.core.eventbus.Message
 import io.vertx.reactivex.ext.mongo.MongoClient
 import java.time.Instant
 import java.util.*
 
-class UserInformationListener(private val mongoClient: MongoClient, private val vertx: Vertx) :
-  Handler<Message<UserInfoRequest>> {
-  override fun handle(message: Message<UserInfoRequest>) {
-    val userInfoRequest = message.body()
-    val openIDInformation = userInfoRequest.openIDInformation
+class UserInformationFinder(private val mongoClient: MongoClient, private val vertx: Vertx) {
+
+  fun handle(openIDInformation: JsonObject): Single<String> {
     val openIDUserIdentifier = extractUserIdentificationKey(openIDInformation)
-    findUser(mongoClient, openIDUserIdentifier)
+    return findUser(mongoClient, openIDUserIdentifier)
       .switchIfEmpty(createUser(openIDUserIdentifier, openIDInformation, mongoClient))
-      .subscribe({ user ->
-        message.reply(UserInfoResponse(user.getString(UserSchema.GLOBAL_USER_IDENTIFIER)))
-      }) {
-        UserMemoryWorkers.log.warn("Unable to fetch user for reasons.", it)
-        message.fail(404, "Shit's broke yo")
+      .switchIfEmpty { singleObserver: SingleObserver<in JsonObject> ->
+        singleObserver.onError(IllegalStateException("Unable to find user for $openIDUserIdentifier"))
+      }.map { user ->
+        user.getString(UserSchema.GLOBAL_USER_IDENTIFIER)
       }
   }
 
@@ -56,7 +53,10 @@ class UserInformationListener(private val mongoClient: MongoClient, private val 
     return mongoClient.rxInsert(UserSchema.COLLECTION, userInformation)
       .map { userInformation }
       .doAfterSuccess {
-        vertx.eventBus().publish(EFFECT_CHANNEL, Effect(usersGiud, timeCreated, timeCreated, USER_CREATED, openIDInformation, jsonObjectOf()))
+        vertx.eventBus().publish(
+          EFFECT_CHANNEL,
+          Effect(usersGiud, timeCreated, timeCreated, USER_CREATED, openIDInformation, jsonObjectOf())
+        )
       }
   }
 }

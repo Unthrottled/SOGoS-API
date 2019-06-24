@@ -1,9 +1,7 @@
 package io.acari.user
 
 import io.acari.memory.UserSchema
-import io.acari.memory.user.USER_INFORMATION_CHANNEL
-import io.acari.memory.user.UserInfoRequest
-import io.acari.memory.user.UserInfoResponse
+import io.acari.memory.user.UserInformationFinder
 import io.acari.security.extractUserValidationKey
 import io.acari.util.loggerFor
 import io.acari.util.toOptional
@@ -13,24 +11,22 @@ import io.vertx.core.json.JsonObject
 import io.vertx.ext.auth.oauth2.AccessToken
 import io.vertx.kotlin.core.json.jsonObjectOf
 import io.vertx.reactivex.MaybeHelper
-import io.vertx.reactivex.core.Vertx
 import io.vertx.reactivex.ext.auth.User
 
-object UserService {
+class UserService(private val userInformationFinder: UserInformationFinder) {
 
   private val log = loggerFor(javaClass)
 
-  fun findUserInformation(vertx: Vertx, user: User): Single<String> =
-    findUser(user, vertx)
+  fun findUserInformation(user: User): Single<String> =
+    findUser(user)
       .map { extractUser(it) }
 
   private fun findUser(
-    user: User,
-    vertx: Vertx
+    user: User
   ): Single<Pair<JsonObject, JsonObject>> =
     extractUserInformation(user)
       .flatMapSingle { oauthUserInformation ->
-        fetchUserFromMemories(vertx, oauthUserInformation)
+        fetchUserFromMemories(oauthUserInformation)
           .map { rememberedUser ->
             Pair(rememberedUser, oauthUserInformation)
           }
@@ -44,15 +40,11 @@ object UserService {
         extractOAuthUserInformation(accessToken)
       }
 
-  private fun fetchUserFromMemories(vertx: Vertx, oauthUserInformation: JsonObject): Single<JsonObject> =
-    vertx.eventBus()
-      .rxSend<UserInfoResponse>(
-        USER_INFORMATION_CHANNEL,
-        UserInfoRequest(oauthUserInformation)
-      )
+  private fun fetchUserFromMemories(oauthUserInformation: JsonObject): Single<JsonObject> =
+    userInformationFinder.handle(oauthUserInformation)
       .map { userResponse ->
         jsonObjectOf(
-          UserSchema.GLOBAL_USER_IDENTIFIER to userResponse.body().guid
+          UserSchema.GLOBAL_USER_IDENTIFIER to userResponse
         )
       }
 
