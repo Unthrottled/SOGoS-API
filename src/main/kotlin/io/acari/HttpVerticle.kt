@@ -10,11 +10,10 @@ import io.acari.util.loggerFor
 import io.reactivex.Single
 import io.reactivex.functions.BiFunction
 import io.vertx.core.Future
-import io.vertx.core.http.HttpServer
 import io.vertx.core.http.HttpServerOptions
 import io.vertx.core.net.JksOptions
-import io.vertx.reactivex.SingleHelper
 import io.vertx.reactivex.core.AbstractVerticle
+import io.vertx.reactivex.core.http.HttpServer
 import io.vertx.reactivex.ext.auth.oauth2.OAuth2Auth
 import io.vertx.reactivex.ext.mongo.MongoClient
 import io.vertx.reactivex.ext.web.Router
@@ -54,17 +53,17 @@ class HttpVerticle : AbstractVerticle() {
       .andThen(MemoryInitializations.registerCodecs(vertx))
       .andThen(MemoryInitializations.registerMemoryWorkers(vertx, mongoClient))
 
-  private fun startServer(router: Router): Single<HttpServer> =
-    SingleHelper.toSingle { handler ->
-      val serverConfig = config().getJsonObject("server")
-      vertx.delegate //todo: moar rxjs
-        .createHttpServer(HttpServerOptions()
-          .setSsl(serverConfig.getBoolean("SSL-Enabled"))
-          .setKeyStoreOptions(JksOptions()
-            .setPassword(serverConfig.getString("Keystore-Password"))
-            .setPath(serverConfig.getString("Keystore-Path")))
-        )
-        .requestHandler(router)
-        .listen(serverConfig.getInteger("port"), handler)
-    }
+  private fun startServer(router: Router): Single<HttpServer>{
+    val serverConfig = config().getJsonObject("server")
+    return vertx //todo: moar rxjs
+      .createHttpServer(
+        HttpServerOptions()
+        .setSsl(serverConfig.getBoolean("SSL-Enabled"))
+        .setKeyStoreOptions(JksOptions()
+          .setPassword(serverConfig.getString("Keystore-Password"))
+          .setPath(serverConfig.getString("Keystore-Path")))
+      )
+      .requestHandler(router)
+      .rxListen(serverConfig.getInteger("port"))
+  }
 }
