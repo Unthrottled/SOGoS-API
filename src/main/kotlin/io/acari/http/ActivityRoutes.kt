@@ -20,46 +20,59 @@ import java.time.Instant
 
 private val logger = loggerFor("Activity Routes")
 
-const val CREATED_OBJECTIVE = "CREATED_OBJECTIVE"
-const val REMOVED_OBJECTIVE = "REMOVED_OBJECTIVE"
-const val UPDATED_OBJECTIVE = "UPDATED_OBJECTIVE"
+const val STARTED_ACTIVITY = "STARTED_ACTIVITY"
+const val REMOVED_ACTIVITY = "REMOVED_ACTIVITY"
+const val UPDATED_ACTIVITY = "UPDATED_ACTIVITY"
 
+const val CREATED = "CREATED"
+const val UPDATED = "UPDATED"
+const val DELETED = "DELETED"
 
-fun createObjectiveRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
+fun createActivityRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
   val router = router(vertx)
-  // todo: other user's should be allowed to see other's objectives.
-  router.get("/:objectiveId").handler { requestContext ->
+  val currentActivityListener = CurrentActivityFinder(mongoClient)
+  router.get("/current").handler { requestContext ->
     val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
-    val objectiveId = requestContext.request().getParam("objectiveId")
-    println(objectiveId)
-//    currentActivityListener.handle(userIdentifier)
-//      .subscribe({
-    requestContext.response()
-      .putHeader(CONTENT_TYPE, APPLICATION_JSON)
-      .setStatusCode(200)
-      .end(Json.encode("butt"))
-//      }) {
-//        logger.warn("Unable to service current activity request for $userIdentifier", it)
-//        requestContext.fail(500)
-//      }
+    currentActivityListener.handle(userIdentifier)
+      .subscribe({
+        requestContext.response()
+          .putHeader(CONTENT_TYPE, APPLICATION_JSON)
+          .setStatusCode(200)
+          .end(Json.encode(it))
+      }) {
+        logger.warn("Unable to service current activity request for $userIdentifier", it)
+        requestContext.fail(500)
+      }
   }
 
-  router.post("/:objectiveId/key-result").handler { requestContext ->
-    val bodyAsJson = requestContext.bodyAsJson
-    val timeCreated = Instant.now().toEpochMilli()
+  val uploadStatus = setOf(CREATED, UPDATED, DELETED)
+
+  /**
+   * Should be used to assimilate any offline activities that may have
+   * been performed.
+   */
+  router.post("/bulk").handler { requestContext ->
+    val bodyAsJsonArray = requestContext.bodyAsJsonArray
     val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
-    val objectiveId = requestContext.request().getParam("objectiveId")
-    println(objectiveId)
-//    vertx.eventBus().publish(
-//      EFFECT_CHANNEL, Effect(
-//        userIdentifier,
-//        timeCreated,
-//        bodyAsJson.getLong("antecedenceTime"),
-//        CREATED_OBJECTIVE,
-//        bodyAsJson.getJsonObject("content") ?: JsonObject(),
-//        extractValuableHeaders(requestContext)
-//      )
-//    )
+    bodyAsJsonArray.stream()
+      .map { it as JsonObject }
+      .filter { cachedActivity ->
+        uploadStatus.contains(cachedActivity.getString("uploadType"))
+      }
+      .forEach { cachedActivity ->
+        val activity = cachedActivity.getJsonObject("activity")
+        vertx.eventBus().publish(
+          EFFECT_CHANNEL,
+          Effect(
+            userIdentifier,
+            Instant.now().toEpochMilli(),
+            activity.getLong("antecedenceTime"),
+            mapTypeToEffect(cachedActivity.getString("uploadType")),
+            activity.getJsonObject("content") ?: JsonObject(),
+            extractValuableHeaders(requestContext)
+          )
+        )
+      }
     requestContext.response().putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(200).end()
   }
 
@@ -72,7 +85,7 @@ fun createObjectiveRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
         userIdentifier,
         timeCreated,
         bodyAsJson.getLong("antecedenceTime"),
-        CREATED_OBJECTIVE,
+        STARTED_ACTIVITY,
         bodyAsJson.getJsonObject("content") ?: JsonObject(),
         extractValuableHeaders(requestContext)
       )
@@ -89,7 +102,7 @@ fun createObjectiveRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
         userIdentifier,
         timeCreated,
         bodyAsJson.getLong("antecedenceTime"), // todo: does this matter in all contexts?
-        UPDATED_OBJECTIVE,
+        UPDATED_ACTIVITY,
         bodyAsJson.getJsonObject("content") ?: JsonObject(),
         extractValuableHeaders(requestContext)
       )
@@ -106,18 +119,30 @@ fun createObjectiveRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
         userIdentifier,
         timeCreated,
         bodyAsJson.getLong("antecedenceTime"), // todo: does this matter in all contexts?
-        REMOVED_OBJECTIVE,
+        REMOVED_ACTIVITY,
         bodyAsJson.getJsonObject("content") ?: JsonObject(),
         extractValuableHeaders(requestContext)
       )
     )
     requestContext.response().putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(200).end()
   }
+
   return router
 }
 
-fun createStrategyRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
-  val router = router(vertx)
-  router.mountSubRouter("/objectives", createObjectiveRoutes(vertx, mongoClient))
-  return router
-}
+val mappings = mapOf(
+  CREATED to STARTED_ACTIVITY,
+  UPDATED to UPDATED_ACTIVITY,
+  DELETED to REMOVED_ACTIVITY
+)
+fun mapTypeToEffect(uploadType: String): String =
+  mappings[uploadType] ?: STARTED_ACTIVITY
+
+fun extractValuableHeaders(requestContext: RoutingContext): JsonObject =
+  requestContext.request().getHeader("User-Agent").toOptional()
+    .map {
+      jsonObjectOf(
+        "userAgent" to it
+      )
+    }
+    .orElseGet { jsonObjectOf() }
