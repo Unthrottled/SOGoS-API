@@ -24,6 +24,12 @@ object CurrentActivitySchema {
   const val CONTENT: String = "content"
 }
 
+object ObjectiveSchema {
+  const val COLLECTION: String = "objective"
+  const val GLOBAL_USER_IDENTIFIER: String = "guid" // string
+  const val OBJECTIVES: String = "objectives"
+}
+
 object ActivityHistorySchema {
   const val COLLECTION: String = "history"
   const val GLOBAL_USER_IDENTIFIER: String = "guid" // string
