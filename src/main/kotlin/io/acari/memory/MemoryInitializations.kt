@@ -1,6 +1,7 @@
 package io.acari.memory
 
 import io.acari.memory.activity.ActivityMemoryWorkers
+import io.acari.memory.strategy.StrategyMemoryWorkers
 import io.acari.memory.user.UserMemoryWorkers
 import io.reactivex.Completable
 import io.vertx.kotlin.core.json.jsonObjectOf
@@ -29,6 +30,7 @@ object MemoryInitializations {
   fun registerMemoryWorkers(vertx: Vertx, mongoClient: MongoClient): Completable =
     UserMemoryWorkers.registerWorkers(vertx, mongoClient)
       .andThen(ActivityMemoryWorkers.registerWorkers(vertx, mongoClient))
+      .andThen(StrategyMemoryWorkers.registerWorkers(vertx, mongoClient))
 
   private fun createCollection(mongoClient: MongoClient, collectionName: String): Completable =
     mongoClient.rxCreateCollection(collectionName)
