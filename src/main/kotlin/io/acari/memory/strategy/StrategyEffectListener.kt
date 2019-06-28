@@ -27,26 +27,42 @@ class StrategyEffectListener(private val mongoClient: MongoClient, private val v
     val effect = message.body()
     effect.toSingle()
       .filter { isObjective(it) }
-      .flatMapSingle { writeObjective(it) }
-      .flatMapCompletable { activity -> writeActivityLog(activity) }
+      .flatMapSingle { writeCurrentObjective(it) }
+      .flatMapCompletable { objective ->
+        if (isUpdate(effect)) {
+          updateOrCreateObjective(objective)
+        } else {
+          createObjective(objective)
+        }
+      }
       .subscribe({}) {
         UserMemoryWorkers.log.warn("Unable to save objective for reasons.", it)
       }
   }
 
-  private fun writeActivityLog(activity: JsonObject): CompletableSource {
+  private fun updateOrCreateObjective(objective: JsonObject): CompletableSource {
+    return mongoClient.rxInsert(ObjectiveHistorySchema.COLLECTION, objective)
+      .ignoreElement()
+  }
+
+  private fun isUpdate(effect: Effect): Boolean {
+    return effect.name == UPDATED_OBJECTIVE
+  }
+
+  private fun createObjective(activity: JsonObject): CompletableSource {
     return mongoClient.rxInsert(ObjectiveHistorySchema.COLLECTION, activity)
       .ignoreElement()
   }
 
-  private fun writeObjective(objectiveEffect: Effect): Single<JsonObject> {
+  private fun writeCurrentObjective(objectiveEffect: Effect): Single<JsonObject> {
     val objectiveContent = objectiveEffect.content
     val objective = objectiveContent.mapTo(Objective::class.java)
     return mongoClient.rxFindOne(
       CurrentObjectiveSchema.COLLECTION,
       jsonObjectOf(CurrentObjectiveSchema.GLOBAL_USER_IDENTIFIER to objectiveEffect.guid),
-      jsonObjectOf())
-      .flatMap {objectives ->
+      jsonObjectOf()
+    )
+      .flatMap { objectives ->
         mongoClient.rxReplaceDocumentsWithOptions(
           CurrentObjectiveSchema.COLLECTION,
           jsonObjectOf(CurrentObjectiveSchema.GLOBAL_USER_IDENTIFIER to objectiveEffect.guid),
@@ -61,10 +77,9 @@ class StrategyEffectListener(private val mongoClient: MongoClient, private val v
         mongoClient.rxInsert(CurrentObjectiveSchema.COLLECTION, objectiveEntry)
           .subscribe({ emitter.onSuccess(objectiveContent) }, { emitter.onError(it) }) { emitter.onComplete() }
       }).toSingle()
-
   }
 
   private fun isObjective(effect: Effect) =
     effect.name == CREATED_OBJECTIVE ||
-      effect.name == UPDATED_OBJECTIVE
+      isUpdate(effect)
 }
