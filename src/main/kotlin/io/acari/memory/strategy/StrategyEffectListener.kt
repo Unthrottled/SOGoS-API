@@ -1,11 +1,8 @@
 package io.acari.memory.strategy
 
 import io.acari.http.CREATED_OBJECTIVE
-import io.acari.http.STARTED_ACTIVITY
 import io.acari.http.UPDATED_OBJECTIVE
-import io.acari.memory.ActivityHistorySchema
-import io.acari.memory.CurrentActivitySchema
-import io.acari.memory.Effect
+import io.acari.memory.*
 import io.acari.memory.user.UserMemoryWorkers
 import io.reactivex.CompletableSource
 import io.reactivex.Single
@@ -29,34 +26,28 @@ class StrategyEffectListener(private val mongoClient: MongoClient, private val v
   }
 
   private fun writeActivityLog(activity: JsonObject): CompletableSource {
-    return mongoClient.rxInsert(ActivityHistorySchema.COLLECTION, activity)
+    return mongoClient.rxInsert(ObjectiveHistorySchema.COLLECTION, activity)
       .ignoreElement()
   }
 
   private fun writeObjective(effect: Effect): Single<JsonObject> {
-    val activity = jsonObjectOf(
+    val objective = jsonObjectOf(
       CurrentActivitySchema.GLOBAL_USER_IDENTIFIER to effect.guid,
       CurrentActivitySchema.CONTENT to effect.content,
       CurrentActivitySchema.TIME_OF_ANTECEDENCE to effect.antecedenceTime
     )
-    return if (isActivity(effect) && shouldTime(effect)) {
+    return if (isObjective(effect)) {
       mongoClient.rxReplaceDocumentsWithOptions(
         CurrentActivitySchema.COLLECTION,
-        jsonObjectOf(CurrentActivitySchema.GLOBAL_USER_IDENTIFIER to effect.guid),
-        activity, UpdateOptions(true)
-      ).map { activity }
+        jsonObjectOf(ObjectiveSchema.GLOBAL_USER_IDENTIFIER to effect.guid),
+        objective, UpdateOptions(true)
+      ).map { objective }
     } else {
-      Single.just(activity)
+      Single.just(objective)
     }
   }
 
-  private fun shouldTime(effect: Effect): Boolean =
-    when (effect.content.getString("type") ?: "PASSIVE") {
-      "ACTIVE" -> true
-      else -> false
-    }
-
-  private fun isActivity(effect: Effect) =
+  private fun isObjective(effect: Effect) =
     effect.name == CREATED_OBJECTIVE ||
       effect.name == UPDATED_OBJECTIVE
 }

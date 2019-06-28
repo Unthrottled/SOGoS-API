@@ -5,11 +5,9 @@ import io.acari.memory.ActivityHistorySchema
 import io.acari.memory.CurrentActivitySchema
 import io.acari.memory.Effect
 import io.acari.memory.user.UserMemoryWorkers
-import io.reactivex.Completable
 import io.reactivex.CompletableSource
-import io.reactivex.Single
+import io.reactivex.Maybe
 import io.vertx.core.Handler
-import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.mongo.UpdateOptions
 import io.vertx.kotlin.core.json.jsonObjectOf
@@ -33,20 +31,24 @@ class ActivityEffectListener(private val mongoClient: MongoClient, private val v
       .ignoreElement()
   }
 
-  private fun writeCurrentActivity(effect: Effect): Single<JsonObject> {
+  private fun writeCurrentActivity(effect: Effect): Maybe<JsonObject> {
     val activity = jsonObjectOf(
       CurrentActivitySchema.GLOBAL_USER_IDENTIFIER to effect.guid,
       CurrentActivitySchema.CONTENT to effect.content,
       CurrentActivitySchema.TIME_OF_ANTECEDENCE to effect.antecedenceTime
     )
-    return if (isActivity(effect) && shouldTime(effect)) {
+    val isActivity = isActivity(effect)
+    return if (isActivity && shouldTime(effect)) {
       mongoClient.rxReplaceDocumentsWithOptions(
         CurrentActivitySchema.COLLECTION,
         jsonObjectOf(CurrentActivitySchema.GLOBAL_USER_IDENTIFIER to effect.guid),
         activity, UpdateOptions(true)
       ).map { activity }
+        .toMaybe()
+    } else if (isActivity) {
+      Maybe.just(activity)
     } else {
-      Single.just(activity)
+      Maybe.empty()
     }
   }
 
