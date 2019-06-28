@@ -2,8 +2,13 @@ package io.acari.memory.strategy
 
 import io.acari.http.CREATED_OBJECTIVE
 import io.acari.http.UPDATED_OBJECTIVE
-import io.acari.memory.*
+import io.acari.memory.Effect
+import io.acari.memory.ObjectiveHistorySchema
+import io.acari.memory.CurrentObjectiveSchema
+import io.acari.memory.ObjectiveType
 import io.acari.memory.user.UserMemoryWorkers
+import io.acari.types.Objective
+import io.acari.util.toSingle
 import io.reactivex.CompletableSource
 import io.reactivex.Single
 import io.vertx.core.Handler
@@ -18,10 +23,12 @@ class StrategyEffectListener(private val mongoClient: MongoClient, private val v
   Handler<Message<Effect>> {
   override fun handle(message: Message<Effect>) {
     val effect = message.body()
-    writeObjective(effect)
+    effect.toSingle()
+      .filter { isObjective(it) }
+      .flatMapSingle { writeObjective(it) }
       .flatMapCompletable { activity -> writeActivityLog(activity) }
       .subscribe({}) {
-        UserMemoryWorkers.log.warn("Unable to save user for reasons.", it)
+        UserMemoryWorkers.log.warn("Unable to save objective for reasons.", it)
       }
   }
 
@@ -30,21 +37,18 @@ class StrategyEffectListener(private val mongoClient: MongoClient, private val v
       .ignoreElement()
   }
 
-  private fun writeObjective(effect: Effect): Single<JsonObject> {
-    val objective = jsonObjectOf(
-      CurrentActivitySchema.GLOBAL_USER_IDENTIFIER to effect.guid,
-      CurrentActivitySchema.CONTENT to effect.content,
-      CurrentActivitySchema.TIME_OF_ANTECEDENCE to effect.antecedenceTime
+  private fun writeObjective(objectiveEffect: Effect): Single<JsonObject> {
+    val objectiveContent = objectiveEffect.content
+    val objective = objectiveContent.mapTo(Objective::class.java)
+    val objectiveEntry = jsonObjectOf(
+      CurrentObjectiveSchema.GLOBAL_USER_IDENTIFIER to objectiveEffect.guid
     )
-    return if (isObjective(effect)) {
-      mongoClient.rxReplaceDocumentsWithOptions(
-        CurrentActivitySchema.COLLECTION,
-        jsonObjectOf(ObjectiveSchema.GLOBAL_USER_IDENTIFIER to effect.guid),
-        objective, UpdateOptions(true)
-      ).map { objective }
-    } else {
-      Single.just(objective)
-    }
+    return mongoClient.rxReplaceDocumentsWithOptions(
+      CurrentObjectiveSchema.COLLECTION,
+      jsonObjectOf(CurrentObjectiveSchema.GLOBAL_USER_IDENTIFIER to objectiveEffect.guid),
+      objectiveEntry, UpdateOptions(true)
+    )
+      .map { objectiveContent }
   }
 
   private fun isObjective(effect: Effect) =

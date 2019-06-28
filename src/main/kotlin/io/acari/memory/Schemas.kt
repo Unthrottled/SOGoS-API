@@ -24,10 +24,23 @@ object CurrentActivitySchema {
   const val CONTENT: String = "content"
 }
 
-object ObjectiveSchema {
+object CurrentObjectiveSchema {
   const val COLLECTION: String = "objective"
   const val GLOBAL_USER_IDENTIFIER: String = "guid" // string
   const val OBJECTIVES: String = "objectives"
+}
+
+object ObjectiveType {
+  const val VALUE_STATEMENT: String = "valueStatement"
+  const val GLOBAL_OBJECTIVE_IDENTIFIER: String = "goid"
+  const val KEY_RESULTS: String = "keyResults"
+  const val TIME_OF_ANTECEDENCE: String = "antecedenceTime"
+}
+
+object KeyResultType {
+  const val VALUE_STATEMENT: String = "valueStatement"
+  const val GLOBAL_KEY_RESULT_IDENTIFIER: String = "gkrid"
+  const val TIME_OF_ANTECEDENCE: String = "antecedenceTime"
 }
 
 object ObjectiveHistorySchema {

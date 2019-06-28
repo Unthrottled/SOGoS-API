@@ -38,17 +38,15 @@ class ActivityEffectListener(private val mongoClient: MongoClient, private val v
       CurrentActivitySchema.TIME_OF_ANTECEDENCE to effect.antecedenceTime
     )
     val isActivity = isActivity(effect)
-    return if (isActivity && shouldTime(effect)) {
-      mongoClient.rxReplaceDocumentsWithOptions(
-        CurrentActivitySchema.COLLECTION,
-        jsonObjectOf(CurrentActivitySchema.GLOBAL_USER_IDENTIFIER to effect.guid),
-        activity, UpdateOptions(true)
-      ).map { activity }
-        .toMaybe()
-    } else if (isActivity) {
-      Maybe.just(activity)
-    } else {
-      Maybe.empty()
+    return when {
+        isActivity && shouldTime(effect) -> mongoClient.rxReplaceDocumentsWithOptions(
+          CurrentActivitySchema.COLLECTION,
+          jsonObjectOf(CurrentActivitySchema.GLOBAL_USER_IDENTIFIER to effect.guid),
+          activity, UpdateOptions(true)
+        ).map { activity }
+          .toMaybe()
+        isActivity -> Maybe.just(activity)
+        else -> Maybe.empty()
     }
   }
 
