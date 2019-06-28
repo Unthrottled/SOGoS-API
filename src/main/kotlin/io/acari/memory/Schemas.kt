@@ -30,19 +30,6 @@ object CurrentObjectiveSchema {
   const val OBJECTIVES: String = "objectives"
 }
 
-object ObjectiveType {
-  const val VALUE_STATEMENT: String = "valueStatement"
-  const val GLOBAL_OBJECTIVE_IDENTIFIER: String = "goid"
-  const val KEY_RESULTS: String = "keyResults"
-  const val TIME_OF_ANTECEDENCE: String = "antecedenceTime"
-}
-
-object KeyResultType {
-  const val VALUE_STATEMENT: String = "valueStatement"
-  const val GLOBAL_KEY_RESULT_IDENTIFIER: String = "gkrid"
-  const val TIME_OF_ANTECEDENCE: String = "antecedenceTime"
-}
-
 object ObjectiveHistorySchema {
   const val COLLECTION: String = "objectiveHistory"
   const val GLOBAL_USER_IDENTIFIER: String = "guid" // string
