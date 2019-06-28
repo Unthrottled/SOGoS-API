@@ -63,23 +63,39 @@ class StrategyEffectListener(private val mongoClient: MongoClient, private val v
       jsonObjectOf()
     )
       .flatMap { objectives ->
-        mongoClient.rxReplaceDocumentsWithOptions(
-          CurrentObjectiveSchema.COLLECTION,
-          jsonObjectOf(CurrentObjectiveSchema.GLOBAL_USER_IDENTIFIER to objectiveEffect.guid),
-          objectives, UpdateOptions(true)
-        ).toMaybe().map { objectiveContent }
+        val objectiveIds = objectives.getJsonArray(CurrentObjectiveSchema.OBJECTIVES)
+        if (objectiveIds.contains(objective.id)) {
+          Maybe.just(objectiveContent)
+        } else {
+          objectives.put(CurrentObjectiveSchema.OBJECTIVES, getNewList(objectiveIds, objective))
+          mongoClient.rxReplaceDocumentsWithOptions(
+            CurrentObjectiveSchema.COLLECTION,
+            jsonObjectOf(CurrentObjectiveSchema.GLOBAL_USER_IDENTIFIER to objectiveEffect.guid),
+            objectives, UpdateOptions(true)
+          ).toMaybe().map { objectiveContent }
+        }
       }
       .switchIfEmpty(Maybe.create { emitter: MaybeEmitter<JsonObject> ->
         val objectiveEntry = jsonObjectOf(
           CurrentObjectiveSchema.GLOBAL_USER_IDENTIFIER to objectiveEffect.guid,
-          CurrentObjectiveSchema.OBJECTIVES to JsonArray(listOf(objectiveContent))
+          CurrentObjectiveSchema.OBJECTIVES to JsonArray(listOf(objective.id))
         )
         mongoClient.rxInsert(CurrentObjectiveSchema.COLLECTION, objectiveEntry)
           .subscribe({ emitter.onSuccess(objectiveContent) }, { emitter.onError(it) }) { emitter.onComplete() }
       }).toSingle()
   }
 
+  private fun getNewList(objectiveIds: JsonArray, objective: Objective): JsonArray {
+   return if(objectiveIds.size() < MAX_OBJECTIVES){
+      objectiveIds // todo: fix dis
+    } else {
+      objectiveIds.add(objective.id)
+    }
+  }
+
   private fun isObjective(effect: Effect) =
     effect.name == CREATED_OBJECTIVE ||
       isUpdate(effect)
 }
+
+const val MAX_OBJECTIVES = 5
