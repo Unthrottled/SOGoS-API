@@ -1,5 +1,6 @@
 package io.acari.memory.strategy
 
+import com.google.common.collect.Lists
 import io.acari.http.CREATED_OBJECTIVE
 import io.acari.http.UPDATED_OBJECTIVE
 import io.acari.memory.CurrentObjectiveSchema
@@ -86,8 +87,12 @@ class StrategyEffectListener(private val mongoClient: MongoClient, private val v
   }
 
   private fun getNewList(objectiveIds: JsonArray, objective: Objective): JsonArray {
-   return if(objectiveIds.size() < MAX_OBJECTIVES){
-      objectiveIds // todo: fix dis
+    return if (objectiveIds.size() < MAX_OBJECTIVES) {
+      JsonArray(objectiveIds.stream().skip(1).collect({
+        Lists.newLinkedList(objectiveIds)
+      }, { list, item -> list.push(item) },
+        { list, otherList -> list.addAll(otherList) })
+      )
     } else {
       objectiveIds.add(objective.id)
     }
