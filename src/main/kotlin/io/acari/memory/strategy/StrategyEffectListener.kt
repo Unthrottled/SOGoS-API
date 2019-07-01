@@ -8,11 +8,10 @@ import io.acari.memory.Effect
 import io.acari.memory.ObjectiveHistorySchema
 import io.acari.memory.user.UserMemoryWorkers
 import io.acari.types.Objective
-import io.acari.util.toSingle
+import io.acari.util.toMaybe
 import io.reactivex.CompletableSource
 import io.reactivex.Maybe
 import io.reactivex.MaybeEmitter
-import io.reactivex.Single
 import io.vertx.core.Handler
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
@@ -26,9 +25,9 @@ class StrategyEffectListener(private val mongoClient: MongoClient, private val v
   Handler<Message<Effect>> {
   override fun handle(message: Message<Effect>) {
     val effect = message.body()
-    effect.toSingle()
+    effect.toMaybe()
       .filter { isObjective(it) }
-      .flatMapSingle { writeCurrentObjective(it) }
+      .flatMap { writeCurrentObjective(it) }
       .flatMapCompletable { objective ->
         if (isUpdate(effect)) {
           updateOrCreateObjective(objective)
@@ -55,7 +54,7 @@ class StrategyEffectListener(private val mongoClient: MongoClient, private val v
       .ignoreElement()
   }
 
-  private fun writeCurrentObjective(objectiveEffect: Effect): Single<JsonObject> {
+  private fun writeCurrentObjective(objectiveEffect: Effect): Maybe<JsonObject>? {
     val objectiveContent = objectiveEffect.content
     val objective = objectiveContent.mapTo(Objective::class.java)
     return mongoClient.rxFindOne(
@@ -83,7 +82,7 @@ class StrategyEffectListener(private val mongoClient: MongoClient, private val v
         )
         mongoClient.rxInsert(CurrentObjectiveSchema.COLLECTION, objectiveEntry)
           .subscribe({ emitter.onSuccess(objectiveContent) }, { emitter.onError(it) }) { emitter.onComplete() }
-      }).toSingle()
+      })
   }
 
   private fun getNewList(objectiveIds: JsonArray, objective: Objective): JsonArray {
