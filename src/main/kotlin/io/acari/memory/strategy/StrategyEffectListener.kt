@@ -9,6 +9,7 @@ import io.acari.memory.ObjectiveHistorySchema
 import io.acari.memory.user.UserMemoryWorkers
 import io.acari.types.Objective
 import io.acari.util.toMaybe
+import io.acari.util.toSingletonList
 import io.reactivex.CompletableSource
 import io.reactivex.Maybe
 import io.reactivex.MaybeEmitter
@@ -20,6 +21,7 @@ import io.vertx.kotlin.core.json.jsonObjectOf
 import io.vertx.reactivex.core.Vertx
 import io.vertx.reactivex.core.eventbus.Message
 import io.vertx.reactivex.ext.mongo.MongoClient
+import java.util.*
 
 class StrategyEffectListener(private val mongoClient: MongoClient, private val vertx: Vertx) :
   Handler<Message<Effect>> {
@@ -86,10 +88,10 @@ class StrategyEffectListener(private val mongoClient: MongoClient, private val v
   }
 
   private fun getNewList(objectiveIds: JsonArray, objective: Objective): JsonArray {
-    return if (objectiveIds.size() < MAX_OBJECTIVES) {
+    return if (objectiveIds.size() >= MAX_OBJECTIVES) {
       JsonArray(objectiveIds.stream().skip(1).collect({
-        Lists.newLinkedList(objectiveIds)
-      }, { list, item -> list.push(item) },
+        Lists.newArrayList<Any>(objective.id.toSingletonList())
+      }, { list, item -> list.add(item) },
         { list, otherList -> list.addAll(otherList) })
       )
     } else {
