@@ -3,6 +3,7 @@ package io.acari.memory.strategy
 import com.google.common.collect.Lists
 import io.acari.http.CREATED_OBJECTIVE
 import io.acari.http.UPDATED_OBJECTIVE
+import io.acari.memory.CurrentActivitySchema
 import io.acari.memory.CurrentObjectiveSchema
 import io.acari.memory.Effect
 import io.acari.memory.ObjectiveHistorySchema
@@ -21,7 +22,6 @@ import io.vertx.kotlin.core.json.jsonObjectOf
 import io.vertx.reactivex.core.Vertx
 import io.vertx.reactivex.core.eventbus.Message
 import io.vertx.reactivex.ext.mongo.MongoClient
-import java.util.*
 
 class StrategyEffectListener(private val mongoClient: MongoClient, private val vertx: Vertx) :
   Handler<Message<Effect>> {
@@ -34,7 +34,7 @@ class StrategyEffectListener(private val mongoClient: MongoClient, private val v
         if (isUpdate(effect)) {
           updateOrCreateObjective(objective)
         } else {
-          createObjective(objective)
+          createObjective(objective, effect.guid)
         }
       }
       .subscribe({}) {
@@ -51,9 +51,13 @@ class StrategyEffectListener(private val mongoClient: MongoClient, private val v
     return effect.name == UPDATED_OBJECTIVE
   }
 
-  private fun createObjective(activity: JsonObject): CompletableSource {
-    return mongoClient.rxInsert(ObjectiveHistorySchema.COLLECTION, activity)
-      .ignoreElement()
+  //todo: replace with same id.
+  private fun createObjective(activity: JsonObject, guid: String): CompletableSource {
+    return mongoClient.rxReplaceDocumentsWithOptions(
+      ObjectiveHistorySchema.COLLECTION,
+      jsonObjectOf(CurrentActivitySchema.GLOBAL_USER_IDENTIFIER to guid),
+      activity, UpdateOptions(true)
+    ).ignoreElement()
   }
 
   private fun writeCurrentObjective(objectiveEffect: Effect): Maybe<JsonObject>? {
@@ -85,6 +89,7 @@ class StrategyEffectListener(private val mongoClient: MongoClient, private val v
         mongoClient.rxInsert(CurrentObjectiveSchema.COLLECTION, objectiveEntry)
           .subscribe({ emitter.onSuccess(objectiveContent) }, { emitter.onError(it) }) { emitter.onComplete() }
       })
+      .map { it.put(CurrentObjectiveSchema.GLOBAL_USER_IDENTIFIER, objectiveEffect.guid) }
   }
 
   private fun getNewList(objectiveIds: JsonArray, objective: Objective): JsonArray {
