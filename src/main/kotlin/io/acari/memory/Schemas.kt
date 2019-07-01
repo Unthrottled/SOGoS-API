@@ -34,6 +34,7 @@ object ObjectiveHistorySchema {
   const val COLLECTION: String = "objectiveHistory"
   const val GLOBAL_USER_IDENTIFIER: String = "guid" // string
   const val OBJECTIVES: String = "objectives"
+  const val IDENTIFIER: String = "id"
 }
 
 object ActivityHistorySchema {
