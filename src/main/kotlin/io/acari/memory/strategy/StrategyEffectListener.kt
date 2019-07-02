@@ -34,7 +34,7 @@ class StrategyEffectListener(private val mongoClient: MongoClient, private val v
         if (isUpdate(effect)) {
           updateOrCreateObjective(objective)
         } else {
-          createObjective(objective, effect.guid)
+          createObjective(objective)
         }
       }
       .subscribe({}) {
@@ -51,11 +51,10 @@ class StrategyEffectListener(private val mongoClient: MongoClient, private val v
     return effect.name == UPDATED_OBJECTIVE
   }
 
-  //todo: replace with same id.
-  private fun createObjective(activity: JsonObject, guid: String): CompletableSource {
+  private fun createObjective(activity: JsonObject): CompletableSource {
     return mongoClient.rxReplaceDocumentsWithOptions(
       ObjectiveHistorySchema.COLLECTION,
-      jsonObjectOf(CurrentActivitySchema.GLOBAL_USER_IDENTIFIER to guid),
+      jsonObjectOf(ObjectiveHistorySchema.IDENTIFIER to activity.getString(ObjectiveHistorySchema.IDENTIFIER)),
       activity, UpdateOptions(true)
     ).ignoreElement()
   }
