@@ -31,20 +31,11 @@ class StrategyEffectListener(private val mongoClient: MongoClient, private val v
       .filter { isObjective(it) }
       .flatMap { writeCurrentObjective(it) }
       .flatMapCompletable { objective ->
-        if (isUpdate(effect)) {
-          updateOrCreateObjective(objective)
-        } else {
           createObjective(objective)
-        }
       }
       .subscribe({}) {
         UserMemoryWorkers.log.warn("Unable to save objective for reasons.", it)
       }
-  }
-
-  private fun updateOrCreateObjective(objective: JsonObject): CompletableSource {
-    return mongoClient.rxInsert(ObjectiveHistorySchema.COLLECTION, objective)
-      .ignoreElement()
   }
 
   private fun isUpdate(effect: Effect): Boolean {
