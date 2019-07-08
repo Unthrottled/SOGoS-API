@@ -1,17 +1,16 @@
 package io.acari.http
 
-import io.acari.memory.*
-import io.acari.memory.activity.activityFromJson
+import io.acari.memory.CurrentObjectiveSchema
+import io.acari.memory.Effect
+import io.acari.memory.ObjectiveHistorySchema
 import io.acari.memory.user.EFFECT_CHANNEL
 import io.acari.security.USER_IDENTIFIER
 import io.acari.util.loggerFor
-import io.netty.handler.codec.http.HttpHeaderNames
 import io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE
 import io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON
 import io.reactivex.Flowable
 import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
-import io.vertx.kotlin.core.json.get
 import io.vertx.kotlin.core.json.jsonArrayOf
 import io.vertx.kotlin.core.json.jsonObjectOf
 import io.vertx.reactivex.core.Vertx
@@ -27,26 +26,41 @@ const val UPDATED_OBJECTIVE = "UPDATED_OBJECTIVE"
 const val REMOVED_OBJECTIVE = "REMOVED_OBJECTIVE"
 const val FOUND_OBJECTIVES = "foundObjectives"
 
+private val mappings = mapOf(
+  CREATED to CREATED_OBJECTIVE,
+  UPDATED to UPDATED_OBJECTIVE,
+  DELETED to REMOVED_OBJECTIVE
+)
+
+private fun mapTypeToEffect(uploadType: String): String =
+  mappings[uploadType] ?: CREATED_OBJECTIVE
+
 fun createObjectiveRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
   val router = router(vertx)
 
-  router.get("/").handler {requestContext ->
+  router.get("/").handler { requestContext ->
     val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
     val response = requestContext.response()
     response.isChunked = true
     response.putHeader(CONTENT_TYPE, JSON_STREAM)
-    mongoClient.aggregate(CurrentObjectiveSchema.COLLECTION, jsonArrayOf(
-      jsonObjectOf("\$match" to
-        jsonObjectOf(CurrentObjectiveSchema.GLOBAL_USER_IDENTIFIER to userIdentifier)),
-      jsonObjectOf("\$lookup" to jsonObjectOf(
-        "from" to ObjectiveHistorySchema.COLLECTION,
-        "localField" to CurrentObjectiveSchema.OBJECTIVES,
-        "foreignField" to ObjectiveHistorySchema.IDENTIFIER,
-        "as" to FOUND_OBJECTIVES
-      ))
+    mongoClient.aggregate(
+      CurrentObjectiveSchema.COLLECTION, jsonArrayOf(
+        jsonObjectOf(
+          "\$match" to
+            jsonObjectOf(CurrentObjectiveSchema.GLOBAL_USER_IDENTIFIER to userIdentifier)
+        ),
+        jsonObjectOf(
+          "\$lookup" to jsonObjectOf(
+            "from" to ObjectiveHistorySchema.COLLECTION,
+            "localField" to CurrentObjectiveSchema.OBJECTIVES,
+            "foreignField" to ObjectiveHistorySchema.IDENTIFIER,
+            "as" to FOUND_OBJECTIVES
+          )
+        )
 
-    )).toFlowable()
-      .flatMap {foundResult ->
+      )
+    ).toFlowable()
+      .flatMap { foundResult ->
         Flowable.fromIterable(foundResult.getJsonArray(FOUND_OBJECTIVES))
           .map { it as JsonObject }
       }
@@ -82,6 +96,35 @@ fun createObjectiveRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
         extractValuableHeaders(requestContext)
       )
     )
+    requestContext.response().putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(200).end()
+  }
+
+  /**
+   * Should be used to assimilate any offline objectives that may have
+   * been performed.
+   */
+  router.post("/bulk").handler { requestContext ->
+    val bodyAsJsonArray = requestContext.bodyAsJsonArray
+    val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
+    bodyAsJsonArray.stream()
+      .map { it as JsonObject }
+      .filter { cachedObjective ->
+        uploadStatus.contains(cachedObjective.getString("uploadType"))
+      }
+      .forEach { cachedObjective ->
+        val objective = cachedObjective.getJsonObject("objective")
+        vertx.eventBus().publish(
+          EFFECT_CHANNEL,
+          Effect(
+            userIdentifier,
+            Instant.now().toEpochMilli(),
+            objective.getLong("antecedenceTime"),
+            mapTypeToEffect(cachedObjective.getString("uploadType")),
+            objective ?: JsonObject(),
+            extractValuableHeaders(requestContext)
+          )
+        )
+      }
     requestContext.response().putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(200).end()
   }
 

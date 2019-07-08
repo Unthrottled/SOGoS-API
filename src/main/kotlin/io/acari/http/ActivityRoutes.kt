@@ -27,6 +27,7 @@ const val UPDATED_ACTIVITY = "UPDATED_ACTIVITY"
 const val CREATED = "CREATED"
 const val UPDATED = "UPDATED"
 const val DELETED = "DELETED"
+val uploadStatus = setOf(CREATED, UPDATED, DELETED)
 
 fun createActivityRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
   val router = router(vertx)
@@ -45,7 +46,6 @@ fun createActivityRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
       }
   }
 
-  val uploadStatus = setOf(CREATED, UPDATED, DELETED)
 
   /**
    * Should be used to assimilate any offline activities that may have
@@ -130,12 +130,12 @@ fun createActivityRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
   return router
 }
 
-val mappings = mapOf(
+private val mappings = mapOf(
   CREATED to STARTED_ACTIVITY,
   UPDATED to UPDATED_ACTIVITY,
   DELETED to REMOVED_ACTIVITY
 )
-fun mapTypeToEffect(uploadType: String): String =
+private fun mapTypeToEffect(uploadType: String): String =
   mappings[uploadType] ?: STARTED_ACTIVITY
 
 fun extractValuableHeaders(requestContext: RoutingContext): JsonObject =
