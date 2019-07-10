@@ -13,6 +13,7 @@ object StrategyMemoryWorkers {
   fun registerWorkers(vertx: Vertx, mongoClient: MongoClient): Completable {
     val eventBus = vertx.eventBus()
     eventBus.consumer(EFFECT_CHANNEL, StrategyEffectListener(mongoClient, vertx))
+    eventBus.consumer(EFFECT_CHANNEL, ObjectiveDeletionEffectListener(mongoClient, vertx))
     return Completable.complete()
   }
 }
