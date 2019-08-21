@@ -32,8 +32,9 @@ fun createAPIRoute(vertx: Vertx, mongoClient: MongoClient): Router {
   val router = Router.router(vertx)
   router.get("/user").handler(createUserHandler(UserService(UserInformationFinder(mongoClient, vertx))))
   router.mountSubRouter("/history", createHistoryRoutes(vertx, mongoClient))
-  router.route().handler(createVerificationHandler())
+  router.route().handler(createVerificationHandler())// order is important here
   router.mountSubRouter("/activity", createActivityRoutes(vertx, mongoClient))
   router.mountSubRouter("/strategy", createStrategyRoutes(vertx, mongoClient))
+  router.mountSubRouter("/tactical", createTacticalRoutes(vertx, mongoClient))
   return router
 }
