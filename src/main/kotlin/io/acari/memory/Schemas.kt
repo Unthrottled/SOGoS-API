@@ -37,6 +37,11 @@ object ObjectiveHistorySchema {
   const val IDENTIFIER: String = "id"
 }
 
+object TacticalSettingsSchema {
+  const val COLLECTION: String = "tacticalSettings"
+  const val POMODORO_SETTINGS: String = "pomodoroSettings" // document
+}
+
 object ActivityHistorySchema {
   const val COLLECTION: String = "history"
   const val GLOBAL_USER_IDENTIFIER: String = "guid" // string
