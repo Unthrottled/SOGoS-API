@@ -39,6 +39,7 @@ object ObjectiveHistorySchema {
 
 object TacticalSettingsSchema {
   const val COLLECTION: String = "tacticalSettings"
+  const val GLOBAL_USER_IDENTIFIER: String = "guid" // string
   const val POMODORO_SETTINGS: String = "pomodoroSettings" // document
 }
 
