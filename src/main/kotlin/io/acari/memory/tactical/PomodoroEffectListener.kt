@@ -32,7 +32,8 @@ class PomodoroEffectListener(private val mongoClient: MongoClient, private val v
     return mongoClient.rxReplaceDocumentsWithOptions(
       TacticalSettingsSchema.COLLECTION,
       jsonObjectOf(TacticalSettingsSchema.GLOBAL_USER_IDENTIFIER to pomodoroEffect.guid),
-      jsonObjectOf(TacticalSettingsSchema.POMODORO_SETTINGS to pomodoroContent),
+      jsonObjectOf(TacticalSettingsSchema.GLOBAL_USER_IDENTIFIER to pomodoroEffect.guid,
+        TacticalSettingsSchema.POMODORO_SETTINGS to pomodoroContent),
       UpdateOptions(true)
     ).toCompletable()
   }

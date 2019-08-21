@@ -25,6 +25,7 @@ fun createTacticalRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
     mongoClient.rxFindOne(TacticalSettingsSchema.COLLECTION,
       jsonObjectOf(TacticalSettingsSchema.GLOBAL_USER_IDENTIFIER to userIdentifier),
       jsonObjectOf())
+      .map { it.getJsonObject(TacticalSettingsSchema.POMODORO_SETTINGS) }
       .defaultIfEmpty(jsonObjectOf())
       .subscribe({
         requestContext.response()
