@@ -31,7 +31,7 @@ class StrategyEffectListener(private val mongoClient: MongoClient, private val v
       .filter { isObjective(it) }
       .flatMap { writeCurrentObjective(it) }
       .flatMapCompletable { objective ->
-          createObjective(objective)
+          createOrUpdateObjective(mongoClient, objective)
       }
       .subscribe({}) {
         UserMemoryWorkers.log.warn("Unable to save objective for reasons.", it)
@@ -42,13 +42,6 @@ class StrategyEffectListener(private val mongoClient: MongoClient, private val v
     return effect.name == UPDATED_OBJECTIVE
   }
 
-  private fun createObjective(activity: JsonObject): CompletableSource {
-    return mongoClient.rxReplaceDocumentsWithOptions(
-      ObjectiveHistorySchema.COLLECTION,
-      jsonObjectOf(ObjectiveHistorySchema.IDENTIFIER to activity.getString(ObjectiveHistorySchema.IDENTIFIER)),
-      activity, UpdateOptions(true)
-    ).ignoreElement()
-  }
 
   private fun writeCurrentObjective(objectiveEffect: Effect): Maybe<JsonObject>? {
     val objectiveContent = objectiveEffect.content
@@ -100,3 +93,12 @@ class StrategyEffectListener(private val mongoClient: MongoClient, private val v
 }
 
 const val MAX_OBJECTIVES = 5
+
+
+fun createOrUpdateObjective(mongoClient: MongoClient, activity: JsonObject): CompletableSource {
+  return mongoClient.rxReplaceDocumentsWithOptions(
+    ObjectiveHistorySchema.COLLECTION,
+    jsonObjectOf(ObjectiveHistorySchema.IDENTIFIER to activity.getString(ObjectiveHistorySchema.IDENTIFIER)),
+    activity, UpdateOptions(true)
+  ).ignoreElement()
+}

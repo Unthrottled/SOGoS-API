@@ -1,11 +1,15 @@
 package io.acari.memory.strategy
 
+import io.acari.http.COMPLETED_OBJECTIVE
 import io.acari.http.REMOVED_OBJECTIVE
 import io.acari.memory.CurrentObjectiveSchema
 import io.acari.memory.Effect
+import io.acari.memory.ObjectiveHistorySchema
 import io.acari.memory.user.UserMemoryWorkers
 import io.acari.types.Objective
 import io.acari.util.toMaybe
+import io.reactivex.Completable
+import io.reactivex.CompletableSource
 import io.reactivex.Maybe
 import io.reactivex.MaybeEmitter
 import io.vertx.core.Handler
@@ -25,14 +29,21 @@ class ObjectiveDeletionEffectListener(private val mongoClient: MongoClient, priv
     effect.toMaybe()
       .filter { isObjective(it) }
       .flatMap { removeObjectiveFromCurrentList(it) }
+      .flatMapCompletable { updateHistory(it, effect) }
       .subscribe({}) {
         UserMemoryWorkers.log.warn("Unable to remove objective for reasons.", it)
       }
   }
 
-  private fun isRemoval(effect: Effect): Boolean {
-    return effect.name == REMOVED_OBJECTIVE
-  }
+  private fun updateHistory(objective: JsonObject, objectiveEffect: Effect): CompletableSource =
+    createOrUpdateObjective(mongoClient, modifyObjective(objective, objectiveEffect))
+
+  private fun modifyObjective(objective: JsonObject, objectiveEffect: Effect): JsonObject =
+    if(isCompletion(objectiveEffect)) {
+      objective.put("completionTime", objectiveEffect.antecedenceTime)
+    } else {
+      objective.put("removalTime", objectiveEffect.antecedenceTime)
+    }
 
   private fun removeObjectiveFromCurrentList(objectiveEffect: Effect): Maybe<JsonObject>? {
     val objectiveContent = objectiveEffect.content
@@ -72,6 +83,10 @@ class ObjectiveDeletionEffectListener(private val mongoClient: MongoClient, priv
       .toList())
 
   private fun isObjective(effect: Effect) =
-    isRemoval(effect)
+    isRemoval(effect) || isCompletion(effect)
+
+  private fun isRemoval(effect: Effect): Boolean = effect.name == REMOVED_OBJECTIVE
+
+  private fun isCompletion(effect: Effect): Boolean = effect.name == COMPLETED_OBJECTIVE
 }
 
