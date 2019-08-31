@@ -4,11 +4,9 @@ import io.acari.http.COMPLETED_OBJECTIVE
 import io.acari.http.REMOVED_OBJECTIVE
 import io.acari.memory.CurrentObjectiveSchema
 import io.acari.memory.Effect
-import io.acari.memory.ObjectiveHistorySchema
 import io.acari.memory.user.UserMemoryWorkers
-import io.acari.types.Objective
+import io.acari.types.ObjectiveLite
 import io.acari.util.toMaybe
-import io.reactivex.Completable
 import io.reactivex.CompletableSource
 import io.reactivex.Maybe
 import io.reactivex.MaybeEmitter
@@ -47,7 +45,7 @@ class ObjectiveDeletionEffectListener(private val mongoClient: MongoClient, priv
 
   private fun removeObjectiveFromCurrentList(objectiveEffect: Effect): Maybe<JsonObject>? {
     val objectiveContent = objectiveEffect.content
-    val objective = objectiveContent.mapTo(Objective::class.java)
+    val objective = objectiveContent.mapTo(ObjectiveLite::class.java)
     return mongoClient.rxFindOne(
       CurrentObjectiveSchema.COLLECTION,
       jsonObjectOf(CurrentObjectiveSchema.GLOBAL_USER_IDENTIFIER to objectiveEffect.guid),
@@ -77,7 +75,7 @@ class ObjectiveDeletionEffectListener(private val mongoClient: MongoClient, priv
       .map { it.put(CurrentObjectiveSchema.GLOBAL_USER_IDENTIFIER, objectiveEffect.guid) }
   }
 
-  private fun getNewList(objectiveIds: JsonArray, objective: Objective): JsonArray =
+  private fun getNewList(objectiveIds: JsonArray, objective: ObjectiveLite): JsonArray =
     JsonArray(objectiveIds.stream()
       .filter { it != objective.id }
       .toList())

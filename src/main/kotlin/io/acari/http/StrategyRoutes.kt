@@ -65,6 +65,22 @@ fun createObjectiveRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
       }
 
   }
+  router.post("/:objectiveId/complete").handler { requestContext ->
+    val bodyAsJson = requestContext.bodyAsJson
+    val timeCreated = Instant.now().toEpochMilli()
+    val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
+    vertx.eventBus().publish(
+      EFFECT_CHANNEL, Effect(
+        userIdentifier,
+        timeCreated,
+        timeCreated,
+        COMPLETED_OBJECTIVE,
+        bodyAsJson,
+        extractValuableHeaders(requestContext)
+      )
+    )
+    requestContext.response().putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(200).end()
+  }
 
   router.get("/").handler { requestContext ->
     val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
@@ -126,6 +142,7 @@ fun createObjectiveRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
     )
     requestContext.response().putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(200).end()
   }
+
 
   /**
    * Should be used to assimilate any offline objectives that may have

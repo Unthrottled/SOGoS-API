@@ -7,6 +7,10 @@ data class Objective(
   val antecedenceTime: Long
 )
 
+data class ObjectiveLite(
+  val id: String
+)
+
 data class KeyResult(
   val id: String,
   val valueStatement: String,
