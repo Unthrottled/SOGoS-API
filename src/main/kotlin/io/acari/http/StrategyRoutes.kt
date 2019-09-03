@@ -41,6 +41,7 @@ private fun mapTypeToEffect(uploadType: String): String =
 fun createObjectiveRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
   val router = router(vertx)
 
+  // todo: should be shareable
   router.get("/:objectiveId").handler { requestContext ->
     val objectiveId = requestContext.request().getParam("objectiveId")
     val response = requestContext.response()
@@ -65,6 +66,8 @@ fun createObjectiveRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
       }
 
   }
+
+  // todo: authorization
   router.post("/:objectiveId/complete").handler { requestContext ->
     val bodyAsJson = requestContext.bodyAsJson
     val timeCreated = Instant.now().toEpochMilli()
@@ -82,6 +85,7 @@ fun createObjectiveRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
     requestContext.response().putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(200).end()
   }
 
+  // todo: should be shareable
   router.get("/").handler { requestContext ->
     val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
     val response = requestContext.response()
@@ -126,6 +130,7 @@ fun createObjectiveRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
 
   }
 
+  // todo: authorization
   router.post("/").handler { requestContext ->
     val bodyAsJson = requestContext.bodyAsJson
     val timeCreated = Instant.now().toEpochMilli()
@@ -144,6 +149,7 @@ fun createObjectiveRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
   }
 
 
+  // todo: authorization
   /**
    * Should be used to assimilate any offline objectives that may have
    * been performed.
@@ -173,6 +179,7 @@ fun createObjectiveRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
     requestContext.response().putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(200).end()
   }
 
+  // todo: authorization
   router.put("/").handler { requestContext ->
     val bodyAsJson = requestContext.bodyAsJson
     val timeCreated = Instant.now().toEpochMilli()
@@ -190,6 +197,7 @@ fun createObjectiveRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
     requestContext.response().putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(200).end()
   }
 
+  // todo: authorization
   router.delete("/").handler { requestContext ->
     val bodyAsJson = requestContext.bodyAsJson
     val timeCreated = Instant.now().toEpochMilli()

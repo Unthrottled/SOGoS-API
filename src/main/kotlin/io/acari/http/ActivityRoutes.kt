@@ -102,7 +102,7 @@ fun createActivityRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
       EFFECT_CHANNEL, Effect(
         userIdentifier,
         timeCreated,
-        bodyAsJson.getLong("antecedenceTime"), // todo: does this matter in all contexts?
+        bodyAsJson.getLong("antecedenceTime"),
         UPDATED_ACTIVITY,
         bodyAsJson.getJsonObject("content") ?: JsonObject(),
         extractValuableHeaders(requestContext)
@@ -119,7 +119,7 @@ fun createActivityRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
       EFFECT_CHANNEL, Effect(
         userIdentifier,
         timeCreated,
-        bodyAsJson.getLong("antecedenceTime"), // todo: does this matter in all contexts?
+        bodyAsJson.getLong("antecedenceTime"),
         REMOVED_ACTIVITY,
         bodyAsJson.getJsonObject("content") ?: JsonObject(),
         extractValuableHeaders(requestContext)
