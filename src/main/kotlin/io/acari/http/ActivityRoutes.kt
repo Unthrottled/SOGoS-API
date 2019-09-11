@@ -2,6 +2,7 @@ package io.acari.http
 
 import io.acari.memory.Effect
 import io.acari.memory.activity.CurrentActivityFinder
+import io.acari.memory.activity.PreviousActivityFinder
 import io.acari.memory.user.EFFECT_CHANNEL
 import io.acari.security.USER_IDENTIFIER
 import io.acari.util.loggerFor
@@ -34,6 +35,20 @@ fun createActivityRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
   val router = router(vertx)
   val currentActivityListener = CurrentActivityFinder(mongoClient)
   router.get("/current").handler { requestContext ->
+    val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
+    currentActivityListener.handle(userIdentifier)
+      .subscribe({
+        requestContext.response()
+          .putHeader(CONTENT_TYPE, APPLICATION_JSON)
+          .setStatusCode(200)
+          .end(Json.encode(it))
+      }) {
+        logger.warn("Unable to service current activity request for $userIdentifier", it)
+        requestContext.fail(500)
+      }
+  }
+  val previousActivityListener = PreviousActivityFinder(mongoClient) //todo: finish me
+  router.get("/previous").handler { requestContext ->
     val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
     currentActivityListener.handle(userIdentifier)
       .subscribe({
