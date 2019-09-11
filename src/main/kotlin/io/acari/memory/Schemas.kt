@@ -22,6 +22,8 @@ object CurrentActivitySchema {
   const val GLOBAL_USER_IDENTIFIER: String = "guid" // string
   const val TIME_OF_ANTECEDENCE: String = "antecedenceTime"
   const val CONTENT: String = "content"
+  const val CURRENT: String = "current"
+  const val PREVIOUS: String = "previous"
 }
 
 object CurrentObjectiveSchema {

@@ -10,11 +10,20 @@ import java.lang.IllegalStateException
 
 data class Activity(val antecedenceTime: Long, val content: JsonObject)
 
-fun activityFromJson(activityJson: JsonObject): Activity =
-  Activity(
-    antecedenceTime = activityJson.getLong(CurrentActivitySchema.TIME_OF_ANTECEDENCE),
-    content = activityJson.getJsonObject(CurrentActivitySchema.CONTENT)
+fun activityFromJson(activityJson: JsonObject): Activity {
+  //TODO: REMOVE ONCE DATA IS LESS JANKY.
+   val currentActivityJson =
+     if (activityJson.containsKey(CurrentActivitySchema.CURRENT)) {
+       activityJson.getJsonObject(CurrentActivitySchema.CURRENT)
+     } else {
+       activityJson
+     }
+
+  return Activity(
+    antecedenceTime = currentActivityJson.getLong(CurrentActivitySchema.TIME_OF_ANTECEDENCE),
+    content = currentActivityJson.getJsonObject(CurrentActivitySchema.CONTENT)
   )
+}
 
 class CurrentActivityFinder(private val mongoClient: MongoClient) {
   val log = loggerFor(javaClass)
