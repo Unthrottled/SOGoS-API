@@ -35,15 +35,15 @@ class CurrentActivityFinder(private val mongoClient: MongoClient) {
       }.switchIfEmpty { observer: SingleObserver<in Activity> ->
         observer.onError(IllegalStateException("$userIdentifier has no current activity!")) }
   }
+}
 
-  private fun findCurrentActivity(
-    mongoClient: MongoClient,
-    globalUserIdentifier: String
-  ): Maybe<JsonObject> {
-    return mongoClient.rxFindOne(
-      CurrentActivitySchema.COLLECTION, jsonObjectOf(
-        CurrentActivitySchema.GLOBAL_USER_IDENTIFIER to globalUserIdentifier
-      ), jsonObjectOf()
-    )
-  }
+fun findCurrentActivity(
+  mongoClient: MongoClient,
+  globalUserIdentifier: String
+): Maybe<JsonObject> {
+  return mongoClient.rxFindOne(
+    CurrentActivitySchema.COLLECTION, jsonObjectOf(
+      CurrentActivitySchema.GLOBAL_USER_IDENTIFIER to globalUserIdentifier
+    ), jsonObjectOf()
+  )
 }

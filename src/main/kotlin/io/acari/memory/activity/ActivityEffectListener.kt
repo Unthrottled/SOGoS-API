@@ -5,8 +5,10 @@ import io.acari.memory.ActivityHistorySchema
 import io.acari.memory.CurrentActivitySchema
 import io.acari.memory.Effect
 import io.acari.memory.user.UserMemoryWorkers
+import io.acari.util.toMaybe
 import io.reactivex.CompletableSource
 import io.reactivex.Maybe
+import io.reactivex.SingleObserver
 import io.vertx.core.Handler
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.mongo.UpdateOptions
@@ -39,15 +41,41 @@ class ActivityEffectListener(private val mongoClient: MongoClient, private val v
     )
     val isActivity = isActivity(effect)
     return when {
-        isActivity && shouldTime(effect) -> mongoClient.rxReplaceDocumentsWithOptions(
-          CurrentActivitySchema.COLLECTION,
-          jsonObjectOf(CurrentActivitySchema.GLOBAL_USER_IDENTIFIER to effect.guid),
-          activity, UpdateOptions(true)
-        ).map { activity }
-          .toMaybe()
-        isActivity -> Maybe.just(activity)
-        else -> Maybe.empty()
+      isActivity && shouldTime(effect) -> updateCurrentActivity(effect, activity)
+      isActivity -> Maybe.just(activity)
+      else -> Maybe.empty()
     }
+  }
+
+  private fun updateCurrentActivity(
+    effect: Effect,
+    activity: JsonObject
+  ): Maybe<JsonObject> {
+    val userIdentifier = effect.guid
+    return findCurrentActivity(mongoClient, userIdentifier)
+      .flatMap {
+        if (it.containsKey(CurrentActivitySchema.CURRENT)) {
+          it.getJsonObject(CurrentActivitySchema.CURRENT).toMaybe()
+        } else {
+          Maybe.error(java.lang.IllegalStateException("$userIdentifier has no current activity!"))
+        }
+      }
+      .switchIfEmpty { observer: SingleObserver<in JsonObject> ->
+        observer.onError(IllegalStateException("$userIdentifier has no current activity!"))
+      }
+      .flatMap { previousActivity ->
+        val activityScope = jsonObjectOf(
+          CurrentActivitySchema.PREVIOUS to previousActivity,
+          CurrentActivitySchema.CURRENT to activity,
+          CurrentActivitySchema.GLOBAL_USER_IDENTIFIER to userIdentifier
+        )
+        mongoClient.rxReplaceDocumentsWithOptions(
+          CurrentActivitySchema.COLLECTION,
+          jsonObjectOf(CurrentActivitySchema.GLOBAL_USER_IDENTIFIER to userIdentifier),
+          activityScope, UpdateOptions(true)
+        )
+      }.map { activity }
+      .toMaybe()
   }
 
   private fun shouldTime(effect: Effect): Boolean =
