@@ -34,7 +34,7 @@ class ObjectiveDeletionEffectListener(private val mongoClient: MongoClient, priv
   }
 
   private fun updateHistory(objective: JsonObject, objectiveEffect: Effect): CompletableSource =
-    createOrUpdateObjective(mongoClient, modifyObjective(objective, objectiveEffect))
+    createOrUpdateObjective(mongoClient, modifyObjective(objective, objectiveEffect), objectiveEffect.guid)
 
   private fun modifyObjective(objective: JsonObject, objectiveEffect: Effect): JsonObject =
     if(isCompletion(objectiveEffect)) {

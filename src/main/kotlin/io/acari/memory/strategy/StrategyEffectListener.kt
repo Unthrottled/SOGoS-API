@@ -3,7 +3,6 @@ package io.acari.memory.strategy
 import com.google.common.collect.Lists
 import io.acari.http.CREATED_OBJECTIVE
 import io.acari.http.UPDATED_OBJECTIVE
-import io.acari.memory.CurrentActivitySchema
 import io.acari.memory.CurrentObjectiveSchema
 import io.acari.memory.Effect
 import io.acari.memory.ObjectiveHistorySchema
@@ -31,7 +30,7 @@ class StrategyEffectListener(private val mongoClient: MongoClient, private val v
       .filter { isObjective(it) }
       .flatMap { writeCurrentObjective(it) }
       .flatMapCompletable { objective ->
-          createOrUpdateObjective(mongoClient, objective)
+          createOrUpdateObjective(mongoClient, objective, effect.guid)
       }
       .subscribe({}) {
         UserMemoryWorkers.log.warn("Unable to save objective for reasons.", it)
@@ -95,10 +94,17 @@ class StrategyEffectListener(private val mongoClient: MongoClient, private val v
 const val MAX_OBJECTIVES = 5
 
 
-fun createOrUpdateObjective(mongoClient: MongoClient, activity: JsonObject): CompletableSource {
+fun createOrUpdateObjective(
+  mongoClient: MongoClient,
+  activity: JsonObject,
+  guid: String
+): CompletableSource {
   return mongoClient.rxReplaceDocumentsWithOptions(
     ObjectiveHistorySchema.COLLECTION,
-    jsonObjectOf(ObjectiveHistorySchema.IDENTIFIER to activity.getString(ObjectiveHistorySchema.IDENTIFIER)),
+    jsonObjectOf(
+      ObjectiveHistorySchema.IDENTIFIER to activity.getString(ObjectiveHistorySchema.IDENTIFIER),
+      ObjectiveHistorySchema.GLOBAL_USER_IDENTIFIER to guid
+    ),
     activity, UpdateOptions(true)
   ).ignoreElement()
 }
