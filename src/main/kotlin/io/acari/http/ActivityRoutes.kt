@@ -1,16 +1,20 @@
 package io.acari.http
 
 import io.acari.memory.Effect
+import io.acari.memory.activity.Activity
 import io.acari.memory.activity.CurrentActivityFinder
 import io.acari.memory.activity.PreviousActivityFinder
 import io.acari.memory.user.EFFECT_CHANNEL
 import io.acari.security.USER_IDENTIFIER
+import io.acari.types.NotFoundException
 import io.acari.util.loggerFor
 import io.acari.util.toOptional
 import io.vertx.reactivex.core.Vertx
 import io.vertx.reactivex.ext.web.RoutingContext
 import io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE
 import io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON
+import io.netty.handler.codec.http.HttpResponseStatus
+import io.reactivex.SingleObserver
 import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.core.json.jsonObjectOf
@@ -47,18 +51,26 @@ fun createActivityRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
         requestContext.fail(500)
       }
   }
-  val previousActivityListener = PreviousActivityFinder(mongoClient) //todo: finish me
+  val previousActivityListener = PreviousActivityFinder(mongoClient)
   router.get("/previous").handler { requestContext ->
     val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
-    currentActivityListener.handle(userIdentifier)
+    previousActivityListener.handle(userIdentifier)
+      .switchIfEmpty { observer: SingleObserver<in Activity> ->
+        observer.onError(NotFoundException("$userIdentifier has no previous activity!"))
+      }
       .subscribe({
         requestContext.response()
           .putHeader(CONTENT_TYPE, APPLICATION_JSON)
           .setStatusCode(200)
           .end(Json.encode(it))
       }) {
-        logger.warn("Unable to service current activity request for $userIdentifier", it)
-        requestContext.fail(500)
+        when (it){
+          is NotFoundException -> requestContext.fail(HttpResponseStatus.NOT_FOUND.code())
+          else -> {
+            logger.warn("Unable to service current activity request for $userIdentifier", it)
+            requestContext.fail(500)
+          }
+        }
       }
   }
 
