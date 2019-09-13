@@ -57,7 +57,7 @@ class ActivityEffectListener(private val mongoClient: MongoClient, private val v
         if (it.containsKey(CurrentActivitySchema.CURRENT)) {
           it.getJsonObject(CurrentActivitySchema.CURRENT).toMaybe()
         } else {
-          Maybe.error(java.lang.IllegalStateException("$userIdentifier has no current activity!"))
+          Maybe.error(IllegalStateException("$userIdentifier has no current activity!"))
         }
       }
       .switchIfEmpty { observer: SingleObserver<in JsonObject> ->
