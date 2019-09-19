@@ -26,6 +26,7 @@ object MemoryInitializations {
       .andThen(createCollection(mongoClient, CurrentObjectiveSchema.COLLECTION))
       .andThen(createCollection(mongoClient, ObjectiveHistorySchema.COLLECTION))
       .andThen(createCollection(mongoClient, TacticalSettingsSchema.COLLECTION))
+      .andThen(createCollection(mongoClient, TacticalActivitySchema.COLLECTION))
 
   fun registerCodecs(vertx: Vertx): Completable =
     MemoryCodecs.attachCodecsToEventBus(vertx)

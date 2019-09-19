@@ -39,6 +39,13 @@ object ObjectiveHistorySchema {
   const val IDENTIFIER: String = "id"
 }
 
+object TacticalActivitySchema {
+  const val COLLECTION: String = "tacticalActivity"
+  const val GLOBAL_USER_IDENTIFIER: String = "guid" // string
+  const val IDENTIFIER: String = "id"
+  const val REMOVED: String = "removed"
+}
+
 object TacticalSettingsSchema {
   const val COLLECTION: String = "tacticalSettings"
   const val GLOBAL_USER_IDENTIFIER: String = "guid" // string

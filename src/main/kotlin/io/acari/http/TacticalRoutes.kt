@@ -20,6 +20,9 @@ private val logger = loggerFor("Tactical Routes")
 
 fun createTacticalRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
   val router = router(vertx)
+
+  router.mountSubRouter("/activity", createTacticalActivityRoutes(vertx, mongoClient))
+
   router.get("/pomodoro/settings").handler { requestContext ->
     val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
     mongoClient.rxFindOne(TacticalSettingsSchema.COLLECTION,

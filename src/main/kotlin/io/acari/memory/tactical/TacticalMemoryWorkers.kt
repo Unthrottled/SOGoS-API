@@ -13,6 +13,7 @@ object TacticalMemoryWorkers {
   fun registerWorkers(vertx: Vertx, mongoClient: MongoClient): Completable {
     val eventBus = vertx.eventBus()
     eventBus.consumer(EFFECT_CHANNEL, PomodoroEffectListener(mongoClient, vertx))
+    eventBus.consumer(EFFECT_CHANNEL, TacticalActivityEffectListener(mongoClient, vertx))
     return Completable.complete()
   }
 }
