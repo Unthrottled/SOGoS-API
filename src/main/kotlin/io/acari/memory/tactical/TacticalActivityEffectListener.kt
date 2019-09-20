@@ -1,11 +1,10 @@
 package io.acari.memory.tactical
 
 import io.acari.http.CREATED_TACTICAL_ACTIVITY
+import io.acari.http.REMOVED_TACTICAL_ACTIVITY
 import io.acari.http.UPDATED_TACTICAL_ACTIVITY
 import io.acari.memory.Effect
-import io.acari.memory.ObjectiveHistorySchema
 import io.acari.memory.TacticalActivitySchema
-import io.acari.memory.TacticalSettingsSchema
 import io.acari.memory.user.UserMemoryWorkers
 import io.acari.util.toMaybe
 import io.reactivex.Completable
@@ -16,8 +15,11 @@ import io.vertx.reactivex.core.Vertx
 import io.vertx.reactivex.core.eventbus.Message
 import io.vertx.reactivex.ext.mongo.MongoClient
 
-class TacticalActivityCreationEffectListener(private val mongoClient: MongoClient, private val vertx: Vertx) :
-  Handler<Message<Effect>> {
+
+abstract class TacticalActivityEffectListener(
+  private val mongoClient: MongoClient,
+  private val vertx: Vertx
+) : Handler<Message<Effect>> {
   override fun handle(message: Message<Effect>) {
     val effect = message.body()
     effect.toMaybe()
@@ -31,7 +33,7 @@ class TacticalActivityCreationEffectListener(private val mongoClient: MongoClien
   private fun writeTacticalActivity(tacticalActivityEffect: Effect): Completable {
     val activity = tacticalActivityEffect.content
     val guid = tacticalActivityEffect.guid
-    activity.put("removed", false)
+    activity.put("removed", isRemoved())
     activity.put(TacticalActivitySchema.GLOBAL_USER_IDENTIFIER, guid)
     return mongoClient.rxReplaceDocumentsWithOptions(
       TacticalActivitySchema.COLLECTION,
@@ -43,8 +45,24 @@ class TacticalActivityCreationEffectListener(private val mongoClient: MongoClien
     ).ignoreElement()
   }
 
-  private fun isTacticalActivity(effect: Effect) =
+  protected abstract fun isTacticalActivity(effect: Effect): Boolean
+  protected abstract fun isRemoved(): Boolean
+}
+
+class TacticalActivityCreationEffectListener(mongoClient: MongoClient, vertx: Vertx) :
+  TacticalActivityEffectListener(mongoClient, vertx) {
+  override fun isTacticalActivity(effect: Effect): Boolean =
     effect.name == UPDATED_TACTICAL_ACTIVITY ||
       effect.name == CREATED_TACTICAL_ACTIVITY
+
+  override fun isRemoved(): Boolean = false
+}
+
+class TacticalActivityDeletionEffectListener(mongoClient: MongoClient, vertx: Vertx) :
+  TacticalActivityEffectListener(mongoClient, vertx) {
+  override fun isTacticalActivity(effect: Effect): Boolean =
+    effect.name == REMOVED_TACTICAL_ACTIVITY
+
+  override fun isRemoved(): Boolean = true
 }
 

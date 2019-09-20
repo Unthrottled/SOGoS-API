@@ -35,8 +35,7 @@ fun createTacticalActivityRoutes(vertx: Vertx, mongoClient: MongoClient): Router
   val router = router(vertx)
 
   router.get("/").handler { requestContext ->
-    val request = requestContext.request()
-    val userIdentifier = request.getParam("userIdentifier")
+    val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
     val response = requestContext.response()
 
     response.isChunked = true
@@ -61,33 +60,30 @@ fun createTacticalActivityRoutes(vertx: Vertx, mongoClient: MongoClient): Router
       })
   }
 
-  //todo: sharing and caring
-//  router.post("/bulk").handler { requestContext ->
-//    val bodyAsJsonArray = requestContext.bodyAsJsonArray
-//    val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
-//    bodyAsJsonArray.stream()
-//      .map { it as JsonObject }
-//      .filter { cachedActivity ->
-//        uploadStatus.contains(cachedActivity.getString("uploadType"))
-//      }
-//      .forEach { cachedActivity ->
-//        val activity = cachedActivity.getJsonObject("activity")
-//        vertx.eventBus().publish(
-//          EFFECT_CHANNEL,
-//          Effect(
-//            userIdentifier,
-//            Instant.now().toEpochMilli(),
-//            activity.getLong("antecedenceTime"),
-//            mapTypeToEffect(cachedActivity.getString("uploadType")),
-//            activity,
-//            extractValuableHeaders(requestContext)
-//          )
-//        )
-//      }
-//    requestContext.response().putHeader(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON).setStatusCode(200).end()
-//  }
-
-
+  router.post("/bulk").handler { requestContext ->
+    val bodyAsJsonArray = requestContext.bodyAsJsonArray
+    val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
+    bodyAsJsonArray.stream()
+      .map { it as JsonObject }
+      .filter { cachedActivity ->
+        uploadStatus.contains(cachedActivity.getString("uploadType"))
+      }
+      .forEach { cachedActivity ->
+        val activity = cachedActivity.getJsonObject("activity")
+        vertx.eventBus().publish(
+          EFFECT_CHANNEL,
+          Effect(
+            userIdentifier,
+            Instant.now().toEpochMilli(),
+            activity.getLong("antecedenceTime"),
+            mapTypeToEffect(cachedActivity.getString("uploadType")),
+            activity,
+            extractValuableHeaders(requestContext)
+          )
+        )
+      }
+    requestContext.response().putHeader(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON).setStatusCode(200).end()
+  }
 
   router.post("/").handler { requestContext ->
     val bodyAsJson = requestContext.bodyAsJson

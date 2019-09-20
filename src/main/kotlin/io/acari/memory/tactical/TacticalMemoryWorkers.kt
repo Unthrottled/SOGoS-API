@@ -14,6 +14,7 @@ object TacticalMemoryWorkers {
     val eventBus = vertx.eventBus()
     eventBus.consumer(EFFECT_CHANNEL, PomodoroEffectListener(mongoClient, vertx))
     eventBus.consumer(EFFECT_CHANNEL, TacticalActivityCreationEffectListener(mongoClient, vertx))
+    eventBus.consumer(EFFECT_CHANNEL, TacticalActivityDeletionEffectListener(mongoClient, vertx))
     return Completable.complete()
   }
 }
