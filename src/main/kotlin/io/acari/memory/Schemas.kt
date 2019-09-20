@@ -43,6 +43,7 @@ object TacticalActivitySchema {
   const val COLLECTION: String = "tacticalActivity"
   const val GLOBAL_USER_IDENTIFIER: String = "guid" // string
   const val IDENTIFIER: String = "id"
+  const val CONTENT: String = "content"
   const val REMOVED: String = "removed"
 }
 
