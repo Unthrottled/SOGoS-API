@@ -5,7 +5,7 @@ services:
 #      build:
 #        context: ./mongo
       volumes:
-        - "./dataDump/:/data/db"
+        - mongo-volume:/data/db
       ports:
         - "27017:27017"
   keycloak:
@@ -32,3 +32,4 @@ services:
 
 volumes:
   postgres-volume:
+  mongo-volume:

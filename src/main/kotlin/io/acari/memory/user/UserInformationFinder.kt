@@ -1,5 +1,6 @@
 package io.acari.memory.user
 
+import io.acari.http.STARTED_ACTIVITY
 import io.acari.memory.Effect
 import io.acari.memory.UserSchema
 import io.acari.security.extractUserIdentificationKey
@@ -55,6 +56,14 @@ class UserInformationFinder(private val mongoClient: MongoClient, private val ve
         vertx.eventBus().publish(
           EFFECT_CHANNEL,
           Effect(usersGiud, timeCreated, timeCreated, USER_CREATED, openIDInformation, jsonObjectOf())
+        )
+        vertx.eventBus().publish(
+          EFFECT_CHANNEL,
+          Effect(usersGiud, timeCreated, timeCreated, STARTED_ACTIVITY, jsonObjectOf(
+            "name" to "RECOVERY",
+            "type" to "ACTIVE",
+            "id" to UUID.randomUUID().toString()
+          ), jsonObjectOf())
         )
       }
   }
