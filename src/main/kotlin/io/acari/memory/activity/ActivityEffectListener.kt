@@ -6,16 +6,20 @@ import io.acari.memory.CurrentActivitySchema
 import io.acari.memory.Effect
 import io.acari.memory.user.UserMemoryWorkers
 import io.acari.util.toMaybe
+import io.acari.util.toOptional
 import io.reactivex.CompletableSource
 import io.reactivex.Maybe
+import io.reactivex.MaybeObserver
 import io.reactivex.SingleObserver
 import io.vertx.core.Handler
+import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.mongo.UpdateOptions
 import io.vertx.kotlin.core.json.jsonObjectOf
 import io.vertx.reactivex.core.Vertx
 import io.vertx.reactivex.core.eventbus.Message
 import io.vertx.reactivex.ext.mongo.MongoClient
+import java.util.*
 
 class ActivityEffectListener(private val mongoClient: MongoClient, private val vertx: Vertx) :
   Handler<Message<Effect>> {
@@ -53,22 +57,20 @@ class ActivityEffectListener(private val mongoClient: MongoClient, private val v
   ): Maybe<JsonObject> {
     val userIdentifier = effect.guid
     return findCurrentActivity(mongoClient, userIdentifier)
-      .flatMap {
-        if (it.containsKey(CurrentActivitySchema.CURRENT)) {
-          it.getJsonObject(CurrentActivitySchema.CURRENT).toMaybe()
-        } else {
-          Maybe.error(IllegalStateException("$userIdentifier has no current activity!"))
-        }
+      .map {
+        it.getJsonObject(CurrentActivitySchema.CURRENT).toOptional()
       }
-      .switchIfEmpty { observer: SingleObserver<in JsonObject> ->
-        observer.onError(IllegalStateException("$userIdentifier has no current activity!"))
-      }
-      .flatMap { previousActivity ->
-        val activityScope = jsonObjectOf(
-          CurrentActivitySchema.PREVIOUS to previousActivity,
+      .switchIfEmpty { observer: MaybeObserver<in Optional<JsonObject>> -> observer.onSuccess(Optional.empty()) }
+      .flatMapSingle { previousActivity ->
+        val baseJson = jsonObjectOf(
           CurrentActivitySchema.CURRENT to activity,
           CurrentActivitySchema.GLOBAL_USER_IDENTIFIER to userIdentifier
         )
+        val activityScope = previousActivity.map {
+          baseJson.put(CurrentActivitySchema.PREVIOUS, it)
+        }.orElseGet {
+          baseJson
+        }
         mongoClient.rxReplaceDocumentsWithOptions(
           CurrentActivitySchema.COLLECTION,
           jsonObjectOf(CurrentActivitySchema.GLOBAL_USER_IDENTIFIER to userIdentifier),
