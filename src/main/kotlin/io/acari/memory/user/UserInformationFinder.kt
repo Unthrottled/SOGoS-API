@@ -62,7 +62,7 @@ class UserInformationFinder(private val mongoClient: MongoClient, private val ve
           Effect(usersGiud, timeCreated, timeCreated, STARTED_ACTIVITY, jsonObjectOf(
             "name" to "RECOVERY",
             "type" to "ACTIVE",
-            "id" to UUID.randomUUID().toString()
+            "uuid" to UUID.randomUUID().toString()
           ), jsonObjectOf())
         )
       }
