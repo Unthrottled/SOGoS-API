@@ -101,6 +101,7 @@ private fun handleFirstRequest(
         .filter(Objects::nonNull)
         .map {
           it.remove("_id")
+          it.remove(ActivityHistorySchema.GLOBAL_USER_IDENTIFIER)
           it
         }
         .subscribe({
