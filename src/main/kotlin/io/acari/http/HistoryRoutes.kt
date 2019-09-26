@@ -99,6 +99,10 @@ private fun handleFirstRequest(
       )
         .map { it.firstOrNull() }
         .filter(Objects::nonNull)
+        .map {
+          it.remove("_id")
+          it
+        }
         .subscribe({
           response.putHeader(HttpHeaderNames.CONTENT_TYPE, JSON)
           response
