@@ -67,7 +67,6 @@ fun createObjectiveRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
 
   }
 
-  // todo: authorization
   router.post("/:objectiveId/complete").handler { requestContext ->
     val bodyAsJson = requestContext.bodyAsJson
     val timeCreated = Instant.now().toEpochMilli()
@@ -130,7 +129,6 @@ fun createObjectiveRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
 
   }
 
-  // todo: authorization
   router.post("/").handler { requestContext ->
     val bodyAsJson = requestContext.bodyAsJson
     val timeCreated = Instant.now().toEpochMilli()
@@ -149,7 +147,6 @@ fun createObjectiveRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
   }
 
 
-  // todo: authorization
   /**
    * Should be used to assimilate any offline objectives that may have
    * been performed.
@@ -179,7 +176,6 @@ fun createObjectiveRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
     requestContext.response().putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(200).end()
   }
 
-  // todo: authorization
   router.put("/").handler { requestContext ->
     val bodyAsJson = requestContext.bodyAsJson
     val timeCreated = Instant.now().toEpochMilli()
@@ -197,7 +193,6 @@ fun createObjectiveRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
     requestContext.response().putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(200).end()
   }
 
-  // todo: authorization
   router.delete("/").handler { requestContext ->
     val bodyAsJson = requestContext.bodyAsJson
     val timeCreated = Instant.now().toEpochMilli()

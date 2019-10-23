@@ -102,7 +102,6 @@ fun createTacticalActivityRoutes(vertx: Vertx, mongoClient: MongoClient): Router
     requestContext.response().putHeader(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON).setStatusCode(200).end()
   }
 
-  // todo: authorization on activity update? Is that taken care of????
   router.put("/bulk").handler { requestContext ->
     val bodyAsJsonArray = requestContext.bodyAsJsonArray
     val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
