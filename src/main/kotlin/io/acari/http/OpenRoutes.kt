@@ -16,7 +16,7 @@ fun attachNonSecuredRoutes(router: Router, configuration: JsonObject): Router {
         "clientID" to securityConfigurations.getString("App-Client-Id"),
         "openIDConnectURI" to securityConfigurations.getString("OpenId-Connect-Provider"),
         "provider" to securityConfigurations.getString("provider")
-      ).encode() // todo: should consolidate configurations.
+      ).encode()
     )
   }
   return router

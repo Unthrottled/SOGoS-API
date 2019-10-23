@@ -30,7 +30,6 @@ const val REMOVED_ACTIVITY = "REMOVED_ACTIVITY"
 const val UPDATED_ACTIVITY = "UPDATED_ACTIVITY"
 
 const val CREATED = "CREATED"
-const val COMPLETED = "COMPLETED" //todo: this
 const val UPDATED = "UPDATED"
 const val DELETED = "DELETED"
 val uploadStatus = setOf(CREATED, UPDATED, DELETED)
