@@ -1,5 +1,6 @@
 package io.acari
 
+import CONNECTION_STRING
 import io.acari.http.attachNonSecuredRoutes
 import io.acari.http.mountAPIRoute
 import io.acari.http.mountSupportingRoutes
@@ -7,11 +8,13 @@ import io.acari.memory.MemoryInitializations
 import io.acari.security.attachSecurityToRouter
 import io.acari.security.setUpOAuth
 import io.acari.util.loggerFor
+import io.acari.util.toOptional
 import io.reactivex.Single
 import io.reactivex.functions.BiFunction
 import io.vertx.core.Future
 import io.vertx.core.http.HttpServerOptions
 import io.vertx.core.net.JksOptions
+import io.vertx.kotlin.core.json.jsonObjectOf
 import io.vertx.reactivex.core.AbstractVerticle
 import io.vertx.reactivex.core.http.HttpServer
 import io.vertx.reactivex.ext.auth.oauth2.OAuth2Auth
@@ -28,7 +31,10 @@ class HttpVerticle : AbstractVerticle() {
   }
 
   override fun start(startFuture: Future<Void>) {
-    val memoryConfiguration = config().getJsonObject("memory")
+    val memoryConfiguration = config().getString(CONNECTION_STRING)
+      .toOptional()
+      .map { jsonObjectOf("connection_string" to it) }
+      .orElseGet { config().getJsonObject("memory") }
     val mongoClient = MongoClient.createShared(vertx, memoryConfiguration)
     val configuration = config()
     setUpOAuth(vertx, configuration)
