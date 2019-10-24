@@ -36,10 +36,13 @@ fun attachSecurityToRouter(
 fun setUpOAuth(vertx: Vertx, config: JsonObject): Single<OAuth2Auth> =
   SingleHelper.toSingle { handler ->
     val securityConfig = config.getJsonObject("security")
+    val openIdProvider =
+      getOpenIdProvider(config, securityConfig)
+    val clientId = getClient(config, securityConfig)
     OpenIDConnectAuth.discover(
       vertx, OAuth2ClientOptions()
-        .setSite(securityConfig.getString("OpenId-Connect-Provider"))
-        .setClientID(securityConfig.getString("Client-Id"))
+        .setSite(openIdProvider)
+        .setClientID(clientId)
         .setClientSecret(config.getString("sogos.client.secret")), handler
     )
   }
@@ -75,3 +78,24 @@ fun createVerificationHandler(): Handler<RoutingContext> = Handler { routingCont
     routingContext.response().setStatusCode(403).end()
   }
 }
+
+
+fun getClient(
+  config: JsonObject,
+  securityConfig: JsonObject
+): String = config.getString("sogos.client.id") ?: securityConfig.getString("Client-Id")
+
+fun getOpenIdProvider(
+  config: JsonObject,
+  securityConfig: JsonObject
+): String = config.getString("sogos.openid.provider") ?: securityConfig.getString("OpenId-Connect-Provider")
+
+fun getProvider(
+  config: JsonObject,
+  securityConfig: JsonObject
+): String = config.getString("sogos.provider") ?: securityConfig.getString("provider")
+
+fun getUIClientId(
+  config: JsonObject,
+  securityConfig: JsonObject
+): String = config.getString("sogos.client.id.ui") ?: securityConfig.getString("App-Client-Id")
