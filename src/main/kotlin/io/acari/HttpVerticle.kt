@@ -21,6 +21,10 @@ import io.vertx.reactivex.ext.web.Router
 class HttpVerticle : AbstractVerticle() {
   companion object {
       private val logger = loggerFor(HttpVerticle::class.java)
+
+    init {
+        System.setProperty("org.mongodb.async.type", "netty")
+    }
   }
 
   override fun start(startFuture: Future<Void>) {
