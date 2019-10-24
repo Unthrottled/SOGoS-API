@@ -18,11 +18,13 @@ import java.util.*
 class UserInformationFinder(private val mongoClient: MongoClient, private val vertx: Vertx) {
 
   fun handle(openIDInformation: JsonObject): Single<String> {
-    val openIDUserIdentifier = extractUserIdentificationKey(openIDInformation)
-    return findUser(openIDUserIdentifier)
-      .switchIfEmpty(createUser(openIDUserIdentifier, openIDInformation, mongoClient))
-      .switchIfEmpty { singleObserver: SingleObserver<in JsonObject> ->
-        singleObserver.onError(IllegalStateException("Unable to find user for $openIDUserIdentifier"))
+    return extractUserIdentificationKey(openIDInformation)
+      .flatMapSingle { openIDUserIdentifier ->
+        findUser(openIDUserIdentifier)
+          .switchIfEmpty(createUser(openIDUserIdentifier, openIDInformation, mongoClient))
+          .switchIfEmpty { singleObserver: SingleObserver<in JsonObject> ->
+            singleObserver.onError(IllegalStateException("Unable to find user for $openIDUserIdentifier"))
+      }
       }.map { user ->
         user.getString(UserSchema.GLOBAL_USER_IDENTIFIER)
       }
@@ -59,11 +61,13 @@ class UserInformationFinder(private val mongoClient: MongoClient, private val ve
         )
         vertx.eventBus().publish(
           EFFECT_CHANNEL,
-          Effect(usersGiud, timeCreated, timeCreated, STARTED_ACTIVITY, jsonObjectOf(
-            "name" to "RECOVERY",
-            "type" to "ACTIVE",
-            "uuid" to UUID.randomUUID().toString()
-          ), jsonObjectOf())
+          Effect(
+            usersGiud, timeCreated, timeCreated, STARTED_ACTIVITY, jsonObjectOf(
+              "name" to "RECOVERY",
+              "type" to "ACTIVE",
+              "uuid" to UUID.randomUUID().toString()
+            ), jsonObjectOf()
+          )
         )
       }
   }

@@ -16,7 +16,7 @@ fun createUserHandler(userService: UserService): Handler<RoutingContext> = Handl
         .putHeader(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON)
         .end(it)
     }) {
-      logger.warn("Unable to get user", it)
+      logger.error("Unable to get user for reasons!", it)
       routingContext.fail(404)
     }
 }

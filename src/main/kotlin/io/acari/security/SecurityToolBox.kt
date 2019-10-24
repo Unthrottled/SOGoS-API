@@ -2,6 +2,9 @@ package io.acari.security
 
 import com.google.common.hash.HashFunction
 import com.google.common.hash.Hashing
+import io.acari.util.toMaybe
+import io.acari.util.toOptional
+import io.reactivex.Maybe
 import io.reactivex.Single
 import io.vertx.core.Handler
 import io.vertx.core.json.JsonObject
@@ -48,8 +51,11 @@ private val hashingFunction: HashFunction = Hashing.hmacSha256(
 fun hashString(stringToHash: String): String =
   hashingFunction.hashString(stringToHash, Charsets.UTF_16).toString()
 
-fun extractUserIdentificationKey(openIDInformation: JsonObject): String =
-  hashString(openIDInformation.getString("email"))
+fun extractUserIdentificationKey(openIDInformation: JsonObject): Maybe<String> =
+  openIDInformation.getString("email").toOptional()
+    .map { it.toMaybe() }
+    .orElseGet { Maybe.error(IllegalStateException("User does not have an email! $openIDInformation")) }
+    .map { hashString(it) }
 
 fun extractUserValidationKey(emailAddress: String, globalUserIdentifier: String): String =
   hashString("$emailAddress(◡‿◡✿)$globalUserIdentifier")
