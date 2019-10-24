@@ -1,5 +1,11 @@
 package io.acari.security
 
+import CLIENT_ID
+import CLIENT_ID_UI
+import CLIENT_SECRET
+import HMAC_KEY
+import OPENID_PROVIDER
+import PROVIDER
 import com.google.common.hash.HashFunction
 import com.google.common.hash.Hashing
 import io.acari.util.toMaybe
@@ -43,12 +49,12 @@ fun setUpOAuth(vertx: Vertx, config: JsonObject): Single<OAuth2Auth> =
       vertx, OAuth2ClientOptions()
         .setSite(openIdProvider)
         .setClientID(clientId)
-        .setClientSecret(config.getString("sogos.client.secret")), handler
+        .setClientSecret(config.getString(CLIENT_SECRET)), handler
     )
   }
 
 private val hashingFunction: HashFunction = Hashing.hmacSha256(
-  System.getenv("sogos.hmac.key").toByteArray()
+  System.getenv(HMAC_KEY).toByteArray()
 )
 
 fun hashString(stringToHash: String): String =
@@ -83,19 +89,19 @@ fun createVerificationHandler(): Handler<RoutingContext> = Handler { routingCont
 fun getClient(
   config: JsonObject,
   securityConfig: JsonObject
-): String = config.getString("sogos.client.id") ?: securityConfig.getString("Client-Id")
+): String = config.getString(CLIENT_ID) ?: securityConfig.getString("Client-Id")
 
 fun getOpenIdProvider(
   config: JsonObject,
   securityConfig: JsonObject
-): String = config.getString("sogos.openid.provider") ?: securityConfig.getString("OpenId-Connect-Provider")
+): String = config.getString(OPENID_PROVIDER) ?: securityConfig.getString("OpenId-Connect-Provider")
 
 fun getProvider(
   config: JsonObject,
   securityConfig: JsonObject
-): String = config.getString("sogos.provider") ?: securityConfig.getString("provider")
+): String = config.getString(PROVIDER) ?: securityConfig.getString("provider")
 
 fun getUIClientId(
   config: JsonObject,
   securityConfig: JsonObject
-): String = config.getString("sogos.client.id.ui") ?: securityConfig.getString("App-Client-Id")
+): String = config.getString(CLIENT_ID_UI) ?: securityConfig.getString("App-Client-Id")
