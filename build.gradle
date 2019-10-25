@@ -20,7 +20,7 @@ ext {
 }
 
 application {
-  mainClassName = 'io.acari.Launcher'
+  mainClassName = 'io.acari.LauncherKt'
 }
 
 
