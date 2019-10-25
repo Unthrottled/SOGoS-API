@@ -65,6 +65,7 @@ class UserInformationFinder(private val mongoClient: MongoClient, private val ve
             usersGiud, timeCreated, timeCreated, STARTED_ACTIVITY, jsonObjectOf(
               "name" to "RECOVERY",
               "type" to "ACTIVE",
+              "veryFirstActivity" to true,
               "uuid" to UUID.randomUUID().toString()
             ), jsonObjectOf()
           )
