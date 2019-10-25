@@ -5,6 +5,7 @@ import CLIENT_ID_UI
 import CLIENT_SECRET
 import HMAC_KEY
 import OPENID_PROVIDER
+import OPENID_PROVIDER_UI
 import PROVIDER
 import com.google.common.hash.HashFunction
 import com.google.common.hash.Hashing
@@ -95,6 +96,13 @@ fun getOpenIdProvider(
   config: JsonObject,
   securityConfig: JsonObject
 ): String = config.getString(OPENID_PROVIDER) ?: securityConfig.getString("OpenId-Connect-Provider")
+
+fun getUIOpenIdProvider(
+  config: JsonObject,
+  securityConfig: JsonObject
+): String = config.getString(OPENID_PROVIDER_UI)
+  ?: config.getString(OPENID_PROVIDER)
+  ?: securityConfig.getString("OpenId-Connect-Provider")
 
 fun getProvider(
   config: JsonObject,

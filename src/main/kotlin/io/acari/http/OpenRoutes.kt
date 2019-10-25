@@ -1,8 +1,8 @@
 package io.acari.http
 
-import io.acari.security.getOpenIdProvider
 import io.acari.security.getProvider
 import io.acari.security.getUIClientId
+import io.acari.security.getUIOpenIdProvider
 import io.netty.handler.codec.http.HttpHeaderNames
 import io.netty.handler.codec.http.HttpHeaderValues
 import io.vertx.core.json.JsonObject
@@ -15,12 +15,12 @@ fun attachNonSecuredRoutes(router: Router, configuration: JsonObject): Router {
     it.response()
       .putHeader(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON)
       .end(
-      jsonObjectOf(
-        "clientID" to getUIClientId(configuration, securityConfigurations),
-        "openIDConnectURI" to getOpenIdProvider(configuration, securityConfigurations),
-        "provider" to getProvider(configuration, securityConfigurations)
-      ).encode()
-    )
+        jsonObjectOf(
+          "clientID" to getUIClientId(configuration, securityConfigurations),
+          "openIDConnectURI" to getUIOpenIdProvider(configuration, securityConfigurations),
+          "provider" to getProvider(configuration, securityConfigurations)
+        ).encode()
+      )
   }
   return router
 }

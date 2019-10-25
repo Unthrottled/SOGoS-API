@@ -14,6 +14,7 @@ services:
       - sogos.hmac.key=FamRavioli!
       - sogos.client.id=sogos
       - sogos.openid.provider=http://keycloak:8080/auth/realms/master
+      - sogos.openid.provider.ui=http://localhost:8180/auth/realms/master
       - sogos.provider=KEYCLOAK
       - sogos.client.id.ui=sogos-app
       - sogos.mongo.connection=mongodb://mongo:27017/local

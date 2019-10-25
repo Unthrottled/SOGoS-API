@@ -1,5 +1,6 @@
 const val CLIENT_ID = "sogos.client.id"
 const val OPENID_PROVIDER = "sogos.openid.provider"
+const val OPENID_PROVIDER_UI = "sogos.openid.provider.ui"
 const val PROVIDER = "sogos.provider"
 const val CLIENT_ID_UI = "sogos.client.id.ui"
 const val HMAC_KEY = "sogos.hmac.key"
