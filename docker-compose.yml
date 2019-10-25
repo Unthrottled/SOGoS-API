@@ -1,9 +1,24 @@
 version: "3"
 services:
+  sogos:
+    image: sogos
+    build:
+      context: .
+    ports:
+      - 8888:8888
+    depends_on:
+      - mongo
+      - keycloak
+    environment:
+      - sogos.client.secret=9793d6b5-24b6-4b45-8076-b50985e8d6f1
+      - sogos.hmac.key=FamRavioli!
+      - sogos.client.id=sogos
+      - sogos.openid.provider=http://localhost:8180/auth/realms/master
+      - sogos.provider=KEYCLOAK
+      - sogos.client.id.ui=sogos-app
+      - sogos.mongo.connection=mongodb://mongo:27017/local
   mongo:
       image: mongo
-#      build:
-#        context: ./mongo
       volumes:
         - mongo-volume:/data/db
       ports:
@@ -11,7 +26,7 @@ services:
   keycloak:
     image: jboss/keycloak
     ports:
-      - "8080:8080"
+      - "8180:8080"
     depends_on:
       - postgres
     environment:

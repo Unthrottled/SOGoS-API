@@ -7,9 +7,9 @@ RUN mkdir -p /opt/gradle/.gradle
 ENV GRADLE_USER_HOME=/opt/gradle/.gradle
 
 #Cache gradle dependencies, will only run if any of these files changes
-ADD ./build.gradle ./
-ADD ./grade.properties ./
-ADD ./settings.gradle ./
+ADD build.gradle ./
+ADD gradle.properties ./
+ADD settings.gradle ./
 
 #Add rest of source code :)
 ADD . .
