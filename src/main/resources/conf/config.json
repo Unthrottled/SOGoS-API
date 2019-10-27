@@ -7,6 +7,10 @@
   },
   "security": {
     "OpenId-Connect-Provider": "http://localhost:8080/auth/realms/master",
+    "auth-url": "http://localhost:8080/auth/realms/master/protocol/openid-connect/auth",
+    "token-url": "http://localhost:8080/auth/realms/master/protocol/openid-connect/token",
+    "user-info-url": "http://localhost:8080/auth/realms/master/protocol/openid-connect/userinfo",
+    "logout-url": "http://localhost:8080/auth/realms/master/protocol/openid-connect/logout",
     "provider": "KEYCLOAK",
     "Client-Id": "sogos",
     "App-Client-Id": "sogos-app"

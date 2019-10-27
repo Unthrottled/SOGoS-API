@@ -43,12 +43,13 @@ fun attachSecurityToRouter(
 fun setUpOAuth(vertx: Vertx, config: JsonObject): Single<OAuth2Auth> =
   SingleHelper.toSingle { handler ->
     val securityConfig = config.getJsonObject("security")
-    val openIdProvider =
-      getOpenIdProvider(config, securityConfig)
     val clientId = getClient(config, securityConfig)
     OpenIDConnectAuth.discover(
       vertx, OAuth2ClientOptions()
-        .setSite(openIdProvider)
+        .setSite(getOpenIdProvider(config, securityConfig))
+        .setTokenPath(getTokenEndpoint(config, securityConfig))
+        .setAuthorizationPath(getAuthEndpoint(config, securityConfig))
+        .setUserInfoPath(getUserInfoEndpoint(config, securityConfig))
         .setClientID(clientId)
         .setClientSecret(config.getString(CLIENT_SECRET)), handler
     )
@@ -96,6 +97,21 @@ fun getOpenIdProvider(
   config: JsonObject,
   securityConfig: JsonObject
 ): String = config.getString(OPENID_PROVIDER) ?: securityConfig.getString("OpenId-Connect-Provider")
+
+fun getAuthEndpoint(
+  config: JsonObject,
+  securityConfig: JsonObject
+): String = config.getString(OPENID_PROVIDER) ?: securityConfig.getString("auth-url")
+
+fun getTokenEndpoint(
+  config: JsonObject,
+  securityConfig: JsonObject
+): String = config.getString(OPENID_PROVIDER) ?: securityConfig.getString("token-url")
+
+fun getUserInfoEndpoint(
+  config: JsonObject,
+  securityConfig: JsonObject
+): String = config.getString(OPENID_PROVIDER) ?: securityConfig.getString("user-info-url")
 
 fun getUIOpenIdProvider(
   config: JsonObject,
