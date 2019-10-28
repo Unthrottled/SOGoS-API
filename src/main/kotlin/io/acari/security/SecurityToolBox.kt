@@ -103,6 +103,11 @@ fun getAuthEndpoint(
   securityConfig: JsonObject
 ): String = config.getString(OPENID_PROVIDER) ?: securityConfig.getString("auth-url")
 
+fun getLogoutEndpoint(
+  config: JsonObject,
+  securityConfig: JsonObject
+): String = config.getString(OPENID_PROVIDER) ?: securityConfig.getString("logout-url")
+
 fun getTokenEndpoint(
   config: JsonObject,
   securityConfig: JsonObject
