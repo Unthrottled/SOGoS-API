@@ -20,6 +20,8 @@ FROM java:8u111-alpine
 
 WORKDIR /app
 
+EXPOSE 8888
+
 COPY --from=packager /app/build/libs /app
 
 ENTRYPOINT ["java", "-jar", "SOGoS-API-1.0.0-BETA-fat.jar"]
