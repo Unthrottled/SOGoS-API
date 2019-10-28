@@ -6,6 +6,7 @@ import io.acari.http.mountAPIRoute
 import io.acari.http.mountSupportingRoutes
 import io.acari.memory.MemoryInitializations
 import io.acari.security.attachSecurityToRouter
+import io.acari.security.getPortNumber
 import io.acari.security.setUpOAuth
 import io.acari.util.loggerFor
 import io.acari.util.toOptional
@@ -51,8 +52,8 @@ class HttpVerticle : AbstractVerticle() {
       }
       .subscribe({
         startFuture.complete()
-        val jsonObject = configuration.getJsonObject("server")
-        logger.info("HTTP${if(jsonObject.getBoolean("SSL-Enabled"))"S" else ""} server started on port ${jsonObject.getInteger("port")}")
+        val serverConfig = configuration.getJsonObject("server")
+        logger.info("HTTP${if(serverConfig.getBoolean("SSL-Enabled"))"S" else ""} server started on port ${getPortNumber(config(), serverConfig)}")
       }) {
         startFuture.fail("Unable to start HTTP Verticle because ${it.message}")
       }
@@ -74,6 +75,6 @@ class HttpVerticle : AbstractVerticle() {
           .setPath(serverConfig.getString("Keystore-Path")))
       )
       .requestHandler(router)
-      .rxListen(serverConfig.getInteger("port"))
+      .rxListen(getPortNumber(config(), serverConfig))
   }
 }

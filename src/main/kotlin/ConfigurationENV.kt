@@ -11,3 +11,5 @@ const val AUTH_URL = "sogos.auth.url"
 const val TOKEN_URL = "sogos.token.url"
 const val USER_INFO_URL = "sogos.user.info.url"
 const val LOGOUT_URL = "sogos.logout.url"
+
+const val PORT_NUMBER = "sogos.port"

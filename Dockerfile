@@ -20,7 +20,7 @@ FROM java:8u111-alpine
 
 WORKDIR /app
 
-EXPOSE 8888
+EXPOSE 80
 
 COPY --from=packager /app/build/libs /app
 

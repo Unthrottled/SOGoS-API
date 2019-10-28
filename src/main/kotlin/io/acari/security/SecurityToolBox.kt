@@ -8,6 +8,7 @@ import HMAC_KEY
 import LOGOUT_URL
 import OPENID_PROVIDER
 import OPENID_PROVIDER_UI
+import PORT_NUMBER
 import PROVIDER
 import TOKEN_URL
 import USER_INFO_URL
@@ -137,3 +138,8 @@ fun getUIClientId(
   config: JsonObject,
   securityConfig: JsonObject
 ): String = config.getString(CLIENT_ID_UI) ?: securityConfig.getString("App-Client-Id")
+
+fun getPortNumber(
+  config: JsonObject,
+  serverConfig: JsonObject
+): Int = config.getInteger(PORT_NUMBER) ?: serverConfig.getInteger("port")
