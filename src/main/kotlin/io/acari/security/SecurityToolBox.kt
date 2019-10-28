@@ -1,12 +1,16 @@
 package io.acari.security
 
+import AUTH_URL
 import CLIENT_ID
 import CLIENT_ID_UI
 import CLIENT_SECRET
 import HMAC_KEY
+import LOGOUT_URL
 import OPENID_PROVIDER
 import OPENID_PROVIDER_UI
 import PROVIDER
+import TOKEN_URL
+import USER_INFO_URL
 import com.google.common.hash.HashFunction
 import com.google.common.hash.Hashing
 import io.acari.util.toMaybe
@@ -87,7 +91,6 @@ fun createVerificationHandler(): Handler<RoutingContext> = Handler { routingCont
   }
 }
 
-
 fun getClient(
   config: JsonObject,
   securityConfig: JsonObject
@@ -101,22 +104,22 @@ fun getOpenIdProvider(
 fun getAuthEndpoint(
   config: JsonObject,
   securityConfig: JsonObject
-): String = config.getString(OPENID_PROVIDER) ?: securityConfig.getString("auth-url")
+): String = config.getString(AUTH_URL) ?: securityConfig.getString("auth-url")
 
 fun getLogoutEndpoint(
   config: JsonObject,
   securityConfig: JsonObject
-): String = config.getString(OPENID_PROVIDER) ?: securityConfig.getString("logout-url")
+): String = config.getString(LOGOUT_URL) ?: securityConfig.getString("logout-url")
 
 fun getTokenEndpoint(
   config: JsonObject,
   securityConfig: JsonObject
-): String = config.getString(OPENID_PROVIDER) ?: securityConfig.getString("token-url")
+): String = config.getString(TOKEN_URL) ?: securityConfig.getString("token-url")
 
 fun getUserInfoEndpoint(
   config: JsonObject,
   securityConfig: JsonObject
-): String = config.getString(OPENID_PROVIDER) ?: securityConfig.getString("user-info-url")
+): String = config.getString(USER_INFO_URL) ?: securityConfig.getString("user-info-url")
 
 fun getUIOpenIdProvider(
   config: JsonObject,
