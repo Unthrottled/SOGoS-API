@@ -22,8 +22,10 @@ import io.vertx.core.Handler
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.auth.oauth2.OAuth2ClientOptions
 import io.vertx.ext.auth.oauth2.impl.OAuth2TokenImpl
+import io.vertx.reactivex.SingleHelper
 import io.vertx.reactivex.core.Vertx
 import io.vertx.reactivex.ext.auth.oauth2.OAuth2Auth
+import io.vertx.reactivex.ext.auth.oauth2.providers.OpenIDConnectAuth
 import io.vertx.reactivex.ext.web.Router
 import io.vertx.reactivex.ext.web.RoutingContext
 import io.vertx.reactivex.ext.web.handler.BodyHandler
@@ -43,25 +45,18 @@ fun attachSecurityToRouter(
   return router
 }
 
-fun setUpOAuth(vertx: Vertx, config: JsonObject): Single<OAuth2Auth> {
-  val securityConfig = config.getJsonObject("security")
-  val clientId = getClient(config, securityConfig)
-  val openIdProvider = getOpenIdProvider(config, securityConfig)
-  val tokenEndpoint = getTokenEndpoint(config, securityConfig)
-  val authEndpoint = getAuthEndpoint(config, securityConfig)
-  val userInfoEndpoint = getUserInfoEndpoint(config, securityConfig)
-  return Single.just(
-    OAuth2Auth.create(
+fun setUpOAuth(vertx: Vertx, config: JsonObject): Single<OAuth2Auth>  =
+  SingleHelper.toSingle { handler ->
+    val securityConfig = config.getJsonObject("security")
+    val openIdProvider =
+      getOpenIdProvider(config, securityConfig)
+    val clientId = getClient(config, securityConfig)//todo: consolidate client ids since not confidential anymoar
+    OpenIDConnectAuth.discover(
       vertx, OAuth2ClientOptions()
         .setSite(openIdProvider)
-        .setTokenPath(tokenEndpoint.removePrefix(openIdProvider))
-        .setAuthorizationPath(authEndpoint.removePrefix(openIdProvider))
-        .setUserInfoPath(userInfoEndpoint.removePrefix(openIdProvider))
-        .setClientID(clientId)
-        .setClientSecret(config.getString(CLIENT_SECRET))
-    )!!
-  )
-}
+        .setClientID(clientId), handler
+    )
+  }
 
 private val hashingFunction: HashFunction = Hashing.hmacSha256(
   System.getenv(HMAC_KEY).toByteArray()
