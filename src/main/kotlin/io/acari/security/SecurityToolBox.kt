@@ -3,7 +3,7 @@ package io.acari.security
 import AUTH_URL
 import CLIENT_ID
 import CLIENT_ID_UI
-import EMAIL_EXTRACTOR
+import CLIENT_SECRET
 import HMAC_KEY
 import LOGOUT_URL
 import OPENID_PROVIDER
@@ -45,7 +45,7 @@ fun attachSecurityToRouter(
   return router
 }
 
-fun setUpOAuth(vertx: Vertx, config: JsonObject): Single<OAuth2Auth> =
+fun setUpOAuth(vertx: Vertx, config: JsonObject): Single<OAuth2Auth>  =
   SingleHelper.toSingle { handler ->
     val securityConfig = config.getJsonObject("security")
     val openIdProvider =
@@ -81,7 +81,7 @@ fun createVerificationHandler(): Handler<RoutingContext> = Handler { routingCont
   val headers = routingContext.request().headers()
   val verificationKey = headers.get("Verification") ?: ""
   val globalUserIdentifier = headers.get(USER_IDENTIFIER) ?: ""
-  val email = emailExtractor(user.accessToken())
+  val email = user.accessToken().getString("email") ?: ""
   val generatedVerificationKey = extractUserValidationKey(email, globalUserIdentifier)
   if (verificationKey == generatedVerificationKey) {
     routingContext.next()
@@ -89,22 +89,6 @@ fun createVerificationHandler(): Handler<RoutingContext> = Handler { routingCont
     routingContext.response().setStatusCode(403).end()
   }
 }
-
-private val emailExtractor: (JsonObject) -> String =
-  when (System.getenv(EMAIL_EXTRACTOR)) {
-    "sub" -> {
-      { extractEmailFromSubject(it) }
-    }
-    else -> {
-      { extractEmailFromToken(it) }
-    }
-  }
-
-private fun extractEmailFromToken(accessToken: JsonObject) =
-  accessToken.getString("email") ?: ""
-
-private fun extractEmailFromSubject(accessToken: JsonObject) =
-  accessToken.getString("sub") ?: ""
 
 fun getClient(
   config: JsonObject,
