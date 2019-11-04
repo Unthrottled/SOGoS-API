@@ -1,5 +1,6 @@
 package io.acari.security
 
+import API_URL
 import AUTH_URL
 import CLIENT_ID
 import CLIENT_ID_UI
@@ -136,6 +137,11 @@ fun getUIClientId(
   config: JsonObject,
   securityConfig: JsonObject
 ): String = config.getString(CLIENT_ID_UI) ?: securityConfig.getString("App-Client-Id")
+
+fun getAPIURL(
+  config: JsonObject,
+  securityConfig: JsonObject
+): String = config.getString(API_URL) ?: securityConfig.getString("api-url")
 
 fun getPortNumber(
   config: JsonObject,
