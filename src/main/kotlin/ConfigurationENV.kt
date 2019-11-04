@@ -13,5 +13,3 @@ const val USER_INFO_URL = "sogos.user.info.url"
 const val LOGOUT_URL = "sogos.logout.url"
 
 const val PORT_NUMBER = "sogos.port"
-
-const val API_URL = "sogos.api.url"

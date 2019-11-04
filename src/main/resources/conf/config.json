@@ -13,8 +13,7 @@
     "logout-url": "http://localhost:8080/auth/realms/master/protocol/openid-connect/logout",
     "provider": "KEYCLOAK",
     "Client-Id": "sogos",
-    "App-Client-Id": "sogos-app",
-    "api-url": "http://localhost:3000/api"
+    "App-Client-Id": "sogos-app"
   },
   "memory": {
     "host": "127.0.0.1",
