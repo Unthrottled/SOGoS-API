@@ -11,7 +11,7 @@ import io.vertx.reactivex.ext.web.Router
 private val logger = loggerFor("APIRouter")
 
 fun mountAPIRoute(vertx: Vertx, mongoClient: MongoClient, router: Router): Router {
-  router.mountSubRouter("/api", createAPIRoute(vertx, mongoClient))
+  router.mountSubRouter("/", createAPIRoute(vertx, mongoClient))
 
   // Static content path must be mounted last, as a fall back
   router.get("/*")

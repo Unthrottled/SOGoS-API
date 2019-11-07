@@ -8,7 +8,7 @@ import io.vertx.kotlin.core.json.jsonObjectOf
 import io.vertx.reactivex.ext.web.Router
 
 fun attachNonSecuredRoutes(router: Router, configuration: JsonObject): Router {
-  router.get("/api/configurations").handler {
+  router.get("/configurations").handler {
     val securityConfigurations = configuration.getJsonObject("security")
     it.response()
       .putHeader(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON)
