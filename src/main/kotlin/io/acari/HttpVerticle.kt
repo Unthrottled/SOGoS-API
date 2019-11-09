@@ -5,6 +5,7 @@ import io.acari.http.attachNonSecuredRoutes
 import io.acari.http.mountAPIRoute
 import io.acari.http.mountSupportingRoutes
 import io.acari.memory.MemoryInitializations
+import io.acari.security.attachCORSRouter
 import io.acari.security.attachSecurityToRouter
 import io.acari.security.getPortNumber
 import io.acari.security.setUpOAuth
@@ -44,7 +45,8 @@ class HttpVerticle : AbstractVerticle() {
       .flatMap { pair ->
         val (oauth2, reactiveMongoClient) = pair
         val router = Router.router(vertx)
-        val configuredRouter = attachNonSecuredRoutes(router, configuration)
+        val corsRouter = attachCORSRouter(router)
+        val configuredRouter = attachNonSecuredRoutes(corsRouter, configuration)
         val securedRoute = attachSecurityToRouter(configuredRouter, oauth2, configuration)
         val supplementedRoutes = mountSupportingRoutes(vertx, securedRoute, configuration)
         val apiRouter = mountAPIRoute(vertx, reactiveMongoClient, supplementedRoutes)

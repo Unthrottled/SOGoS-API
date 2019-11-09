@@ -19,6 +19,8 @@ import io.acari.util.toOptional
 import io.reactivex.Maybe
 import io.reactivex.Single
 import io.vertx.core.Handler
+import io.vertx.core.http.HttpMethod
+import io.vertx.core.http.HttpMethod.*
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.auth.oauth2.OAuth2ClientOptions
 import io.vertx.ext.auth.oauth2.impl.OAuth2TokenImpl
@@ -29,7 +31,38 @@ import io.vertx.reactivex.ext.auth.oauth2.providers.OpenIDConnectAuth
 import io.vertx.reactivex.ext.web.Router
 import io.vertx.reactivex.ext.web.RoutingContext
 import io.vertx.reactivex.ext.web.handler.BodyHandler
+import io.vertx.reactivex.ext.web.handler.CorsHandler
 import io.vertx.reactivex.ext.web.handler.OAuth2AuthHandler
+
+fun attachCORSRouter(
+  router: Router
+): Router {
+  router.route().handler(createCORSHandler())
+  return router
+}
+
+fun createCORSHandler(): Handler<RoutingContext>? {
+  return CorsHandler.create("*")
+    .allowedHeaders(
+      setOf(
+        "x-requested-with",
+        "Access-Control-Allow-Origin",
+        "origin",
+        "Content-Type",
+        "accept",
+        "X-Amz-Date",
+        "Authorization",
+        "X-Api-Key",
+        "X-Amz-Security-Token"
+      )
+    )
+    .allowedMethods(
+      setOf(
+        DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT
+      )
+    )
+}
+
 
 fun attachSecurityToRouter(
   router: Router,
@@ -45,7 +78,7 @@ fun attachSecurityToRouter(
   return router
 }
 
-fun setUpOAuth(vertx: Vertx, config: JsonObject): Single<OAuth2Auth>  =
+fun setUpOAuth(vertx: Vertx, config: JsonObject): Single<OAuth2Auth> =
   SingleHelper.toSingle { handler ->
     val securityConfig = config.getJsonObject("security")
     val openIdProvider =
