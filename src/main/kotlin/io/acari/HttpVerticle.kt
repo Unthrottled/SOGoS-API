@@ -45,7 +45,7 @@ class HttpVerticle : AbstractVerticle() {
       .flatMap { pair ->
         val (oauth2, reactiveMongoClient) = pair
         val router = Router.router(vertx)
-        val corsRouter = attachCORSRouter(router)
+        val corsRouter = attachCORSRouter(router, configuration)
         val configuredRouter = attachNonSecuredRoutes(corsRouter, configuration)
         val securedRoute = attachSecurityToRouter(configuredRouter, oauth2, configuration)
         val supplementedRoutes = mountSupportingRoutes(vertx, securedRoute, configuration)

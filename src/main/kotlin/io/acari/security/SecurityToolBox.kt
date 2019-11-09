@@ -3,7 +3,7 @@ package io.acari.security
 import AUTH_URL
 import CLIENT_ID
 import CLIENT_ID_UI
-import CLIENT_SECRET
+import CORS_ORIGIN_URL
 import HMAC_KEY
 import LOGOUT_URL
 import OPENID_PROVIDER
@@ -19,7 +19,6 @@ import io.acari.util.toOptional
 import io.reactivex.Maybe
 import io.reactivex.Single
 import io.vertx.core.Handler
-import io.vertx.core.http.HttpMethod
 import io.vertx.core.http.HttpMethod.*
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.auth.oauth2.OAuth2ClientOptions
@@ -35,14 +34,17 @@ import io.vertx.reactivex.ext.web.handler.CorsHandler
 import io.vertx.reactivex.ext.web.handler.OAuth2AuthHandler
 
 fun attachCORSRouter(
-  router: Router
+  router: Router,
+  config: JsonObject
 ): Router {
-  router.route().handler(createCORSHandler())
+  router.route().handler(createCORSHandler(config))
   return router
 }
 
-fun createCORSHandler(): Handler<RoutingContext>? {
-  return CorsHandler.create("*")
+fun createCORSHandler(config: JsonObject): Handler<RoutingContext>? {
+  val securityConfig = config.getJsonObject("security")
+  return CorsHandler.create(getCORSOrigin(config, securityConfig))
+    .allowCredentials(true)
     .allowedHeaders(
       setOf(
         "x-requested-with",
@@ -51,9 +53,15 @@ fun createCORSHandler(): Handler<RoutingContext>? {
         "Content-Type",
         "accept",
         "X-Amz-Date",
-        "Authorization",
         "X-Api-Key",
-        "X-Amz-Security-Token"
+        "X-Amz-Security-Token",
+        "Sec-Fetch-Mode",
+
+        //SOGoS Things
+        "Authorization",
+        "Verification",
+        "User-Identifier",
+        "User-Agent"
       )
     )
     .allowedMethods(
@@ -169,6 +177,11 @@ fun getUIClientId(
   config: JsonObject,
   securityConfig: JsonObject
 ): String = config.getString(CLIENT_ID_UI) ?: securityConfig.getString("App-Client-Id")
+
+fun getCORSOrigin(
+  config: JsonObject,
+  securityConfig: JsonObject
+): String = config.getString(CORS_ORIGIN_URL) ?: securityConfig.getString("allowed-origin")
 
 fun getPortNumber(
   config: JsonObject,

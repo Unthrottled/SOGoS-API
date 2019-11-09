@@ -6,6 +6,7 @@
     "SSL-Enabled": false
   },
   "security": {
+    "allowed-origin": "http://localhost:3000",
     "OpenId-Connect-Provider": "http://localhost:8080/auth/realms/master",
     "auth-url": "http://localhost:8080/auth/realms/master/protocol/openid-connect/auth",
     "token-url": "http://localhost:8080/auth/realms/master/protocol/openid-connect/token",
