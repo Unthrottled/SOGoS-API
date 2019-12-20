@@ -153,6 +153,8 @@ fun createActivityRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
     requestContext.response().putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(200).end()
   }
 
+  router.mountSubRouter("/pomodoro", createPomodoroRouter(vertx, mongoClient))
+
   return router
 }
 
