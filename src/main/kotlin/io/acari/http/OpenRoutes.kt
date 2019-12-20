@@ -6,8 +6,19 @@ import io.netty.handler.codec.http.HttpHeaderValues
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.core.json.jsonObjectOf
 import io.vertx.reactivex.ext.web.Router
+import java.time.Instant
 
 fun attachNonSecuredRoutes(router: Router, configuration: JsonObject): Router {
+  router.get("/time").handler {
+    it.response()
+      .putHeader(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON)
+      .end(
+        jsonObjectOf(
+          "currentTime" to Instant.now().toEpochMilli()
+        ).encode()
+      )
+  }
+
   router.get("/configurations").handler {
     val securityConfigurations = configuration.getJsonObject("security")
     it.response()
