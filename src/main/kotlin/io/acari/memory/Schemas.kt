@@ -59,3 +59,10 @@ object ActivityHistorySchema {
   const val TIME_OF_ANTECEDENCE: String = "antecedenceTime"
   const val CONTENT: String = "content"
 }
+
+object PomodoroCompletionHistorySchema {
+  const val COLLECTION: String = "pomodoro"
+  const val GLOBAL_USER_IDENTIFIER: String = "guid" // string
+  const val DAY: String = "day"
+  const val COUNT: String = "count"
+}
