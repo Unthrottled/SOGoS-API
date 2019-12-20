@@ -11,6 +11,7 @@ import io.reactivex.Completable
 import io.reactivex.MaybeObserver
 import io.vertx.core.Handler
 import io.vertx.core.json.JsonObject
+import io.vertx.ext.mongo.UpdateOptions
 import io.vertx.kotlin.core.json.jsonObjectOf
 import io.vertx.reactivex.core.Vertx
 import io.vertx.reactivex.core.eventbus.Message
@@ -26,23 +27,25 @@ class CompletedPomodoroListener(
 
   override fun handle(event: Message<Effect>) {
     event.body().toSingle()
-      .filter { it.name == "RECOVERY" }
-      .filter { it.content.containsKey("autoStart") }
+      .filter{ it.name == "STARTED_ACTIVITY"}
+      .filter { it.content.getString("name") == "RECOVERY" }
+      .filter { it.content.getBoolean("autoStart") }
       .flatMapCompletable { writePomodoroCount(it) }
       .subscribe({
 
       }) {
-        log.error("Unable to process completed pomodoro for event ${event.body()}")
+        log.error("Unable to process completed pomodoro for event ${event.body()}", it)
       }
   }
 
   private fun writePomodoroCount(completionEffect: Effect): Completable {
-    val currentDay = Duration.between(Instant.MIN, Instant.now()).toDays()
+    val currentDay = Duration.between(Instant.EPOCH, Instant.now()).toDays()
+    val query = jsonObjectOf(
+      GLOBAL_USER_IDENTIFIER to completionEffect.guid,
+      DAY to currentDay
+    )
     return mongoClient.rxFindOne(
-      COLLECTION, jsonObjectOf(
-        GLOBAL_USER_IDENTIFIER to completionEffect.guid,
-        DAY to currentDay
-      ), jsonObjectOf()
+      COLLECTION, query, jsonObjectOf()
     )
       .map { item ->
         item.put(COUNT, item.getInteger(COUNT) + 1)
@@ -56,9 +59,10 @@ class CompletedPomodoroListener(
           )
         )
       }
-      .flatMap {
-        mongoClient.rxInsert(COLLECTION, it)
+      .flatMapCompletable {
+        mongoClient
+          .rxReplaceDocumentsWithOptions(COLLECTION, query, it, UpdateOptions(true) )
+          .ignoreElement()
       }
-      .ignoreElement()
   }
 }
