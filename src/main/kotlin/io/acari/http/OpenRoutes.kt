@@ -31,7 +31,8 @@ fun attachNonSecuredRoutes(router: Router, configuration: JsonObject): Router {
           "userInfoEndpoint" to getUserInfoEndpoint(configuration, securityConfigurations),
           "tokenEndpoint" to getTokenEndpoint(configuration, securityConfigurations),
           "openIDConnectURI" to getUIOpenIdProvider(configuration, securityConfigurations),
-          "provider" to getProvider(configuration, securityConfigurations)
+          "provider" to getProvider(configuration, securityConfigurations),
+          "issuer" to getIssuer(configuration, securityConfigurations)
         ).encode()
       )
   }

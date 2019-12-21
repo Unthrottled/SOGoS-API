@@ -5,6 +5,7 @@ import CLIENT_ID
 import CLIENT_ID_UI
 import CORS_ORIGIN_URL
 import HMAC_KEY
+import ISSUER
 import LOGOUT_URL
 import OPENID_PROVIDER
 import OPENID_PROVIDER_UI
@@ -172,6 +173,11 @@ fun getProvider(
   config: JsonObject,
   securityConfig: JsonObject
 ): String = config.getString(PROVIDER) ?: securityConfig.getString("provider")
+
+fun getIssuer(
+  config: JsonObject,
+  securityConfig: JsonObject
+): String = config.getString(ISSUER) ?: securityConfig.getString("issuer")
 
 fun getUIClientId(
   config: JsonObject,
