@@ -33,6 +33,7 @@ fun createHistoryRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
     handleFirstRequest(requestContext, mongoClient, sortOrder, comparisonString)
   }
 
+  // todo: json stream most gooder
   router.get("/:userIdentifier/feed").handler { requestContext ->
     val request = requestContext.request()
     val userIdentifier = request.getParam("userIdentifier")

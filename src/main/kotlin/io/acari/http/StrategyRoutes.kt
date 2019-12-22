@@ -85,6 +85,7 @@ fun createObjectiveRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
   }
 
   // todo: should be shareable
+  // TODO: json stream most gooder
   router.get("/").handler { requestContext ->
     val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
     val response = requestContext.response()

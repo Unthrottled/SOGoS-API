@@ -34,6 +34,7 @@ private val logger = loggerFor("Tactical Routes")
 fun createTacticalActivityRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
   val router = router(vertx)
 
+  // todo: json stream most gooder
   router.get("/").handler { requestContext ->
     val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
     val response = requestContext.response()
