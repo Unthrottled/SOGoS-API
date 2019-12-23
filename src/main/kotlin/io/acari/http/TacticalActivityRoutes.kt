@@ -34,13 +34,16 @@ private val logger = loggerFor("Tactical Routes")
 fun createTacticalActivityRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
   val router = router(vertx)
 
-  // todo: json stream most gooder
   router.get("/").handler { requestContext ->
     val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
+    val asArray = requestContext.request().params().get("asArray") == "true"
     val response = requestContext.response()
 
     response.isChunked = true
-    response.putHeader(HttpHeaderNames.CONTENT_TYPE, JSON_STREAM)
+    response.putHeader(HttpHeaderNames.CONTENT_TYPE, if(asArray) JSON else JSON_STREAM)
+    if(asArray){
+      response.write("[")
+    }
     mongoClient.findBatch(
       TacticalActivitySchema.COLLECTION, jsonObjectOf(
         TacticalActivitySchema.GLOBAL_USER_IDENTIFIER to userIdentifier,
@@ -50,13 +53,19 @@ fun createTacticalActivityRoutes(vertx: Vertx, mongoClient: MongoClient): Router
       .map {
         it.remove("_id")
         it.remove(TacticalActivitySchema.REMOVED)
-        Json.encode(it)
+        val json = Json.encode(it)
+        if(asArray) "$json,"
+        else json
       }
       .subscribe({
         response.write(it)
       }, {
         logger.warn("Unable to fetch activity feed for $userIdentifier because reasons.", it)
       }, {
+        if(asArray){
+          response.write("]")
+        }
+
         response.end()
       })
   }

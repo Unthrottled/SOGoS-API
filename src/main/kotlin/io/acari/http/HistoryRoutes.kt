@@ -33,7 +33,6 @@ fun createHistoryRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
     handleFirstRequest(requestContext, mongoClient, sortOrder, comparisonString)
   }
 
-  // todo: json stream most gooder
   router.get("/:userIdentifier/feed").handler { requestContext ->
     val request = requestContext.request()
     val userIdentifier = request.getParam("userIdentifier")
@@ -50,8 +49,13 @@ fun createHistoryRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
       meow.toEpochMilli()
     }
 
+    val asArray = requestContext.request().params().get("asArray") == "true"
+
     response.isChunked = true
-    response.putHeader(HttpHeaderNames.CONTENT_TYPE, JSON_STREAM)
+    response.putHeader(HttpHeaderNames.CONTENT_TYPE, if(asArray) JSON else JSON_STREAM)
+    if(asArray){
+      response.write("[")
+    }
     mongoClient.findBatch(
       ActivityHistorySchema.COLLECTION, jsonObjectOf(
         ActivityHistorySchema.GLOBAL_USER_IDENTIFIER to userIdentifier,
@@ -62,13 +66,18 @@ fun createHistoryRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
       )
     ).toFlowable()
       .map {
-        Json.encode(activityFromJson(it))
+        val json = Json.encode(it)
+        if(asArray) "$json,"
+        else json
       }
       .subscribe({
         response.write(it)
       }, {
         logger.warn("Unable to fetch activity feed for $userIdentifier because reasons.", it)
       }, {
+        if(asArray){
+          response.write("]")
+        }
         response.end()
       })
   }

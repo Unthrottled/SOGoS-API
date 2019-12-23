@@ -6,6 +6,7 @@ import io.acari.memory.ObjectiveHistorySchema
 import io.acari.memory.user.EFFECT_CHANNEL
 import io.acari.security.USER_IDENTIFIER
 import io.acari.util.loggerFor
+import io.netty.handler.codec.http.HttpHeaderNames
 import io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE
 import io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON
 import io.reactivex.Flowable
@@ -85,12 +86,16 @@ fun createObjectiveRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
   }
 
   // todo: should be shareable
-  // TODO: json stream most gooder
   router.get("/").handler { requestContext ->
     val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
+    val asArray = requestContext.request().params().get("asArray") == "true"
     val response = requestContext.response()
+
     response.isChunked = true
-    response.putHeader(CONTENT_TYPE, JSON_STREAM)
+    response.putHeader(CONTENT_TYPE, if(asArray) JSON else JSON_STREAM)
+    if(asArray){
+      response.write("[")
+    }
     mongoClient.aggregate(
       CurrentObjectiveSchema.COLLECTION, jsonArrayOf(
         jsonObjectOf(
@@ -117,7 +122,9 @@ fun createObjectiveRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
         it
       }
       .map {
-        Json.encodePrettily(it)
+        val json = Json.encodePrettily(it)
+        if(asArray) "$json,"
+        else json
       }
       .subscribe({
         response.write(it)
@@ -125,6 +132,9 @@ fun createObjectiveRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
         logger.warn("Unable to fetch objectives for $userIdentifier because reasons.", it)
         response.setStatusCode(500).end()
       }, {
+        if(asArray){
+          response.write("]")
+        }
         response.end()
       })
 
