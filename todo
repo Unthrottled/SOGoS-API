@@ -1,14 +1,9 @@
-Things to think about:
------
-
-----
-
-
-TODO:
----
+- Serverless
+- capture when device last did something.
 - replace current activity only if activities time is greater
----
 
+Stretch Goals
+---
 
 Strategy API
   - Objectives
