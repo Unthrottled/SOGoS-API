@@ -1,3 +1,4 @@
+import {handleRequest} from './APIRoute';
 import ImmaTeapot from './ImmaTeapot';
 
 const serverless = require('serverless-http');
@@ -7,8 +8,8 @@ const application = express();
 
 application.use(bodyParser.json({strict: false}));
 application.use(bodyParser.urlencoded({extended: true}));
-application.post('/slack/error', (request, response) => {
-  response.send(420);
+application.get('/test', (request, response) => {
+  handleRequest().then((result) => response.send(result));
 });
 
 application.use((request, response) => {

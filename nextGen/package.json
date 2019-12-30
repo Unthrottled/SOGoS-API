@@ -10,10 +10,11 @@
   "dependencies": {
     "body-parser": "^1.19.0",
     "express": "^4.17.0",
+    "mongodb": "^3.4.1",
     "serverless-http": "^2.0.2"
   },
   "scripts": {
-    "start": "SLACK_URL=https://exyos.acari.io/ sls offline start",
+    "start": "sls offline start",
     "start:not:dev": "sls offline start",
     "test": "jest --coverage",
     "lint": "tslint src/**/*.ts"
@@ -25,6 +26,7 @@
     "@types/express": "^4.17.2",
     "@types/jest": "^24.0.13",
     "@types/node": "^12.0.2",
+    "@types/mongodb": "^3.3.14",
     "babel-core": "^7.0.0-bridge.0",
     "babel-jest": "^24.8.0",
     "eslint": "^5.16.0",
