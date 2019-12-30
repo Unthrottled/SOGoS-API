@@ -1,0 +1,32 @@
+plugins:
+  - serverless-offline
+  - serverless-webpack
+  - serverless-domain-manager
+
+service: doki-api
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+
+custom:
+  customDomain:
+    domainName: doki.api.acari.io
+    certificateName: '*.api.acari.io'
+    basePath: ''
+    stage: prd
+    createRoute53Record: true
+
+
+functions:
+  doki:
+    handler: src/index.handler
+    events:
+      - http:
+          path: / # this matches the base path
+          method: ANY
+      - http:
+          path: /{any+} # this matches any path, the token 'any' doesn't mean anything special
+          method: ANY
+
+

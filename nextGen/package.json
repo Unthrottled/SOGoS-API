@@ -1,0 +1,55 @@
+{
+  "name": "doki-api",
+  "version": "1.0.0",
+  "description": "Supports the Doki Themes",
+  "main": "src/index.ts",
+  "repository": "git@github.com:cyclic-reference/doki-api.git",
+  "author": "Alex Simons <alexsimons9999@gmail.com>",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "@types/axios": "^0.14.0",
+    "@types/express": "^4.17.2",
+    "axios": "^0.19.0",
+    "body-parser": "^1.19.0",
+    "express": "^4.17.0",
+    "serverless-http": "^2.0.2"
+  },
+  "scripts": {
+    "start": "SLACK_URL=https://exyos.acari.io/ sls offline start",
+    "start:not:dev": "sls offline start",
+    "test": "jest --coverage",
+    "lint": "tslint src/**/*.ts"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.4.5",
+    "@babel/preset-env": "^7.4.5",
+    "@babel/preset-typescript": "^7.3.3",
+    "@types/jest": "^24.0.13",
+    "@types/node": "^12.0.2",
+    "babel-core": "^7.0.0-bridge.0",
+    "babel-jest": "^24.8.0",
+    "eslint": "^5.16.0",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-plugin-import": "^2.17.3",
+    "eslint-plugin-node": "^9.1.0",
+    "eslint-plugin-promise": "^4.1.1",
+    "eslint-plugin-standard": "^4.0.0",
+    "jest": "^24.8.0",
+    "lodash": "^4.17.15",
+    "serverless-domain-manager": "^3.3.0",
+    "serverless-offline": "^5.12.1",
+    "serverless-webpack": "^5.3.1",
+    "ts-jest": "^24.0.2",
+    "ts-loader": "^6.2.1",
+    "tslint": "^5.20.1",
+    "typescript": "^3.7.3",
+    "webpack": "^4.41.2"
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.jsx?$": "babel-jest",
+      "^.+\\.tsx?$": "ts-jest"
+    }
+  }
+}
