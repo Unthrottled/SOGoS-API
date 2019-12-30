@@ -3,7 +3,7 @@ plugins:
   - serverless-webpack
   - serverless-domain-manager
 
-service: doki-api
+service: sogos-api
 
 provider:
   name: aws
@@ -11,15 +11,17 @@ provider:
 
 custom:
   customDomain:
-    domainName: doki.api.acari.io
+    domainName: sogos.api.acari.io
     certificateName: '*.api.acari.io'
     basePath: ''
     stage: prd
     createRoute53Record: true
+  serverless-offline:
+    port: 8888
 
 
 functions:
-  doki:
+  sogos:
     handler: src/index.handler
     events:
       - http:
