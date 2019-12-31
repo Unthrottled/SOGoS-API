@@ -2,6 +2,7 @@ plugins:
   - serverless-offline
   - serverless-webpack
   - serverless-domain-manager
+  - serverless-dotenv-plugin
 
 service: sogos-api
 

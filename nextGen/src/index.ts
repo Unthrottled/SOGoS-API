@@ -27,10 +27,6 @@ application.get('/test', (request, response) => {
     );
 });
 
-application.use((request, response) => {
-  response.status(418).send(ImmaTeapot);
-});
-
 application.use(verificationHandler);
 
 module.exports.handler = serverless(application);
