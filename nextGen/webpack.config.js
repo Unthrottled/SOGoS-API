@@ -26,12 +26,12 @@ module.exports = {
           {
             loader: 'ts-loader'
           }
-        ],
+        ]
       }
     ]
   },
   plugins: [],
   node: {
-    __dirname: false,
+    __dirname: false
   }
 };

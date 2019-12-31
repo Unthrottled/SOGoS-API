@@ -1,9 +1,9 @@
 {
-  "name": "doki-api",
-  "version": "1.0.0",
-  "description": "Supports the Doki Themes",
+  "name": "sogos-api",
+  "version": "2.0.0",
+  "description": "Supports the SOGoS Application Suite",
   "main": "src/index.ts",
-  "repository": "git@github.com:cyclic-reference/doki-api.git",
+  "repository": "git@github.com:cyclic-reference/SOGoS-API.git",
   "author": "Alex Simons <alexsimons9999@gmail.com>",
   "license": "MIT",
   "private": false,

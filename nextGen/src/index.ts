@@ -11,7 +11,6 @@ application.use(bodyParser.urlencoded({extended: true}));
 application.get('/test', (request, response) => {
   handleRequest()
     .subscribe(item => {
-        console.log(item);
         response.write(JSON.stringify(item));
       }, error => {
 
