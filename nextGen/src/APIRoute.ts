@@ -1,16 +1,22 @@
+import {Observable} from 'rxjs';
+import {mergeMap} from 'rxjs/operators';
 import {getConnection} from './MongoDude';
 
-export const handleRequest = (): Promise<any> => {
-  return getConnection().then(db => {
-    return new Promise((resolve, reject) => {
-      db.collection('user').find({})
-        .toArray((error, result) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve(result);
-          }
+export const handleRequest = (): Observable<any> => {
+  return getConnection()
+    .pipe(
+      mergeMap(db => {
+        return new Observable(subscriber => {
+          db.collection('user').find({})
+            .toArray((error, result) => {
+              if (error) {
+                subscriber.error(error);
+              } else {
+                subscriber.next(result);
+                subscriber.complete();
+              }
+            });
         });
-    });
-  });
+      }),
+    );
 };
