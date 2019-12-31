@@ -12,6 +12,8 @@ application.use(corsRequestHandler);
 application.use(corsErrorHandler);
 application.use(bodyParser.json({strict: false}));
 application.use(bodyParser.urlencoded({extended: true}));
+
+// todo: revist streams
 application.get('/test', (request, response) => {
   handleRequest()
     .subscribe(item => {

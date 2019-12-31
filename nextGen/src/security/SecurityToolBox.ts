@@ -1,6 +1,7 @@
 import cors from 'cors';
+import crypto from 'crypto';
 import {CONFIG} from '../config/config';
-import {CORS_ORIGIN_URL} from '../ConfigurationENV';
+import {CORS_ORIGIN_URL, HMAC_KEY} from '../ConfigurationENV';
 
 const allowedOrigin = CORS_ORIGIN_URL || CONFIG.security['allowed-origin'];
 
@@ -43,3 +44,11 @@ export const corsRequestHandler = cors(
     ],
   },
 );
+
+const hashingFunction = crypto.createHmac('SHA256', HMAC_KEY);
+
+const hashString = (value: string) => hashingFunction.update(value).digest('hex');
+
+export const extractUserValidationKey =
+  (emailAddress: string, globalUserIdentifier: string): string =>
+    hashString(`${emailAddress}(◡‿◡✿)${globalUserIdentifier}`);
