@@ -1,7 +1,26 @@
 import cors from 'cors';
+import {CONFIG} from '../config/config';
+import {CORS_ORIGIN_URL} from '../ConfigurationENV';
+
+const allowedOrigin = CORS_ORIGIN_URL || CONFIG.security['allowed-origin'];
+
+export const corsErrorHandler = (err, req, res, next) => {
+  if (err.message && err.message.endsWith('is not an allowed origin.')) {
+    res.status(403).end(err.message);
+  } else {
+    next();
+  }
+};
+
 export const corsRequestHandler = cors(
   {
-    origin: CORS_ORIGIN_URL,
+    origin: ((requestOrigin, callback) => {
+      if (requestOrigin === allowedOrigin || !requestOrigin) {
+        callback(null, true);
+      } else {
+        callback(new Error(`${requestOrigin} is not an allowed origin.`), false);
+      }
+    }),
     allowedHeaders: [
       'x-requested-with',
       'Access-Control-Allow-Origin',
