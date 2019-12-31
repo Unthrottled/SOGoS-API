@@ -10,11 +10,13 @@ application.use(bodyParser.json({strict: false}));
 application.use(bodyParser.urlencoded({extended: true}));
 application.get('/test', (request, response) => {
   handleRequest()
-    .subscribe(items => {
-        response.status(200).json(items);
+    .subscribe(item => {
+        console.log(item);
+        response.write(JSON.stringify(item));
       }, error => {
 
       }, () => {
+        response.end();
       },
     );
 });

@@ -7,15 +7,15 @@ export const handleRequest = (): Observable<any> => {
     .pipe(
       mergeMap(db => {
         return new Observable(subscriber => {
-          db.collection('user').find({})
-            .toArray((error, result) => {
-              if (error) {
-                subscriber.error(error);
-              } else {
-                subscriber.next(result);
-                subscriber.complete();
-              }
+          const cursor = db.collection('user').find({})
+            .stream({
+              transform: document => ({
+                guid: document.guid,
+              }),
             });
+          cursor.on('data', data => subscriber.next(data));
+          cursor.on('error', error => subscriber.error(error));
+          cursor.on('end', () => subscriber.complete());
         });
       }),
     );
