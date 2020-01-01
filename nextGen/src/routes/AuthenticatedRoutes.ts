@@ -7,11 +7,12 @@ import {dispatchEffect} from '../effects/Dispatch';
 import {UserSchema} from '../memory/Schemas';
 import {RequestError} from '../models/Errors';
 import {getConnection} from '../MongoDude';
-import {mongoToObservable} from '../rxjs/Convience';
+import {mongoToObservable, mongoUpdateToObservable} from '../rxjs/Convience';
 import {switchIfEmpty} from '../rxjs/Operators';
 import {extractClaims} from '../security/AuthorizationOperators';
 import {Claims} from '../security/OAuthHandler';
 import {extractUserValidationKey} from '../security/SecurityToolBox';
+import {meow} from "../utils/Utils";
 
 const authenticatedRoutes = Router();
 
@@ -24,16 +25,15 @@ interface ClaimsAndStuff {
 const createUserIfNecessary = (claimsAndStuff: ClaimsAndStuff,
                                db: Db) =>
   switchIfEmpty(
-    mongoToObservable<any>(callBack => {
+    mongoUpdateToObservable<any>(callBackSupplier => {
       const guid = uuid();
-      const meow = new Date().valueOf();
       const newUser = {
         [UserSchema.GLOBAL_USER_IDENTIFIER]: guid,
         [UserSchema.OAUTH_IDENTIFIERS]: [claimsAndStuff.identityProviderId],
-        [UserSchema.TIME_CREATED]: meow,
+        [UserSchema.TIME_CREATED]: meow(),
       };
       db.collection(UserSchema.COLLECTION)
-        .insertOne(newUser, callBack);
+        .insertOne(newUser, callBackSupplier(newUser));
     })
       .pipe(
         mergeMap(user =>
