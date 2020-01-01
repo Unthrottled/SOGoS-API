@@ -1,6 +1,6 @@
 plugins:
   - serverless-offline
-  - serverless-webpack
+  - serverless-plugin-typescript
   - serverless-domain-manager
   - serverless-dotenv-plugin
 

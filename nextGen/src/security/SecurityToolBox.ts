@@ -47,7 +47,7 @@ export const corsRequestHandler = cors(
 
 const hashingFunction = crypto.createHmac('SHA256', HMAC_KEY);
 
-const hashString = (value: string) => hashingFunction.update(value).digest('hex');
+export const hashString = (value: string) => hashingFunction.update(value).digest('hex');
 
 export const extractUserValidationKey =
   (emailAddress: string, globalUserIdentifier: string): string =>

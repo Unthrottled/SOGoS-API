@@ -31,7 +31,7 @@ interface MapOfKidToPublicKey {
   [key: string]: PublicKeyMeta;
 }
 
-interface Claims {
+export interface Claims {
   token_use: string;
   auth_time: number;
   iss: string;
