@@ -3,8 +3,10 @@ import express from 'express';
 import serverless from 'serverless-http';
 import {handleRequest} from './APIRoute';
 import openRoutes from './routes/OpenRoutes';
-import {verificationHandler} from './security/OAuthHandler';
+import {jwtHandler, verificationHandler} from './security/OAuthHandler';
 import {corsErrorHandler, corsRequestHandler} from './security/SecurityToolBox';
+import authorizedRoutes from "./routes/AuthorizedRoutes";
+import authenticatedRoutes from "./routes/AuthenticatedRoutes";
 
 const application = express();
 
@@ -25,7 +27,18 @@ application.get('/test', (request, response) => {
       },
     );
 });
+
+// not secure
 application.use(openRoutes);
+
+application.use(jwtHandler);
+
+// secure
+application.use(authenticatedRoutes);
+
 application.use(verificationHandler);
+
+// mega secure
+application.use(authorizedRoutes);
 
 module.exports.handler = serverless(application);

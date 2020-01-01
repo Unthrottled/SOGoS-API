@@ -64,34 +64,48 @@ const getPublicKeys = () => {
   }
 };
 
+export const jwtHandler = (request, response, next) => {
+  Promise.resolve(request.headers.authorization as string)
+    .then(extractJwt)
+    .then(parsHeaders)
+    .then(combineWithPublicKeys)
+    .then(extractClaims)
+    .then(verifyIssuer)
+    .then(claims => {
+      request.claims = claims;
+      next();
+    })
+    .catch(code => response.send(code));
+};
+
+const getClaimsFromRequest = (request): Claims => {
+  const claims = request.custom.claims as Claims;
+  if (!claims) {
+    throw new Error('You forgot to either put claims in the response or ' +
+      'you put the authorization handler in the wrong order');
+  }
+  return claims;
+};
+
 export const verificationHandler = (request, response, next) => {
-  const hasPermission = claims => {
-    const verificationKey = request.headers.Verification || '';
-    const globalUserIdentifier = request.headers['User-Identifier'] || '';
+    const verificationKey = request.headers.verification || '';
+    const globalUserIdentifier = request.headers['user-identifier'] || '';
+    const claims = getClaimsFromRequest(request);
     const email = claims.email;
     const generatedVerificationKey = extractUserValidationKey(
       email,
       globalUserIdentifier,
     );
     if (verificationKey === generatedVerificationKey) {
-      return next();
+      next();
     } else {
-      return Promise.reject(403);
+      response.send(403);
     }
-  };
-  Promise.resolve(request.headers.Authorization as string)
-    .then(extractJwt)
-    .then(parsHeaders)
-    .then(combineWithPublicKeys)
-    .then(extractClaims)
-    .then(verifyIssuer)
-    .then(hasPermission)
-    .catch((code) => response.send(code));
 };
 
 const extractJwt = authHeader => {
   if (authHeader && authHeader.startsWith('Bearer ')) {
-    return authHeader.substr(8);
+    return authHeader.substr(7);
   } else {
     return Promise.reject(401);
   }
@@ -99,17 +113,19 @@ const extractJwt = authHeader => {
 const parsHeaders = token => {
   const tokenPieces = token.split('.');
   if (tokenPieces.length > 1) {
-    return {
-      token,
-      tokenHeader:
-        JSON.parse(
-          Buffer.from(tokenPieces[0], 'base64')
-            .toString('utf8'),
-        ) as TokenHeader,
-    };
-  } else {
-    return Promise.reject(401);
+    try {
+      return {
+        token,
+        tokenHeader:
+          JSON.parse(
+            Buffer.from(tokenPieces[0], 'base64')
+              .toString('utf8'),
+          ) as TokenHeader,
+      };
+    } catch (e) {}
   }
+  return Promise.reject(401);
+
 };
 const combineWithPublicKeys = tokenStuff => getPublicKeys().then(keys => ({
   keys,
