@@ -30,7 +30,7 @@ authenticatedRoutes.get('/user', ((req, res) => {
               console.log(identityProviderId);
               db.collection(UserSchema.COLLECTION)
                 .findOne({
-                  [UserSchema.OAUTH_IDENTIFIERS]: [identityProviderId],
+                  [UserSchema.OAUTH_IDENTIFIERS]: identityProviderId,
                 }, ((error, result) => {
                   if (error) {
                     subscriber.error(error);
