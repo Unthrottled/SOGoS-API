@@ -6,7 +6,7 @@ import {dispatchEffect} from '../effects/Dispatch';
 import {ActivityHistorySchema, CurrentActivitySchema, UserSchema} from '../memory/Schemas';
 import {getConnection} from '../MongoDude';
 import {mongoToObservable, toObservable} from '../rxjs/Convience';
-import {meow} from "../utils/Utils";
+import {rightMeow} from "../utils/Utils";
 
 export interface StoredCurrentActivity {
   guid: string;
@@ -64,7 +64,7 @@ export const commenceActivity = (act: Activity, db: Db): Observable<any> =>
       mergeMap(activity => writeActivityLog(activity, db)),
       dispatchEffect<Activity>(db, activity => ({
         guid: activity.guid,
-        timeCreated: meow(),
+        timeCreated: rightMeow(),
         antecedenceTime: activity.antecedenceTime,
         name: 'STARTED_ACTIVITY',
         content: activity.content,

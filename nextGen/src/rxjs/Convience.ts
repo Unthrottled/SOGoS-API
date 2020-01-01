@@ -1,11 +1,19 @@
 import omit from 'lodash/omit';
-import {MongoCallback} from 'mongodb';
+import {Cursor, MongoCallback} from 'mongodb';
 import {Observable} from 'rxjs';
 
 export const toObservable = <T>(t: T) =>
   new Observable<T>(subscriber => {
     subscriber.next(t);
     subscriber.complete();
+  });
+
+export const mongoToStream = <T>(cursorSupplier: () => Cursor<T>) =>
+  new Observable(subscriber => {
+    const cursor: Cursor<T> = cursorSupplier();
+    cursor.on('data', data => subscriber.next(data));
+    cursor.on('error', error => subscriber.error(error));
+    cursor.on('end', () => subscriber.complete());
   });
 
 export const mongoToObservable = <T>(querier: (callBack: MongoCallback<T>) => void): Observable<T> => {

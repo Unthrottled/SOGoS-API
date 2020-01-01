@@ -3,6 +3,7 @@ import {Observable} from 'rxjs';
 
 const mongoUrl = 'mongodb://localhost:27017';
 
+// todo look into serverless connection re-use
 export const getConnection = (): Observable<Db> =>
   new Observable<Db>(subscriber => {
     MongoClient.connect(mongoUrl, {useNewUrlParser: true}, ((error, result) => {

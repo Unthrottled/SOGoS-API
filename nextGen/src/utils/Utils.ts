@@ -1,2 +1,2 @@
 
-export const meow = () => new Date().valueOf();
+export const rightMeow = () => new Date().valueOf();

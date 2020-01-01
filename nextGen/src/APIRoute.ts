@@ -1,3 +1,4 @@
+import {Cursor} from 'mongodb';
 import {Observable} from 'rxjs';
 import {mergeMap} from 'rxjs/operators';
 import {getConnection} from './MongoDude';
@@ -7,7 +8,7 @@ export const handleRequest = (): Observable<any> => {
     .pipe(
       mergeMap(db => {
         return new Observable(subscriber => {
-          const cursor = db.collection('user').find({})
+          const cursor: Cursor<any> = db.collection('user').find({})
             .stream({
               transform: document => ({
                 guid: document.guid,

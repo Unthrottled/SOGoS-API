@@ -6,11 +6,12 @@ import {
   OPENID_PROVIDER_UI,
   PROVIDER,
   TOKEN_URL,
-  USER_INFO_URL
+  USER_INFO_URL,
 } from '../ConfigurationENV';
 
 const openRoutes = Router();
 
+export const JSON_STREAM = 'application/stream+json';
 export const APPLICATION_JSON = 'application/json';
 
 openRoutes.get('/time', (_, res) => {

@@ -11,7 +11,7 @@ import {switchIfEmpty} from '../rxjs/Operators';
 import {extractClaims} from '../security/AuthorizationOperators';
 import {Claims} from '../security/OAuthHandler';
 import {extractUserValidationKey} from '../security/SecurityToolBox';
-import {meow} from '../utils/Utils';
+import {rightMeow} from '../utils/Utils';
 
 interface ClaimsAndStuff {
   request: any;
@@ -27,7 +27,7 @@ export const createUserIfNecessary = (claimsAndStuff: ClaimsAndStuff,
       const newUser = {
         [UserSchema.GLOBAL_USER_IDENTIFIER]: guid,
         [UserSchema.OAUTH_IDENTIFIERS]: [claimsAndStuff.identityProviderId],
-        [UserSchema.TIME_CREATED]: meow(),
+        [UserSchema.TIME_CREATED]: rightMeow(),
       };
       db.collection(UserSchema.COLLECTION)
         .insertOne(newUser, callBackSupplier(newUser));
