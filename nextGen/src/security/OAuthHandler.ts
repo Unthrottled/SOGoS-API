@@ -38,6 +38,10 @@ export interface Claims {
   email: string;
   exp: number;
   username: string;
+  name: string;
+  preferred_username: string;
+  given_name: string;
+  family_name: string;
   client_id: string;
 }
 
