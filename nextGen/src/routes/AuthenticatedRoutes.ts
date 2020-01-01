@@ -15,8 +15,13 @@ import {extractUserValidationKey} from '../security/SecurityToolBox';
 
 const authenticatedRoutes = Router();
 
-const createUserIfNecessary = (claimsAndStuff:
-                                 { request: any; claims: Claims; identityProviderId: string },
+interface ClaimsAndStuff {
+  request: any;
+  claims: Claims;
+  identityProviderId: string;
+}
+
+const createUserIfNecessary = (claimsAndStuff: ClaimsAndStuff,
                                db: Db) =>
   switchIfEmpty(
     mongoToObservable<any>(callBack => {
@@ -54,41 +59,48 @@ const createUserIfNecessary = (claimsAndStuff:
         })),
       ));
 
+const constructUserResponse = (claimsAndStuff: ClaimsAndStuff) => user => {
+  const claims = claimsAndStuff.claims;
+  const globalUserIdentifier = user.guid;
+  const userVerificationKey =
+    extractUserValidationKey(claims.email, globalUserIdentifier);
+  const userInfo = {
+    fullName: claims.name,
+    userName: claims.preferred_username,
+    firstName: claims.given_name,
+    lastName: claims.family_name,
+    email: claims.email,
+    [UserSchema.GLOBAL_USER_IDENTIFIER]: globalUserIdentifier,
+  };
+  const security = {
+    verificationKey: userVerificationKey,
+  };
+  return {
+    security,
+    information: userInfo,
+  };
+};
+
+const tryToFindUser = (db: Db,
+                       claimsAndStuff: ClaimsAndStuff) =>
+  mongoToObservable(callBack =>
+    db.collection(UserSchema.COLLECTION)
+      .findOne(
+        {[UserSchema.OAUTH_IDENTIFIERS]: claimsAndStuff.identityProviderId},
+        callBack));
+
 authenticatedRoutes.get('/user', (req, res) => {
   extractClaims(req)
     .pipe(
       mergeMap(claimsAndStuff =>
         getConnection()
           .pipe(
-            mergeMap(db => mongoToObservable(callBack =>
-              db.collection(UserSchema.COLLECTION)
-                .findOne(
-                  {[UserSchema.OAUTH_IDENTIFIERS]: claimsAndStuff.identityProviderId},
-                  callBack))
-              .pipe(
-                createUserIfNecessary(claimsAndStuff, db),
-                map(user => {
-                  const claims = claimsAndStuff.claims;
-                  const globalUserIdentifier = user.guid;
-                  const userVerificationKey =
-                    extractUserValidationKey(claims.email, globalUserIdentifier);
-                  const userInfo = {
-                    fullName: claims.name,
-                    userName: claims.preferred_username,
-                    firstName: claims.given_name,
-                    lastName: claims.family_name,
-                    email: claims.email,
-                    [UserSchema.GLOBAL_USER_IDENTIFIER]: globalUserIdentifier,
-                  };
-                  const security = {
-                    verificationKey: userVerificationKey,
-                  };
-                  return {
-                    security,
-                    information: userInfo,
-                  };
-                }),
-              ),
+            mergeMap(db =>
+              tryToFindUser(db, claimsAndStuff)
+                .pipe(
+                  createUserIfNecessary(claimsAndStuff, db),
+                  map(constructUserResponse(claimsAndStuff)),
+                ),
             ),
           )),
       throwIfEmpty(() => new RequestError('Ya dun messed up', 400)),
