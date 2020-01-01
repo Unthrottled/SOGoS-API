@@ -1,0 +1,21 @@
+{
+  "name": "migrations",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "license": "MIT",
+  "private": false,
+  "scripts": {
+    "start": "npm run build:live",
+    "build": "tsc -p .",
+    "build:live": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts"
+  },
+  "devDependencies": {
+    "@types/mongodb": "^3.3.14",
+    "@types/node": "^13.1.2",
+    "nodemon": "^2.0.2",
+    "typescript": "^3.7.4"
+  },
+  "dependencies": {
+    "mongodb": "^3.4.1"
+  }
+}
