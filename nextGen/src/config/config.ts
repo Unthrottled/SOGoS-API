@@ -4,6 +4,7 @@ export const CONFIG = {
     'OpenId-Connect-Provider': 'http://172.21.0.1:8080/auth/realms/master',
     'auth-url': 'http://172.21.0.1:8080/auth/realms/master/protocol/openid-connect/auth',
     'token-url': 'http://172.21.0.1:8080/auth/realms/master/protocol/openid-connect/token',
+    'jwks-url': 'http://172.21.0.1:8080/auth/realms/master/protocol/openid-connect/certs',
     'user-info-url': 'http://172.21.0.1:8080/auth/realms/master/protocol/openid-connect/userinfo',
     'logout-url': 'http://172.21.0.1:8080/auth/realms/master/protocol/openid-connect/logout',
     'issuer': 'http://172.21.0.1:8080/auth/realms/master',

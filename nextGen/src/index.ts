@@ -1,12 +1,11 @@
-import cors from 'cors';
+import bodyParser from 'body-parser';
 import express from 'express';
+import serverless from 'serverless-http';
 import {handleRequest} from './APIRoute';
-import ImmaTeapot from './ImmaTeapot';
+import openRoutes from './routes/OpenRoutes';
 import {verificationHandler} from './security/OAuthHandler';
 import {corsErrorHandler, corsRequestHandler} from './security/SecurityToolBox';
 
-const serverless = require('serverless-http');
-const bodyParser = require('body-parser');
 const application = express();
 
 application.use(corsRequestHandler);
@@ -26,7 +25,7 @@ application.get('/test', (request, response) => {
       },
     );
 });
-
+application.use(openRoutes);
 application.use(verificationHandler);
 
 module.exports.handler = serverless(application);
