@@ -16,7 +16,8 @@
     "jwk-to-pem": "^2.0.2",
     "mongodb": "^3.4.1",
     "rxjs": "^6.5.4",
-    "serverless-http": "^2.0.2"
+    "serverless-http": "^2.0.2",
+    "uuid": "^3.3.3"
   },
   "scripts": {
     "start": "sls offline start",
@@ -36,6 +37,7 @@
     "@types/jwk-to-pem": "^2.0.0",
     "@types/mongodb": "^3.3.14",
     "@types/node": "^13.1.2",
+    "@types/uuid": "^3.4.6",
     "babel-core": "^7.0.0-bridge.0",
     "babel-jest": "^24.8.0",
     "eslint": "^5.16.0",

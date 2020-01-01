@@ -1,9 +1,11 @@
 import {Router} from 'express';
 import {Observable} from 'rxjs';
 import {filter, map, mergeMap, throwIfEmpty} from 'rxjs/operators';
+import uuid from 'uuid/v4';
 import {UserSchema} from '../memory/Schemas';
 import {RequestError} from '../models/Errors';
 import {getConnection} from '../MongoDude';
+import {switchIfEmpty} from '../rxjs/Operators';
 import {Claims} from '../security/OAuthHandler';
 import {hashString} from '../security/SecurityToolBox';
 
@@ -27,7 +29,6 @@ authenticatedRoutes.get('/user', ((req, res) => {
         return getConnection()
           .pipe(
             mergeMap(db => new Observable(subscriber => {
-              console.log(identityProviderId);
               db.collection(UserSchema.COLLECTION)
                 .findOne({
                   [UserSchema.OAUTH_IDENTIFIERS]: identityProviderId,
@@ -35,10 +36,22 @@ authenticatedRoutes.get('/user', ((req, res) => {
                   if (error) {
                     subscriber.error(error);
                   } else {
-                    subscriber.next(result);
+                    if (!!result) {
+                      subscriber.next(result);
+                    }
                     subscriber.complete();
                   }
                 }));
+            })),
+            switchIfEmpty(new Observable(subscriber => {
+              const guid = uuid();
+              const meow = new Date().valueOf();
+              const newUser = {
+                [UserSchema.GLOBAL_USER_IDENTIFIER]: guid,
+                [UserSchema.OAUTH_IDENTIFIERS]: [identityProviderId],
+                [UserSchema.TIME_CREATED]: meow,
+              };
+              subscriber.next(newUser);
             })),
           );
       }),
@@ -46,7 +59,7 @@ authenticatedRoutes.get('/user', ((req, res) => {
     )
     .subscribe(
       user => res.send(user),
-      error => res.status(error).end(),
+      error => res.status(error.code || 500).end(),
     );
 }));
 
