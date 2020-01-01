@@ -1,3 +1,4 @@
+import omit from 'lodash/omit';
 import {MongoCallback} from 'mongodb';
 import {Observable} from 'rxjs';
 
@@ -10,12 +11,13 @@ new Observable<T>(subscriber => {
 export const mongoToObservable = <T>(querier: (callBack: MongoCallback<T>) => void): Observable<T> => {
   return new Observable<T>(subscriber => {
     const mongoCallback: MongoCallback<T> =
-      ((error, result) => {
+      ((error, result: T) => {
         if (error) {
           subscriber.error(error);
         } else {
           if (!!result) {
-            subscriber.next(result);
+            // @ts-ignore
+            subscriber.next(omit(result, ['_id']));
           }
           subscriber.complete();
         }
