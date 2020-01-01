@@ -12,7 +12,7 @@ import {switchIfEmpty} from '../rxjs/Operators';
 import {extractClaims} from '../security/AuthorizationOperators';
 import {Claims} from '../security/OAuthHandler';
 import {extractUserValidationKey} from '../security/SecurityToolBox';
-import {meow} from "../utils/Utils";
+import {meow} from '../utils/Utils';
 
 const authenticatedRoutes = Router();
 
@@ -38,7 +38,7 @@ const createUserIfNecessary = (claimsAndStuff: ClaimsAndStuff,
       .pipe(
         mergeMap(user =>
           commenceActivity({
-            userIdentifier: user[UserSchema.GLOBAL_USER_IDENTIFIER],
+            guid: user[UserSchema.GLOBAL_USER_IDENTIFIER],
             antecedenceTime: user[UserSchema.TIME_CREATED],
             content: {
               name: 'RECOVERY',

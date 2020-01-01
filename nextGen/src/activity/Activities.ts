@@ -47,7 +47,7 @@ export interface ActivityContent {
 export interface Activity {
   antecedenceTime: number;
   content: ActivityContent;
-  userIdentifier: string;
+  guid: string;
 }
 
 export const startActivity = (activity: Activity): Observable<any> =>
@@ -63,7 +63,7 @@ export const commenceActivity = (act: Activity, db: Db): Observable<any> =>
       ),
       mergeMap(activity => writeActivityLog(activity, db)),
       dispatchEffect<Activity>(db, activity => ({
-        guid: activity.userIdentifier,
+        guid: activity.guid,
         timeCreated: meow(),
         antecedenceTime: activity.antecedenceTime,
         name: 'STARTED_ACTIVITY',
@@ -73,7 +73,7 @@ export const commenceActivity = (act: Activity, db: Db): Observable<any> =>
     );
 
 const updateCurrentActivity = (newActivity: Activity, db: Db): Observable<Activity> =>
-  findCurrentActivity(newActivity.userIdentifier, db)
+  findCurrentActivity(newActivity.guid, db)
     .pipe(
       mergeMap(possiblyPreviousActivity =>
         isOlder(possiblyPreviousActivity, newActivity) ?
@@ -93,12 +93,12 @@ const writeNewCurrentActivity = (
   mongoToObservable(callBack => {
       const stuffToSave: StoredCurrentActivity = {
         current: newActivity,
-        guid: newActivity.userIdentifier,
+        guid: newActivity.guid,
         previous: previousActivity,
       };
       db.collection(CurrentActivitySchema.COLLECTION)
         .replaceOne({
-          [CurrentActivitySchema.GLOBAL_USER_IDENTIFIER]: newActivity.userIdentifier,
+          [CurrentActivitySchema.GLOBAL_USER_IDENTIFIER]: newActivity.guid,
         }, stuffToSave, {upsert: true}, callBack);
     },
   ).pipe(
