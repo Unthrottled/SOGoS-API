@@ -1,6 +1,8 @@
 import omit from 'lodash/omit';
-import {Cursor, MongoCallback} from 'mongodb';
+import {Cursor, Db, MongoCallback} from 'mongodb';
 import {Observable} from 'rxjs';
+import {mergeMap} from 'rxjs/operators';
+import {getConnection} from '../MongoDude';
 
 export const toObservable = <T>(t: T) =>
   new Observable<T>(subscriber => {
@@ -55,3 +57,14 @@ export const mongoUpdateToObservable =
         return mongoCallback;
       });
     });
+
+export const findOne = <T>(queryPerformer: (
+  db: Db,
+  mongoCallback: MongoCallback<T>,
+) => void): Observable<T> => {
+  return getConnection()
+    .pipe(
+      mergeMap(db =>
+      mongoToObservable<T>(querier => queryPerformer(db, querier))),
+    );
+};

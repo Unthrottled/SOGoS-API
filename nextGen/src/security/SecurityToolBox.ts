@@ -3,6 +3,8 @@ import crypto from 'crypto';
 import {CONFIG} from '../config/config';
 import {CORS_ORIGIN_URL, HMAC_KEY} from '../ConfigurationENV';
 
+export const USER_IDENTIFIER = 'User-Identifier';
+
 const allowedOrigin = CORS_ORIGIN_URL || CONFIG.security['allowed-origin'];
 
 export const corsErrorHandler = (err, req, res, next) => {

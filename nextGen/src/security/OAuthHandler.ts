@@ -83,7 +83,7 @@ export const jwtHandler = (request, response, next) => {
 };
 
 const getClaimsFromRequest = (request): Claims => {
-  const claims = request.custom.claims as Claims;
+  const claims = request.claims as Claims;
   if (!claims) {
     throw new Error('You forgot to either put claims in the response or ' +
       'you put the authorization handler in the wrong order');

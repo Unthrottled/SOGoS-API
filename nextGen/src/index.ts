@@ -2,11 +2,11 @@ import bodyParser from 'body-parser';
 import express from 'express';
 import serverless from 'serverless-http';
 import {handleRequest} from './APIRoute';
+import authenticatedRoutes from './routes/AuthenticatedRoutes';
+import authorizedRoutes from './routes/AuthorizedRoutes';
 import openRoutes from './routes/OpenRoutes';
 import {jwtHandler, verificationHandler} from './security/OAuthHandler';
 import {corsErrorHandler, corsRequestHandler} from './security/SecurityToolBox';
-import authorizedRoutes from "./routes/AuthorizedRoutes";
-import authenticatedRoutes from "./routes/AuthenticatedRoutes";
 
 const application = express();
 

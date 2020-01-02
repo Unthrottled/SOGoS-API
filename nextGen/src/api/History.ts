@@ -89,6 +89,7 @@ const getTo = (to: any, meow: number) => {
   }
 };
 
+// todo figure out how to stream
 historyRouter.get('/:userIdentifier/feed',
   (req, res) => {
     const requestParameters = req.params;
