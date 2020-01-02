@@ -1,11 +1,12 @@
 import {Router} from 'express';
 import {filter, map, throwIfEmpty} from 'rxjs/operators';
-import {Activity, StoredCurrentActivity} from '../activity/Activities';
+import {Activity, startActivity, StoredCurrentActivity} from '../activity/Activities';
 import {CurrentActivitySchema} from '../memory/Schemas';
 import {NoResultsError} from '../models/Errors';
 import {APPLICATION_JSON} from '../routes/OpenRoutes';
 import {findOne} from '../rxjs/Convience';
 import {USER_IDENTIFIER} from '../security/SecurityToolBox';
+import {rightMeow} from '../utils/Utils';
 
 const activityRoutes = Router();
 
@@ -95,15 +96,21 @@ activityRoutes.post('/bulk', ((req, res) => {
 }));
 
 activityRoutes.post('/', ((req, res) => {
-
-}));
-
-activityRoutes.put('/', ((req, res) => {
-
-}));
-
-activityRoutes.delete('/', ((req, res) => {
-
+  const body = req.body;
+  const meow = rightMeow();
+  const userIdentifier = req.header(USER_IDENTIFIER);
+  const activity: Activity = {
+    antecedenceTime: meow,
+    guid: userIdentifier,
+    content: body.content,
+  };
+  startActivity(activity)
+    .subscribe(_ => {
+      res.send(204);
+    }, error => {
+      // todo: log
+      res.send(500);
+    });
 }));
 
 activityRoutes.get('/pomodoro/count', ((req, res) => {
