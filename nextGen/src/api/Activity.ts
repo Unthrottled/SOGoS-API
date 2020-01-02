@@ -1,11 +1,11 @@
 import {Router} from 'express';
-import {map, throwIfEmpty} from 'rxjs/operators';
+import {filter, map, throwIfEmpty} from 'rxjs/operators';
 import {Activity, StoredCurrentActivity} from '../activity/Activities';
 import {CurrentActivitySchema} from '../memory/Schemas';
-import {getConnection} from '../MongoDude';
+import {NoResultsError} from '../models/Errors';
+import {APPLICATION_JSON} from '../routes/OpenRoutes';
 import {findOne} from '../rxjs/Convience';
 import {USER_IDENTIFIER} from '../security/SecurityToolBox';
-import {APPLICATION_JSON} from "../routes/OpenRoutes";
 
 const activityRoutes = Router();
 
@@ -23,41 +23,71 @@ const uploadStatus = {
   DELETED,
 };
 
+const findActivity = (
+  userIdentifier: string,
+  transformer: (storedCurrentActivity: StoredCurrentActivity) => (Activity),
+) => findOne<StoredCurrentActivity>((db, mongoCallback) => {
+  db.collection(CurrentActivitySchema.COLLECTION)
+    .findOne({
+      [CurrentActivitySchema.GLOBAL_USER_IDENTIFIER]: userIdentifier,
+    }, mongoCallback);
+})
+  .pipe(
+    map(transformer),
+    filter(Boolean),
+    map((activity: Activity) => ({
+      antecedenceTime: activity.antecedenceTime,
+      content: activity.content,
+    })),
+    throwIfEmpty(() => new NoResultsError()),
+  );
+
+const getCurrentActivity = (userIdentifier: string) => {
+  const transformer = storedCurrentActivity => {
+    if (!!storedCurrentActivity.current) {
+      return storedCurrentActivity.current;
+    } else {
+      return storedCurrentActivity; // todo remove once data is less janky
+    }
+  };
+  return findActivity(userIdentifier, transformer);
+};
+
+const getPreviousActivity = (userIdentifier: string) => {
+  const transformer = storedCurrentActivity => {
+    return storedCurrentActivity.previous;
+  };
+  return findActivity(userIdentifier, transformer);
+};
+
 activityRoutes.get('/current', ((req, res) => {
   const userIdentifier = req.header(USER_IDENTIFIER);
-  findOne<StoredCurrentActivity>((db, mongoCallback) => {
-    db.collection(CurrentActivitySchema.COLLECTION)
-      .findOne({
-        [CurrentActivitySchema.GLOBAL_USER_IDENTIFIER]: userIdentifier,
-      }, mongoCallback);
-  })
-    .pipe(
-      map(storedCurrentActivity => {
-        if (!!storedCurrentActivity.current) {
-          return storedCurrentActivity.current;
-        } else {
-          return storedCurrentActivity; // todo remove once data is less janky
-        }
-      }),
-      map((activity: Activity) => ({
-        antecedenceTime: activity.antecedenceTime,
-        content: activity.content,
-      })),
-      throwIfEmpty(), // should always have current activity
-    )
+  getCurrentActivity(userIdentifier)
     .subscribe(activity => {
       res.contentType(APPLICATION_JSON)
         .status(200)
         .send(activity);
     }, error => {
       // todo: log
-      res.send(500)
-    })
-  ;
+      res.send(500);
+    });
 }));
 
 activityRoutes.get('/previous', ((req, res) => {
-
+  const userIdentifier = req.header(USER_IDENTIFIER);
+  getPreviousActivity(userIdentifier)
+    .subscribe(activity => {
+      res.contentType(APPLICATION_JSON)
+        .status(200)
+        .send(activity);
+    }, error => {
+      // todo: log
+      if (error instanceof NoResultsError) {
+        res.send(404);
+      } else {
+        res.send(500);
+      }
+    });
 }));
 
 activityRoutes.post('/bulk', ((req, res) => {
