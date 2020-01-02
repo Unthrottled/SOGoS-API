@@ -1,8 +1,10 @@
 import {Router} from 'express';
-import {filter, map, throwIfEmpty} from 'rxjs/operators';
-import {Activity, startActivity, StoredCurrentActivity} from '../activity/Activities';
+import {zip} from 'rxjs';
+import {filter, map, mergeMap, throwIfEmpty} from 'rxjs/operators';
+import {Activity, CachedActivity, startActivity, StoredCurrentActivity} from '../activity/Activities';
 import {CurrentActivitySchema} from '../memory/Schemas';
 import {NoResultsError} from '../models/Errors';
+import {EventTypes} from '../models/EventTypes';
 import {APPLICATION_JSON} from '../routes/OpenRoutes';
 import {findOne} from '../rxjs/Convience';
 import {USER_IDENTIFIER} from '../security/SecurityToolBox';
@@ -92,7 +94,24 @@ activityRoutes.get('/previous', ((req, res) => {
 }));
 
 activityRoutes.post('/bulk', ((req, res) => {
-
+  const body = req.body as CachedActivity[];
+  const userIdentifier = req.header(USER_IDENTIFIER);
+  body.filter(cachedActivity => cachedActivity.uploadType === EventTypes.CREATED)
+    .map(cachedActivity => cachedActivity.activity)
+    .map(activity => startActivity({
+      antecedenceTime: activity.antecedenceTime,
+      guid: userIdentifier,
+      content: activity.content,
+    }))
+    .reduce((accum, next) =>
+      accum.pipe(mergeMap(_ => next)))
+    .subscribe(_ => {
+      res.send(204);
+    }, error => {
+      // todo log
+      res.send(500);
+    })
+  ;
 }));
 
 activityRoutes.post('/', ((req, res) => {

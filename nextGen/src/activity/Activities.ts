@@ -7,6 +7,7 @@ import {ActivityHistorySchema, CurrentActivitySchema, UserSchema} from '../memor
 import {getConnection} from '../MongoDude';
 import {mongoToObservable, toObservable} from '../rxjs/Convience';
 import {rightMeow} from "../utils/Utils";
+import {EventTypes} from "../models/EventTypes";
 
 export interface StoredCurrentActivity {
   guid: string;
@@ -29,6 +30,11 @@ export enum ActivityTimedType {
   NONE = 'NONE',
   TIMER = 'TIMER',
   STOP_WATCH = 'STOP_WATCH',
+}
+
+export interface CachedActivity {
+  uploadType: EventTypes.CREATED | EventTypes.UPDATED | EventTypes.DELETED;
+  activity: Activity;
 }
 
 export interface ActivityContent {
