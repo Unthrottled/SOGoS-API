@@ -1,3 +1,6 @@
+export class NoResultsError extends Error {
+
+}
 export class RequestError extends Error {
   private code: number;
 

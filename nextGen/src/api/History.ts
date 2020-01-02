@@ -1,23 +1,74 @@
 import {response, Router} from 'express';
-import {map, mergeMap} from 'rxjs/operators';
+import {Request, Response} from 'express-serve-static-core';
+import omit = require('lodash/omit');
+import {map, mergeMap, throwIfEmpty} from 'rxjs/operators';
+import {Activity} from '../activity/Activities';
 import {ActivityHistorySchema} from '../memory/Schemas';
+import {NoResultsError} from '../models/Errors';
 import {getConnection} from '../MongoDude';
 import {APPLICATION_JSON, JSON_STREAM} from '../routes/OpenRoutes';
-import {mongoToStream} from '../rxjs/Convience';
+import {mongoToObservable, mongoToStream} from '../rxjs/Convience';
 import {rightMeow} from '../utils/Utils';
 
 const historyRouter = Router();
+
+const findActivity = (
+  request: Request,
+  res: Response,
+  sortOrder: number,
+  comparisonString: string,
+) => {
+  const userIdentifier = request.params.userIdentifier;
+  const bodyAsJson = request.body;
+  const relativeTime = bodyAsJson.relativeTime;
+  if (!!relativeTime) {
+    getConnection()
+      .pipe(
+        mergeMap(db =>
+          mongoToObservable(callBack =>
+            db.collection(ActivityHistorySchema.COLLECTION)
+              .findOne({
+                [ActivityHistorySchema.GLOBAL_USER_IDENTIFIER]: userIdentifier,
+                [ActivityHistorySchema.TIME_OF_ANTECEDENCE]: {
+                  [comparisonString]: relativeTime,
+                },
+              }, {
+                sort: {
+                  [ActivityHistorySchema.TIME_OF_ANTECEDENCE]: sortOrder,
+                },
+              }, callBack))),
+        throwIfEmpty(() => new NoResultsError()),
+        map((activity: Activity ) => omit(activity, [ActivityHistorySchema.GLOBAL_USER_IDENTIFIER])),
+      ).subscribe(activity => {
+      res.contentType(APPLICATION_JSON)
+        .status(200)
+        .send(activity);
+    }, error => {
+      if (!(error instanceof NoResultsError)) {
+        // todo log
+        res.send(500);
+      } else {
+        res.send(404);
+      }
+    });
+  } else {
+    res.status(400)
+      .send('Expected a number in "relativeTime" in the request.');
+  }
+};
 
 historyRouter.post('/:userIdentifier/first/before',
   ((req, res) => {
     const sortOrder = -1;
     const comparisonString = '$lt';
+    findActivity(req, res, sortOrder, comparisonString);
   }));
 
 historyRouter.post('/:userIdentifier/first/after',
   ((req, res) => {
-    const sortOrder = -1;
-    const comparisonString = '$lt';
+    const sortOrder = 1;
+    const comparisonString = '$gte';
+    findActivity(req, res, sortOrder, comparisonString);
   }));
 
 const SEVEN_DAYZ = 604800000;
