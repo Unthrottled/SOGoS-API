@@ -1,5 +1,5 @@
 import {Router} from 'express';
-import objectivesRoutes from './Objective';
+import objectivesRoutes from './ObjectiveRoutes';
 
 const strategyRoutes = Router();
 
