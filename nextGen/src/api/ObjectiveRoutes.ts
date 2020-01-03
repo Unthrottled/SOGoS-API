@@ -1,13 +1,22 @@
 import {Router} from 'express';
 import omit = require('lodash/omit');
+import {EMPTY, empty, Observable} from 'rxjs';
 import {fromIterable} from 'rxjs/internal-compatibility';
-import {map, mergeMap, throwIfEmpty} from 'rxjs/operators';
+import {filter, map, mergeMap, throwIfEmpty} from 'rxjs/operators';
 import {CurrentObjectiveSchema, ObjectiveHistorySchema} from '../memory/Schemas';
 import {NoResultsError} from '../models/Errors';
+import {EventTypes} from '../models/EventTypes';
 import {APPLICATION_JSON, JSON_STREAM} from '../routes/OpenRoutes';
 import {findMany, findOne} from '../rxjs/Convience';
 import {USER_IDENTIFIER} from '../security/SecurityToolBox';
-import {completeObjective, createObjective, FOUND_OBJECTIVES, Objective} from '../strategy/Objectives';
+import {
+  CachedObjective,
+  completeObjective,
+  createObjective,
+  deleteObjective,
+  FOUND_OBJECTIVES,
+  Objective, updateObjective,
+} from '../strategy/Objectives';
 
 const objectivesRoutes = Router();
 
@@ -103,6 +112,32 @@ objectivesRoutes.post('/', ((req, res) => {
 }));
 
 objectivesRoutes.post('/bulk', ((req, res) => {
+  const objectives = req.body as CachedObjective[];
+  const userIdentifier = req.header(USER_IDENTIFIER);
+
+  fromIterable(objectives)
+    .pipe(
+      filter(cachedObjective => !!cachedObjective.uploadType),
+      mergeMap(cachedObjective => {
+        switch (cachedObjective.uploadType) {
+          case EventTypes.COMPLETED:
+            return completeObjective(cachedObjective.objective, userIdentifier);
+          case EventTypes.DELETED:
+            return deleteObjective(cachedObjective.objective, userIdentifier);
+          case EventTypes.UPDATED:
+            return updateObjective(cachedObjective.objective, userIdentifier);
+          case EventTypes.CREATED:
+            return createObjective(cachedObjective.objective, userIdentifier);
+          default:
+            return EMPTY;
+        }
+      }),
+    ).subscribe(_=> {
+      res.send(204)
+  }, error => {
+  //    todo: log error
+    res.send(500);
+  });
 
 }));
 
