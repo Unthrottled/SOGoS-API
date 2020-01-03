@@ -1,8 +1,8 @@
 import {Router} from 'express';
-import {zip} from 'rxjs';
-import {filter, map, mergeMap, throwIfEmpty} from 'rxjs/operators';
+import {defaultIfEmpty, filter, map, mergeMap, throwIfEmpty} from 'rxjs/operators';
 import {Activity, CachedActivity, startActivity, StoredCurrentActivity} from '../activity/Activities';
-import {CurrentActivitySchema} from '../memory/Schemas';
+import {findPomodoro} from '../activity/Pomodoro';
+import {CurrentActivitySchema, PomodoroCompletionHistorySchema} from '../memory/Schemas';
 import {NoResultsError} from '../models/Errors';
 import {EventTypes} from '../models/EventTypes';
 import {APPLICATION_JSON} from '../routes/OpenRoutes';
@@ -134,8 +134,21 @@ activityRoutes.post('/', ((req, res) => {
 
 activityRoutes.get('/pomodoro/count', ((req, res) => {
   const userIdentifier = req.header(USER_IDENTIFIER);
-
-
+  findPomodoro(userIdentifier).execution
+    .pipe(
+      map(savedPomo => savedPomo.count),
+      defaultIfEmpty(0),
+      map(count => ({
+        [PomodoroCompletionHistorySchema.COUNT]: count,
+      })),
+    ).subscribe(pomoCount => {
+    res.contentType(APPLICATION_JSON)
+      .status(200)
+      .send(pomoCount);
+  }, error => {
+    // todo error log
+    res.send(500);
+  });
 }));
 
 export default activityRoutes;

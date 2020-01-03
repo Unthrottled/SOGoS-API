@@ -14,16 +14,26 @@ interface SavedPomodoro {
   count: number;
 }
 
-export const writePomodoroCount = (activity: Activity): Observable<Activity> => {
+export const findPomodoro = (userIdentifier: string) => {
   const currentDay = Math.floor(rightMeow() / ONE_DAY);
   const query = {
-    [PomodoroCompletionHistorySchema.GLOBAL_USER_IDENTIFIER]: activity.guid,
+    [PomodoroCompletionHistorySchema.GLOBAL_USER_IDENTIFIER]: userIdentifier,
     [PomodoroCompletionHistorySchema.DAY]: currentDay,
   };
-  return findOne<SavedPomodoro>(((db, mongoCallback) =>
+  const savedPomodoroObservable = findOne<SavedPomodoro>(((db, mongoCallback) =>
       db.collection(PomodoroCompletionHistorySchema.COLLECTION)
         .findOne(query, mongoCallback)
-  ))
+  ));
+  return {
+    currentDay,
+    query,
+    execution: savedPomodoroObservable,
+  };
+};
+
+export const writePomodoroCount = (activity: Activity): Observable<Activity> => {
+  const {currentDay, query, execution} = findPomodoro(activity.guid);
+  return execution
     .pipe(
       map(savedPomo => ({
         ...savedPomo,
@@ -40,6 +50,5 @@ export const writePomodoroCount = (activity: Activity): Observable<Activity> => 
             .replaceOne(query, savedPomo, {upsert: true}, callBackSupplier(savedPomo)),
         )),
       map(_ => activity),
-    )
-    ;
+    );
 };
