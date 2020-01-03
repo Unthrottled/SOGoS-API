@@ -1,7 +1,8 @@
 import omit from 'lodash/omit';
-import {Cursor, Db, MongoCallback} from 'mongodb';
+import { Db, MongoCallback} from 'mongodb';
 import {Observable} from 'rxjs';
 import {mergeMap} from 'rxjs/operators';
+import {Stream} from 'stream';
 import {getConnection} from '../MongoDude';
 
 export const toObservable = <T>(t: T) =>
@@ -10,10 +11,10 @@ export const toObservable = <T>(t: T) =>
     subscriber.complete();
   });
 
-export const mongoToStream = <T>(cursorSupplier: () => Cursor<T>) =>
-  new Observable(subscriber => {
-    const cursor: Cursor<T> = cursorSupplier();
-    cursor.on('data', data => subscriber.next(data));
+export const mongoToStream = <T>(cursorSupplier: () => Stream) =>
+  new Observable<T>(subscriber => {
+    const cursor: Stream = cursorSupplier();
+    cursor.on('data', data => subscriber.next(omit(data, '_id')));
     cursor.on('error', error => subscriber.error(error));
     cursor.on('end', () => subscriber.complete());
   });
@@ -68,6 +69,17 @@ export const findOne = <T>(queryPerformer: (
       mongoToObservable<T>(querier => queryPerformer(db, querier))),
     );
 };
+
+export const findMany = <T>(queryPerformer: (
+  db: Db,
+) => Stream): Observable<T> => {
+  return getConnection()
+    .pipe(
+      mergeMap(db =>
+      mongoToStream<T>(() => queryPerformer(db))),
+    );
+};
+
 export const performUpdate = <T, U>(queryPerformer: (
   db: Db,
   callBackSupplier: (t: T) => MongoCallback<U>,

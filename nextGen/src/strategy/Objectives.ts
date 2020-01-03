@@ -1,6 +1,19 @@
+import {Observable} from 'rxjs';
 import {EventTypes} from '../models/EventTypes';
-import {Observable} from "rxjs";
-import {toObservable} from "../rxjs/Convience";
+import {toObservable} from '../rxjs/Convience';
+
+export const CREATED_OBJECTIVE = "CREATED_OBJECTIVE"
+export const COMPLETED_OBJECTIVE = "COMPLETED_OBJECTIVE"
+export const UPDATED_OBJECTIVE = "UPDATED_OBJECTIVE"
+export const REMOVED_OBJECTIVE = "REMOVED_OBJECTIVE"
+export const FOUND_OBJECTIVES = "foundObjectives"
+
+const mappings = {
+  CREATED: CREATED_OBJECTIVE,
+  UPDATED: UPDATED_OBJECTIVE,
+  DELETED: REMOVED_OBJECTIVE
+}
+
 
 export interface KeyResult {
   id: string;
@@ -38,14 +51,30 @@ export interface ObjectiveCacheEvent {
   userGUID: string;
 }
 
-export const deleteObjective = (objective: Objective): Observable<Objective> => {
+export const deleteObjective = (
+  objective: Objective,
+  userIdentifier: string,
+): Observable<Objective> => {
   return toObservable(objective);
 };
 
-export const createObjective = (objective: Objective): Observable<Objective> => {
+export const completeObjective = (
+  objective: Objective,
+  userIdentifier: string,
+): Observable<Objective> => {
   return toObservable(objective);
 };
 
-export const updateObjective = (objective: Objective): Observable<Objective> => {
+export const createObjective = (
+  objective: Objective,
+  userIdentifier: string,
+): Observable<Objective> => {
+  return toObservable(objective);
+};
+
+export const updateObjective = (
+  objective: Objective,
+  userIdentifier: string,
+): Observable<Objective> => {
   return toObservable(objective);
 };
