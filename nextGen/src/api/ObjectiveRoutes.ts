@@ -5,9 +5,9 @@ import {map, mergeMap, throwIfEmpty} from 'rxjs/operators';
 import {CurrentObjectiveSchema, ObjectiveHistorySchema} from '../memory/Schemas';
 import {NoResultsError} from '../models/Errors';
 import {APPLICATION_JSON, JSON_STREAM} from '../routes/OpenRoutes';
-import {findMany, findOne, mongoToStream} from '../rxjs/Convience';
+import {findMany, findOne} from '../rxjs/Convience';
 import {USER_IDENTIFIER} from '../security/SecurityToolBox';
-import {completeObjective, FOUND_OBJECTIVES, Objective} from '../strategy/Objectives';
+import {completeObjective, createObjective, FOUND_OBJECTIVES, Objective} from '../strategy/Objectives';
 
 const objectivesRoutes = Router();
 
@@ -91,7 +91,15 @@ objectivesRoutes.get('/', ((req, res) => {
 }));
 
 objectivesRoutes.post('/', ((req, res) => {
-
+  const objective = req.body as Objective;
+  const userIdentifier = req.header(USER_IDENTIFIER);
+  createObjective(objective, userIdentifier)
+    .subscribe(_ => {
+      res.send(204);
+    }, error => {
+      // todo: log error
+      res.send(500);
+    });
 }));
 
 objectivesRoutes.post('/bulk', ((req, res) => {
