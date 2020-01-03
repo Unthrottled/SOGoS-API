@@ -22,7 +22,7 @@ interface ClaimsAndStuff {
 export const createUserIfNecessary = (claimsAndStuff: ClaimsAndStuff,
                                       db: Db) =>
   switchIfEmpty(
-    mongoUpdateToObservable<any>(callBackSupplier => {
+    mongoUpdateToObservable<any, any>(callBackSupplier => {
       const guid = uuid();
       const newUser = {
         [UserSchema.GLOBAL_USER_IDENTIFIER]: guid,

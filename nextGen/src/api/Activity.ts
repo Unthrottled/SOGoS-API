@@ -133,6 +133,8 @@ activityRoutes.post('/', ((req, res) => {
 }));
 
 activityRoutes.get('/pomodoro/count', ((req, res) => {
+  const userIdentifier = req.header(USER_IDENTIFIER);
+
 
 }));
 

@@ -4,10 +4,11 @@ import {defaultIfEmpty, map, mergeMap} from 'rxjs/operators';
 import uuid from 'uuid/v4';
 import {dispatchEffect} from '../effects/Dispatch';
 import {ActivityHistorySchema, CurrentActivitySchema, UserSchema} from '../memory/Schemas';
+import {EventTypes} from '../models/EventTypes';
 import {getConnection} from '../MongoDude';
 import {mongoToObservable, toObservable} from '../rxjs/Convience';
-import {rightMeow} from "../utils/Utils";
-import {EventTypes} from "../models/EventTypes";
+import {rightMeow} from '../utils/Utils';
+import {writePomodoroCount} from './Pomodoro';
 
 export interface StoredCurrentActivity {
   guid: string;
@@ -76,6 +77,14 @@ export const commenceActivity = (act: Activity, db: Db): Observable<any> =>
         content: activity.content,
         meta: {},
       })),
+      mergeMap(activity => {
+        if (activity.content.name === 'RECOVERY' &&
+          !!activity.content.autoStart) {
+          return writePomodoroCount(activity);
+        } else {
+          return toObservable(activity);
+        }
+      }),
     );
 
 const updateCurrentActivity = (newActivity: Activity, db: Db): Observable<Activity> =>

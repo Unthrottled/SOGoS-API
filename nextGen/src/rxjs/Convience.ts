@@ -40,11 +40,11 @@ export const mongoToObservable = <T>(querier: (callBack: MongoCallback<T>) => vo
 // So I put functions with in functions,
 // So you can async while you defer.
 export const mongoUpdateToObservable =
-  <T>(querier: (callBackSupplier: (t: T) => MongoCallback<T>) => void): Observable<T> =>
+  <T, U>(querier: (callBackSupplier: (t: T) => MongoCallback<U>) => void): Observable<T> =>
     new Observable<T>(subscriber => {
       querier((passThrough: T) => {
-        const mongoCallback: MongoCallback<T> =
-          ((error, result: T) => {
+        const mongoCallback: MongoCallback<U> =
+          ((error, result) => {
             if (error) {
               subscriber.error(error);
             } else {
@@ -66,5 +66,15 @@ export const findOne = <T>(queryPerformer: (
     .pipe(
       mergeMap(db =>
       mongoToObservable<T>(querier => queryPerformer(db, querier))),
+    );
+};
+export const performUpdate = <T, U>(queryPerformer: (
+  db: Db,
+  callBackSupplier: (t: T) => MongoCallback<U>,
+) => void): Observable<T> => {
+  return getConnection()
+    .pipe(
+      mergeMap(db =>
+      mongoUpdateToObservable<T, U>(querier => queryPerformer(db, querier))),
     );
 };
