@@ -4,6 +4,7 @@ import {createEffect} from '../effects/Dispatch';
 import {CurrentObjectiveSchema, ObjectiveHistorySchema} from '../memory/Schemas';
 import {EventTypes} from '../models/EventTypes';
 import {findOne, performUpdate, toObservable} from '../rxjs/Convience';
+import {switchIfEmpty} from '../rxjs/Operators';
 import {rightMeow} from '../utils/Utils';
 
 export const CREATED_OBJECTIVE = 'CREATED_OBJECTIVE';
@@ -69,13 +70,11 @@ export const completeObjective = (
 };
 
 interface StoredObjectives {
+  guid: string;
   objectives: string[];
 }
 
-export const createObjective = (
-  objective: Objective,
-  userIdentifier: string,
-): Observable<Objective> => {
+function performObjectivePersistence(userIdentifier: string, objective: Objective, effectName: string) {
   return findOne((db, mongoCallback) =>
     db.collection(CurrentObjectiveSchema.COLLECTION)
       .findOne({
@@ -95,6 +94,14 @@ export const createObjective = (
         }));
       }
     }),
+    switchIfEmpty(performUpdate(((db, callBackSupplier) => {
+      const docs: StoredObjectives = {
+        guid: userIdentifier,
+        objectives: [objective.id],
+      };
+      db.collection(CurrentObjectiveSchema.COLLECTION)
+        .insertOne(docs, callBackSupplier(objective));
+    }))),
     map(objecto => {
       objecto[CurrentObjectiveSchema.GLOBAL_USER_IDENTIFIER] = userIdentifier;
       return objecto;
@@ -113,20 +120,28 @@ export const createObjective = (
       return createEffect({
         meta: {},
         content: objecto,
-        name: CREATED_OBJECTIVE,
+        name: effectName,
         antecedenceTime: objecto.antecedenceTime || meow,
         timeCreated: meow,
         guid: userIdentifier,
       }).pipe(map(_ => objecto));
     }),
   );
+}
+
+export const createObjective = (
+  objective: Objective,
+  userIdentifier: string,
+): Observable<Objective> => {
+  return performObjectivePersistence(userIdentifier, objective, CREATED_OBJECTIVE);
 };
 
+// Note: Can Update a non-existing objective, will just create objective.
 export const updateObjective = (
   objective: Objective,
   userIdentifier: string,
 ): Observable<Objective> => {
-  return toObservable(objective);
+  return performObjectivePersistence(userIdentifier, objective, UPDATED_OBJECTIVE);
 };
 
 export const MAX_OBJECTIVES = 5;
