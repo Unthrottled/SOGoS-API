@@ -1,11 +1,13 @@
 import {Router} from 'express';
-import {EMPTY, Observable} from 'rxjs';
-import {defaultIfEmpty, map, throwIfEmpty} from 'rxjs/operators';
+import {Observable} from 'rxjs';
+import {defaultIfEmpty, map, mergeMap, throwIfEmpty} from 'rxjs/operators';
+import {createEffect} from '../effects/Dispatch';
 import {TacticalSettingsSchema} from '../memory/Schemas';
 import {APPLICATION_JSON} from '../routes/OpenRoutes';
-import {findOne} from '../rxjs/Convience';
+import {findOne, performUpdate} from '../rxjs/Convience';
 import {USER_IDENTIFIER} from '../security/SecurityToolBox';
 import tacticalActivityRoutes from '../tactical/TacticalActivity';
+import {rightMeow} from '../utils/Utils';
 
 const tacticalRoutes = Router();
 
@@ -44,11 +46,37 @@ tacticalRoutes.get('/pomodoro/settings', ((req, res) => {
     });
 }));
 
+interface SavedPomoSettings {
+  guid: string;
+  pomodoroSettings: PomodoroSettings;
+}
+
+const UPDATED_POMODORO_SETTINGS = 'UPDATED_POMODORO_SETTINGS';
+
 const createOrUpdatePomodoroSettings = (
   pomoSettings: PomodoroSettings,
   userIdentifier: string,
-): Observable<PomodoroSettings> => {
-  return EMPTY; // todo: dis
+): Observable<SavedPomoSettings> => {
+  return performUpdate<SavedPomoSettings, any>((db, callBackSupplier) =>
+    db.collection(TacticalSettingsSchema.COLLECTION)
+      .replaceOne({
+        [TacticalSettingsSchema.GLOBAL_USER_IDENTIFIER]: userIdentifier,
+      }, {
+        [TacticalSettingsSchema.GLOBAL_USER_IDENTIFIER]: userIdentifier,
+        [TacticalSettingsSchema.POMODORO_SETTINGS]: pomoSettings,
+      }, {upsert: true}),
+  ).pipe(
+    mergeMap(savedPomoSettings => {
+      return createEffect({
+        timeCreated: rightMeow(),
+        guid: userIdentifier,
+        antecedenceTime: rightMeow(),
+        name: UPDATED_POMODORO_SETTINGS,
+        content: pomoSettings,
+        meta: {}, // todo: extract meta
+      }).pipe(map(_ => savedPomoSettings));
+    }),
+  );
 };
 
 tacticalRoutes.post('/pomodoro/settings', ((req, res) => {
@@ -56,7 +84,7 @@ tacticalRoutes.post('/pomodoro/settings', ((req, res) => {
   const pomoSettings: PomodoroSettings = req.body;
   createOrUpdatePomodoroSettings(pomoSettings, userIdentifier)
     .pipe(
-      throwIfEmpty(()=> Error('Create/update pomo was empty for some rasin')),
+      throwIfEmpty(() => Error('Create/update pomo was empty for some rasin')),
     )
     .subscribe(pomoSettings => {
       res.contentType(APPLICATION_JSON)
@@ -66,7 +94,6 @@ tacticalRoutes.post('/pomodoro/settings', ((req, res) => {
       // todo: log error
       res.send(500);
     });
-
 }));
 
 export default tacticalRoutes;
