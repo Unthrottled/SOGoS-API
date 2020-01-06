@@ -1,6 +1,168 @@
 import {Router} from 'express';
+import omit = require('lodash/omit');
+import {EMPTY, Observable} from 'rxjs';
+import {fromIterable} from 'rxjs/internal-compatibility';
+import {filter, map, mergeMap} from 'rxjs/operators';
+import {TacticalActivitySchema} from '../memory/Schemas';
+import {EventTypes} from '../models/EventTypes';
+import {APPLICATION_JSON, JSON_STREAM} from '../routes/OpenRoutes';
+import {findMany} from '../rxjs/Convience';
+import {USER_IDENTIFIER} from '../security/SecurityToolBox';
+import {ColorType} from '../strategy/Objectives';
 
 const tacticalActivityRoutes = Router();
 
+const CREATED_TACTICAL_ACTIVITY = 'STARTED_TACTICAL_ACTIVITY';
+const REMOVED_TACTICAL_ACTIVITY = 'REMOVED_TACTICAL_ACTIVITY';
+const UPDATED_TACTICAL_ACTIVITY = 'UPDATED_TACTICAL_ACTIVITY';
+
+export interface CachedTacticalActivity {
+  uploadType: EventTypes;
+  activity: TacticalActivity;
+}
+
+export interface TacticalActivity {
+  id: string;
+  name: string;
+  rank: number;
+  antecedenceTime?: number;
+  iconCustomization: {
+    background: ColorType,
+    line: ColorType,
+  };
+  categories: string[];
+  hidden?: boolean;
+}
+
+tacticalActivityRoutes.get('/', (req, res) => {
+  const queryParameters = req.query;
+  const asArray = queryParameters.asArray === 'true';
+
+  res.setHeader('Content-Type', asArray ? APPLICATION_JSON : JSON_STREAM);
+  if (asArray) {
+    res.write('[');
+  }
+
+  const userIdentifier = req.header(USER_IDENTIFIER);
+  findMany(db =>
+    db.collection(TacticalActivitySchema.COLLECTION)
+      .find({
+        [TacticalActivitySchema.GLOBAL_USER_IDENTIFIER]: userIdentifier,
+        [TacticalActivitySchema.REMOVED]: false,
+      }),
+  ).pipe(
+    map((tacticalActivity: TacticalActivity) => omit(tacticalActivity, ['_id'])),
+    map(tacticalActivity => asArray ? `${tacticalActivity},` : tacticalActivity),
+  )
+    .subscribe(tacticalActivity => {
+      res.write(tacticalActivity);
+    }, error => {
+      // todo: log error
+      res.send(500);
+    }, () => {
+      if (asArray) {
+        res.write(']');
+      }
+      res.end();
+    });
+});
+
+const deleteTacticalActivity = (
+  tacticalActivity: TacticalActivity,
+  userIdentifier: string): Observable<TacticalActivity> => {
+
+  return EMPTY;
+};
+const updateTacticalActivity = (
+  tacticalActivity: TacticalActivity,
+  userIdentifier: string): Observable<TacticalActivity> => {
+
+  return EMPTY;
+};
+const createTacticalActivity = (
+  tacticalActivity: TacticalActivity,
+  userIdentifier: string): Observable<TacticalActivity> => {
+
+  return EMPTY;
+};
+
+tacticalActivityRoutes.post('/bulk', (req, res) => {
+  const objectives = req.body as CachedTacticalActivity[];
+  const userIdentifier = req.header(USER_IDENTIFIER);
+
+  fromIterable(objectives)
+    .pipe(
+      filter(cachedTacticalActivity => !!cachedTacticalActivity.uploadType),
+      mergeMap(cachedTacticalActivity => {
+        switch (cachedTacticalActivity.uploadType) {
+          case EventTypes.DELETED: // todo: remember to pick up antecedence time
+            return deleteTacticalActivity(cachedTacticalActivity.activity, userIdentifier);
+          case EventTypes.UPDATED:
+            return updateTacticalActivity(cachedTacticalActivity.activity, userIdentifier);
+          case EventTypes.CREATED:
+            return createTacticalActivity(cachedTacticalActivity.activity, userIdentifier);
+          default:
+            return EMPTY;
+        }
+      }),
+    ).subscribe(_ => {
+    res.send(204);
+  }, error => {
+    //    todo: log error
+    res.send(500);
+  });
+});
+
+tacticalActivityRoutes.post('/', (req, res) => {
+  const tacticalActivity = req.body as TacticalActivity;
+  const userIdentifier = req.header(USER_IDENTIFIER);
+  createTacticalActivity(tacticalActivity, userIdentifier)
+    .subscribe(_ => {
+      res.send(204);
+    }, error => {
+      // todo: log error
+      res.send(500);
+    });
+});
+
+tacticalActivityRoutes.put('/bulk', (req, res) => {
+  const tacticalActivities = req.body as TacticalActivity[];
+  const userIdentifier = req.header(USER_IDENTIFIER);
+  fromIterable(tacticalActivities)
+    .pipe(
+      mergeMap(tacticalActivity => // todo use antecedence time.
+        updateTacticalActivity(tacticalActivity, userIdentifier)),
+    )
+    .subscribe(_ => {
+      res.send(204);
+    }, error => {
+      // todo: log error
+      res.send(500);
+    });
+});
+
+tacticalActivityRoutes.put('/', (req, res) => {
+  const tacticalActivity = req.body as TacticalActivity;
+  const userIdentifier = req.header(USER_IDENTIFIER);
+  updateTacticalActivity(tacticalActivity, userIdentifier)
+    .subscribe(_ => {
+      res.send(204);
+    }, error => {
+      // todo: log error
+      res.send(500);
+    });
+});
+
+tacticalActivityRoutes.delete('/', (req, res) => {
+  const tacticalActivity = req.body as TacticalActivity;
+  const userIdentifier = req.header(USER_IDENTIFIER);
+  deleteTacticalActivity(tacticalActivity, userIdentifier)
+    .subscribe(_ => {
+      res.send(204);
+    }, error => {
+      // todo: log error
+      res.send(500);
+    });
+});
 
 export default tacticalActivityRoutes;
