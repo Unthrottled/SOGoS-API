@@ -140,7 +140,6 @@ objectivesRoutes.post('/bulk', ((req, res) => {
     //    todo: log error
     res.send(500);
   });
-
 }));
 
 objectivesRoutes.put('/', ((req, res) => {
