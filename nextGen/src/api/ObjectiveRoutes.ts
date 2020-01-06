@@ -1,6 +1,6 @@
 import {Router} from 'express';
 import omit = require('lodash/omit');
-import {EMPTY, empty, Observable} from 'rxjs';
+import {EMPTY} from 'rxjs';
 import {fromIterable} from 'rxjs/internal-compatibility';
 import {filter, map, mergeMap, throwIfEmpty} from 'rxjs/operators';
 import {CurrentObjectiveSchema, ObjectiveHistorySchema} from '../memory/Schemas';
@@ -15,7 +15,8 @@ import {
   createObjective,
   deleteObjective,
   FOUND_OBJECTIVES,
-  Objective, updateObjective,
+  Objective,
+  updateObjective,
 } from '../strategy/Objectives';
 
 const objectivesRoutes = Router();
@@ -23,10 +24,10 @@ const objectivesRoutes = Router();
 objectivesRoutes.get('/:objectiveId', ((req, res) => {
   const objectiveId = req.params.objectiveId;
   findOne((db, mongoCallback) =>
-  db.collection(ObjectiveHistorySchema.COLLECTION)
-    .findOne({
-      [ObjectiveHistorySchema.IDENTIFIER]: objectiveId,
-    }, mongoCallback),
+    db.collection(ObjectiveHistorySchema.COLLECTION)
+      .findOne({
+        [ObjectiveHistorySchema.IDENTIFIER]: objectiveId,
+      }, mongoCallback),
   ).pipe(
     throwIfEmpty(() => new NoResultsError()),
   ).subscribe(objective => {
@@ -49,11 +50,10 @@ objectivesRoutes.post('/:objectiveId/complete', ((req, res) => {
   completeObjective(objective, userIdentifier)
     .subscribe(_ => {
       res.send(204);
-    }, error =>  {
+    }, error => {
       // todo log error
       res.send(500);
     });
-
 }));
 
 objectivesRoutes.get('/', ((req, res) => {
@@ -69,9 +69,11 @@ objectivesRoutes.get('/', ((req, res) => {
   findMany(db =>
     db.collection(CurrentObjectiveSchema.COLLECTION)
       .aggregate([
-        {$match: {
-          [CurrentObjectiveSchema.GLOBAL_USER_IDENTIFIER]: userIdentifier,
-          }},
+        {
+          $match: {
+            [CurrentObjectiveSchema.GLOBAL_USER_IDENTIFIER]: userIdentifier,
+          },
+        },
         {
           $lookup: {
             from: ObjectiveHistorySchema.COLLECTION,
@@ -132,21 +134,37 @@ objectivesRoutes.post('/bulk', ((req, res) => {
             return EMPTY;
         }
       }),
-    ).subscribe(_=> {
-      res.send(204)
+    ).subscribe(_ => {
+    res.send(204);
   }, error => {
-  //    todo: log error
+    //    todo: log error
     res.send(500);
   });
 
 }));
 
 objectivesRoutes.put('/', ((req, res) => {
-
+  const objective = req.body as Objective;
+  const userIdentifier = req.header(USER_IDENTIFIER);
+  updateObjective(objective, userIdentifier)
+    .subscribe(_ => {
+      res.send(204);
+    }, error => {
+      // todo: log error
+      res.send(500);
+    });
 }));
 
 objectivesRoutes.delete('/', ((req, res) => {
-
+  const objective = req.body as Objective;
+  const userIdentifier = req.header(USER_IDENTIFIER);
+  deleteObjective(objective, userIdentifier)
+    .subscribe(_ => {
+      res.send(204);
+    }, error => {
+      // todo: log error
+      res.send(500);
+    });
 }));
 
 export default objectivesRoutes;
