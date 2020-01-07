@@ -5,7 +5,7 @@ import {ActivityTimedType, ActivityType, commenceActivity} from '../activity/Act
 import {dispatchEffect} from '../effects/Dispatch';
 import {UserSchema} from '../memory/Schemas';
 import {RequestError} from '../models/Errors';
-import {getConnection} from '../MongoDude';
+import {getConnection} from '../Mongo';
 import {mongoToObservable, mongoUpdateToObservable} from '../rxjs/Convience';
 import {switchIfEmpty} from '../rxjs/Operators';
 import {extractClaims} from '../security/AuthorizationOperators';

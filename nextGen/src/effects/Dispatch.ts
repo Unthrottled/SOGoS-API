@@ -2,7 +2,7 @@ import {Db} from 'mongodb';
 import {Observable} from 'rxjs';
 import {map, mergeMap} from 'rxjs/operators';
 import {EffectSchema} from '../memory/Schemas';
-import {getConnection} from '../MongoDude';
+import {getConnection} from '../Mongo';
 import {mongoToObservable} from '../rxjs/Convience';
 
 export interface Effect {

@@ -4,7 +4,7 @@ import {Cursor} from 'mongodb';
 import {Observable} from 'rxjs';
 import {mergeMap} from 'rxjs/operators';
 import serverless from 'serverless-http';
-import {getConnection} from './MongoDude';
+import {getConnection} from './Mongo';
 import authenticatedRoutes from './routes/AuthenticatedRoutes';
 import authorizedRoutes from './routes/AuthorizedRoutes';
 import openRoutes from './routes/OpenRoutes';
@@ -18,8 +18,13 @@ application.use(corsErrorHandler);
 application.use(bodyParser.json({strict: false}));
 application.use(bodyParser.urlencoded({extended: true}));
 
-// todo: revist streams
 application.get('/test', (request, response) => {
+
+  response.writeHead(200, {
+    'Content-Type': 'application/json+stream',
+  });
+
+  response.write('[');
   getConnection()
     .pipe(
       mergeMap(db => {
@@ -36,10 +41,11 @@ application.get('/test', (request, response) => {
         });
       }),
     ).subscribe(item => {
-      response.write(JSON.stringify(item));
+      response.write(`${JSON.stringify(item)},`);
     }, error => {
 
     }, () => {
+      response.write(']');
       response.end();
     },
   );

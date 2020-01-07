@@ -5,7 +5,7 @@ import {map, mergeMap, throwIfEmpty} from 'rxjs/operators';
 import {Activity} from '../activity/Activities';
 import {ActivityHistorySchema} from '../memory/Schemas';
 import {NoResultsError} from '../models/Errors';
-import {getConnection} from '../MongoDude';
+import {getConnection} from '../Mongo';
 import {APPLICATION_JSON, JSON_STREAM} from '../routes/OpenRoutes';
 import {mongoToObservable, mongoToStream} from '../rxjs/Convience';
 import {rightMeow} from '../utils/Utils';

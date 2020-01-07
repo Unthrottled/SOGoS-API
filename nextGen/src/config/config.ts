@@ -17,5 +17,6 @@ export const CONFIG = {
     port: 27017,
     maxPoolSize: 30,
     ssl: false,
+    connectionString: 'mongodb://localhost:27017',
   },
 };

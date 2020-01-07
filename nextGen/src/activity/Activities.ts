@@ -5,7 +5,7 @@ import uuid from 'uuid/v4';
 import {dispatchEffect} from '../effects/Dispatch';
 import {ActivityHistorySchema, CurrentActivitySchema, UserSchema} from '../memory/Schemas';
 import {EventTypes} from '../models/EventTypes';
-import {getConnection} from '../MongoDude';
+import {getConnection} from '../Mongo';
 import {mongoToObservable, toObservable} from '../rxjs/Convience';
 import {rightMeow} from '../utils/Utils';
 import {writePomodoroCount} from './Pomodoro';

@@ -1,6 +1,6 @@
 import {CONFIG} from './config/config';
 
-export const CONNECTION_STRING = process.env.SOGOS_MONGO_CONNECTION;
+export const CONNECTION_STRING = process.env.SOGOS_MONGO_CONNECTION || CONFIG.memory.connectionString;
 export const HMAC_KEY = process.env.SOGOS_HMAC_KEY;
 
 if (!HMAC_KEY) {

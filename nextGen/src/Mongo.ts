@@ -1,13 +1,12 @@
 import {Db, MongoClient} from 'mongodb';
 import {Observable} from 'rxjs';
+import {CONNECTION_STRING} from './ConfigurationENV';
 
-const mongoUrl = 'mongodb://localhost:27017';
-
-// todo look into serverless connection re-use
 let connection: MongoClient;
 
 export const getConnection = (): Observable<Db> => {
-  if (connection) {
+  if (connection && connection.isConnected()) {
+    console.log('using cache');
     return new Observable<Db>(
       subscriber => {
         subscriber.next(connection.db('DEFAULT_DB'));
@@ -15,8 +14,9 @@ export const getConnection = (): Observable<Db> => {
       },
     );
   } else {
+    console.log('new connection');
     return new Observable<Db>(subscriber => {
-      MongoClient.connect(mongoUrl, {useNewUrlParser: true}, ((error, result) => {
+      MongoClient.connect(CONNECTION_STRING, {useNewUrlParser: true}, ((error, result) => {
         if (error) {
           subscriber.error(error);
         } else {

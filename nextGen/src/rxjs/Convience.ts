@@ -3,7 +3,7 @@ import { Db, MongoCallback} from 'mongodb';
 import {Observable} from 'rxjs';
 import {mergeMap} from 'rxjs/operators';
 import {Stream} from 'stream';
-import {getConnection} from '../MongoDude';
+import {getConnection} from '../Mongo';
 
 export const toObservable = <T>(t: T) =>
   new Observable<T>(subscriber => {
