@@ -11,7 +11,6 @@ import {
 
 const openRoutes = Router();
 
-export const JSON_STREAM = 'application/stream+json';
 export const APPLICATION_JSON = 'application/json';
 
 openRoutes.get('/time', (_, res) => {

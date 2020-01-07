@@ -1,7 +1,6 @@
 - Serverless
   - Auth error handling
-  - Mongo Scheme Creation
-  -
+  - Versioning
 
 
 - capture when device last did something.

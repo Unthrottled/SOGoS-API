@@ -1,9 +1,14 @@
 import omit from 'lodash/omit';
 import { Db, MongoCallback} from 'mongodb';
 import {Observable} from 'rxjs';
-import {mergeMap} from 'rxjs/operators';
+import {mergeMap, reduce} from 'rxjs/operators';
 import {Stream} from 'stream';
 import {getConnection} from '../Mongo';
+
+export const collectList = <T>() => reduce<T, T[]>((acc, value) => {
+  acc.push(value);
+  return acc;
+}, []);
 
 export const toObservable = <T>(t: T) =>
   new Observable<T>(subscriber => {

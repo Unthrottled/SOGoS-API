@@ -1,4 +1,4 @@
-import {Router} from 'express';
+import {response, Router} from 'express';
 import omit = require('lodash/omit');
 import {EMPTY} from 'rxjs';
 import {fromIterable} from 'rxjs/internal-compatibility';
@@ -6,8 +6,8 @@ import {filter, map, mergeMap, throwIfEmpty} from 'rxjs/operators';
 import {CurrentObjectiveSchema, ObjectiveHistorySchema} from '../memory/Schemas';
 import {NoResultsError} from '../models/Errors';
 import {EventTypes} from '../models/EventTypes';
-import {APPLICATION_JSON, JSON_STREAM} from '../routes/OpenRoutes';
-import {findMany, findOne} from '../rxjs/Convience';
+import {APPLICATION_JSON} from '../routes/OpenRoutes';
+import {collectList, findMany, findOne} from '../rxjs/Convience';
 import {USER_IDENTIFIER} from '../security/SecurityToolBox';
 import {
   CachedObjective,
@@ -57,14 +57,6 @@ objectivesRoutes.post('/:objectiveId/complete', ((req, res) => {
 }));
 
 objectivesRoutes.get('/', ((req, res) => {
-  const queryParameters = req.query;
-  const asArray = queryParameters.asArray === 'true';
-
-  res.setHeader('Content-Type', asArray ? APPLICATION_JSON : JSON_STREAM);
-  if (asArray) {
-    res.write('[');
-  }
-
   const userIdentifier = req.header(USER_IDENTIFIER);
   findMany(db =>
     db.collection(CurrentObjectiveSchema.COLLECTION)
@@ -86,18 +78,15 @@ objectivesRoutes.get('/', ((req, res) => {
   ).pipe(
     mergeMap(foundResult => fromIterable(foundResult[FOUND_OBJECTIVES])),
     map((objective: Objective) => omit(objective, ['_id'])),
-    map(objective => asArray ? `${objective},` : objective),
+    collectList<Objective>(),
   )
-    .subscribe(objective => {
-      res.write(objective);
+    .subscribe(objectives => {
+      response.status(200)
+        .contentType(APPLICATION_JSON)
+        .send(objectives);
     }, error => {
       // todo: log error
       res.send(500);
-    }, () => {
-      if (asArray) {
-        res.write(']');
-      }
-      res.end();
     });
 }));
 

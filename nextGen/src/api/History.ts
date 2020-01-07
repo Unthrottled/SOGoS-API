@@ -1,13 +1,13 @@
 import {response, Router} from 'express';
 import {Request, Response} from 'express-serve-static-core';
 import omit = require('lodash/omit');
-import {map, mergeMap, throwIfEmpty} from 'rxjs/operators';
+import {map, mergeMap, reduce, throwIfEmpty} from 'rxjs/operators';
 import {Activity} from '../activity/Activities';
 import {ActivityHistorySchema} from '../memory/Schemas';
 import {NoResultsError} from '../models/Errors';
 import {getConnection} from '../Mongo';
-import {APPLICATION_JSON, JSON_STREAM} from '../routes/OpenRoutes';
-import {mongoToObservable, mongoToStream} from '../rxjs/Convience';
+import {APPLICATION_JSON} from '../routes/OpenRoutes';
+import {collectList, mongoToObservable, mongoToStream} from '../rxjs/Convience';
 import {rightMeow} from '../utils/Utils';
 
 const historyRouter = Router();
@@ -38,7 +38,7 @@ const findActivity = (
                 },
               }, callBack))),
         throwIfEmpty(() => new NoResultsError()),
-        map((activity: Activity ) => omit(activity, [ActivityHistorySchema.GLOBAL_USER_IDENTIFIER])),
+        map((activity: Activity) => omit(activity, [ActivityHistorySchema.GLOBAL_USER_IDENTIFIER])),
       ).subscribe(activity => {
       res.contentType(APPLICATION_JSON)
         .status(200)
@@ -99,13 +99,6 @@ historyRouter.get('/:userIdentifier/feed',
     const from = getFrom(queryParameters.from, meow);
     const to = getTo(queryParameters.from, meow);
 
-    const asArray = queryParameters.asArray === 'true';
-
-    res.setHeader('Content-Type', asArray ? APPLICATION_JSON : JSON_STREAM);
-    if (asArray) {
-      res.write('[');
-    }
-
     getConnection()
       .pipe(
         mergeMap(db =>
@@ -118,17 +111,14 @@ historyRouter.get('/:userIdentifier/feed',
                   $gte: from,
                 },
               }))),
-        map(activity => asArray ? `${activity}` : activity),
+        collectList<Activity>(),
       )
-      .subscribe(activity => {
-        response.write(activity);
+      .subscribe(activities => {
+        response.status(200)
+          .contentType(APPLICATION_JSON)
+          .send(activities);
       }, error => {
         // todo: error log
-      }, () => {
-        if (asArray) {
-          response.write(']');
-        }
-        res.end();
       });
   });
 
