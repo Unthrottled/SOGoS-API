@@ -13,18 +13,6 @@ import {rightMeow} from '../utils/Utils';
 const activityRoutes = Router();
 
 export const STARTED_ACTIVITY = 'STARTED_ACTIVITY';
-export const REMOVED_ACTIVITY = 'REMOVED_ACTIVITY';
-export const UPDATED_ACTIVITY = 'UPDATED_ACTIVITY';
-
-export const CREATED = 'CREATED';
-export const UPDATED = 'UPDATED';
-export const DELETED = 'DELETED';
-
-const uploadStatus = {
-  CREATED,
-  UPDATED,
-  DELETED,
-};
 
 const findActivity = (
   userIdentifier: string,
@@ -46,20 +34,14 @@ const findActivity = (
   );
 
 const getCurrentActivity = (userIdentifier: string) => {
-  const transformer = storedCurrentActivity => {
-    if (!!storedCurrentActivity.current) {
-      return storedCurrentActivity.current;
-    } else {
-      return storedCurrentActivity; // todo remove once data is less janky
-    }
-  };
+  const transformer = storedCurrentActivity =>
+    storedCurrentActivity.current;
   return findActivity(userIdentifier, transformer);
 };
 
 const getPreviousActivity = (userIdentifier: string) => {
-  const transformer = storedCurrentActivity => {
-    return storedCurrentActivity.previous;
-  };
+  const transformer = storedCurrentActivity =>
+    storedCurrentActivity.previous;
   return findActivity(userIdentifier, transformer);
 };
 
