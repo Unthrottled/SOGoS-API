@@ -1,14 +1,16 @@
 import {Router} from 'express';
-import omit = require('lodash/omit');
+import omit from 'lodash/omit';
 import {EMPTY, Observable} from 'rxjs';
 import {fromIterable} from 'rxjs/internal-compatibility';
 import {filter, map, mergeMap} from 'rxjs/operators';
+import {createEffect} from '../effects/Dispatch';
 import {TacticalActivitySchema} from '../memory/Schemas';
 import {EventTypes} from '../models/EventTypes';
 import {APPLICATION_JSON, JSON_STREAM} from '../routes/OpenRoutes';
-import {findMany} from '../rxjs/Convience';
+import {findMany, performUpdate} from '../rxjs/Convience';
 import {USER_IDENTIFIER} from '../security/SecurityToolBox';
 import {ColorType} from '../strategy/Objectives';
+import {rightMeow} from '../utils/Utils';
 
 const tacticalActivityRoutes = Router();
 
@@ -33,6 +35,35 @@ export interface TacticalActivity {
   categories: string[];
   hidden?: boolean;
 }
+
+const performTacticalActivityUpdate = (
+  tacticalActivity: TacticalActivity,
+  userIdentifier: string,
+  removed: boolean,
+  name: string,
+) => performUpdate<TacticalActivity, any>((db, callBackSupplier) =>
+  db.collection(TacticalActivitySchema.GLOBAL_USER_IDENTIFIER)
+    .replaceOne({
+      [TacticalActivitySchema.IDENTIFIER]: tacticalActivity.id,
+      [TacticalActivitySchema.GLOBAL_USER_IDENTIFIER]: userIdentifier,
+    }, {
+      ...tacticalActivity,
+      removed,
+    }, {upsert: true}, callBackSupplier(tacticalActivity)),
+).pipe(
+  mergeMap(savedTactAct => {
+      const meow = rightMeow();
+      return createEffect({
+        name,
+        meta: {},
+        content: savedTactAct,
+        antecedenceTime: savedTactAct.antecedenceTime || meow,
+        guid: userIdentifier,
+        timeCreated: meow,
+      });
+    },
+  ),
+);
 
 tacticalActivityRoutes.get('/', (req, res) => {
   const queryParameters = req.query;
@@ -66,24 +97,37 @@ tacticalActivityRoutes.get('/', (req, res) => {
       res.end();
     });
 });
-
 const deleteTacticalActivity = (
   tacticalActivity: TacticalActivity,
   userIdentifier: string): Observable<TacticalActivity> => {
-
-  return EMPTY;
+  return performTacticalActivityUpdate(
+    tacticalActivity,
+    userIdentifier,
+    true,
+    REMOVED_TACTICAL_ACTIVITY,
+  );
 };
+
 const updateTacticalActivity = (
   tacticalActivity: TacticalActivity,
   userIdentifier: string): Observable<TacticalActivity> => {
-
-  return EMPTY;
+  return performTacticalActivityUpdate(
+    tacticalActivity,
+    userIdentifier,
+    false,
+    UPDATED_TACTICAL_ACTIVITY,
+  );
 };
+
 const createTacticalActivity = (
   tacticalActivity: TacticalActivity,
   userIdentifier: string): Observable<TacticalActivity> => {
-
-  return EMPTY;
+  return performTacticalActivityUpdate(
+    tacticalActivity,
+    userIdentifier,
+    false,
+    CREATED_TACTICAL_ACTIVITY,
+  );
 };
 
 tacticalActivityRoutes.post('/bulk', (req, res) => {
