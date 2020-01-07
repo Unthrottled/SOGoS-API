@@ -1,6 +1,6 @@
 {
   "server": {
-    "port": 8888,
+    "port": 8889,
     "Keystore-Path": "keystore.jks",
     "Keystore-Password": "123456",
     "SSL-Enabled": false

@@ -1,7 +1,10 @@
 import bodyParser from 'body-parser';
 import express from 'express';
+import {Cursor} from 'mongodb';
+import {Observable} from 'rxjs';
+import {mergeMap} from 'rxjs/operators';
 import serverless from 'serverless-http';
-import {handleRequest} from './APIRoute';
+import {getConnection} from './MongoDude';
 import authenticatedRoutes from './routes/AuthenticatedRoutes';
 import authorizedRoutes from './routes/AuthorizedRoutes';
 import openRoutes from './routes/OpenRoutes';
@@ -17,15 +20,29 @@ application.use(bodyParser.urlencoded({extended: true}));
 
 // todo: revist streams
 application.get('/test', (request, response) => {
-  handleRequest()
-    .subscribe(item => {
-        response.write(JSON.stringify(item));
-      }, error => {
+  getConnection()
+    .pipe(
+      mergeMap(db => {
+        return new Observable(subscriber => {
+          const cursor: Cursor<any> = db.collection('user').find({})
+            .stream({
+              transform: document => ({
+                guid: document.guid,
+              }),
+            });
+          cursor.on('data', data => subscriber.next(data));
+          cursor.on('error', error => subscriber.error(error));
+          cursor.on('end', () => subscriber.complete());
+        });
+      }),
+    ).subscribe(item => {
+      response.write(JSON.stringify(item));
+    }, error => {
 
-      }, () => {
-        response.end();
-      },
-    );
+    }, () => {
+      response.end();
+    },
+  );
 });
 
 // not secure

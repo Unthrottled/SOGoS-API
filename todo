@@ -1,4 +1,9 @@
 - Serverless
+  - Auth error handling
+  - Mongo Scheme Creation
+  -
+
+
 - capture when device last did something.
 - replace current activity only if activities time is greater
 
