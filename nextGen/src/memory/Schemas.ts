@@ -31,9 +31,9 @@ export const CurrentObjectiveSchema = {
 };
 
 export const ObjectiveHistorySchema = {
- COLLECTION: 'objectHistory',
+ COLLECTION: 'objectiveHistory',
  GLOBAL_USER_IDENTIFIER: 'guid', // string
- OBJECTIVES: 'objects',
+ OBJECTIVES: 'objectives',
  IDENTIFIER: 'id',
 };
 
