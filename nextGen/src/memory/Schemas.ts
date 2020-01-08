@@ -27,7 +27,7 @@ export const CurrentActivitySchema = {
 export const CurrentObjectiveSchema = {
  COLLECTION: 'objective',
  GLOBAL_USER_IDENTIFIER: 'guid', // string
- OBJECTIVES: 'objectives, =',
+ OBJECTIVES: 'objectives',
 };
 
 export const ObjectiveHistorySchema = {
