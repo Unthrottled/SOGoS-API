@@ -2,7 +2,7 @@ import {Router} from 'express';
 import omit = require('lodash/omit');
 import {EMPTY} from 'rxjs';
 import {fromIterable} from 'rxjs/internal-compatibility';
-import {filter, map, mergeMap, throwIfEmpty} from 'rxjs/operators';
+import {filter, map, mergeMap, reduce, throwIfEmpty} from 'rxjs/operators';
 import {CurrentObjectiveSchema, ObjectiveHistorySchema} from '../memory/Schemas';
 import {NoResultsError} from '../models/Errors';
 import {EventTypes} from '../models/EventTypes';
@@ -123,6 +123,7 @@ objectivesRoutes.post('/bulk', ((req, res) => {
             return EMPTY;
         }
       }),
+      reduce(acc => acc, {}),
     ).subscribe(_ => {
     res.send(204);
   }, error => {

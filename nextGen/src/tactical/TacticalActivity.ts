@@ -2,7 +2,7 @@ import {Router} from 'express';
 import omit from 'lodash/omit';
 import {EMPTY, Observable} from 'rxjs';
 import {fromIterable} from 'rxjs/internal-compatibility';
-import {filter, map, mergeMap} from 'rxjs/operators';
+import {filter, map, mergeMap, reduce} from 'rxjs/operators';
 import {createEffect} from '../effects/Dispatch';
 import {TacticalActivitySchema} from '../memory/Schemas';
 import {EventTypes} from '../models/EventTypes';
@@ -14,7 +14,7 @@ import {rightMeow} from '../utils/Utils';
 
 const tacticalActivityRoutes = Router();
 
-const CREATED_TACTICAL_ACTIVITY = 'STARTED_TACTICAL_ACTIVITY';
+const CREATED_TACTICAL_ACTIVITY = 'CREATED_TACTICAL_ACTIVITY'; // was STARTED_TACTICAL_ACTIVITY.
 const REMOVED_TACTICAL_ACTIVITY = 'REMOVED_TACTICAL_ACTIVITY';
 const UPDATED_TACTICAL_ACTIVITY = 'UPDATED_TACTICAL_ACTIVITY';
 
@@ -42,12 +42,13 @@ const performTacticalActivityUpdate = (
   removed: boolean,
   name: string,
 ) => performUpdate<TacticalActivity, any>((db, callBackSupplier) =>
-  db.collection(TacticalActivitySchema.GLOBAL_USER_IDENTIFIER)
+  db.collection(TacticalActivitySchema.COLLECTION)
     .replaceOne({
       [TacticalActivitySchema.IDENTIFIER]: tacticalActivity.id,
       [TacticalActivitySchema.GLOBAL_USER_IDENTIFIER]: userIdentifier,
     }, {
       ...tacticalActivity,
+      guid: userIdentifier,
       removed,
     }, {upsert: true}, callBackSupplier(tacticalActivity)),
 ).pipe(
@@ -138,6 +139,7 @@ tacticalActivityRoutes.post('/bulk', (req, res) => {
             return EMPTY;
         }
       }),
+      reduce(acc => acc, {}),
     ).subscribe(_ => {
     res.send(204);
   }, error => {
@@ -165,6 +167,7 @@ tacticalActivityRoutes.put('/bulk', (req, res) => {
     .pipe(
       mergeMap(tacticalActivity => // todo use antecedence time.
         updateTacticalActivity(tacticalActivity, userIdentifier)),
+      reduce(acc => acc, {}),
     )
     .subscribe(_ => {
       res.send(204);

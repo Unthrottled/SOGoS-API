@@ -1,6 +1,8 @@
 Pass
 ----
 Pomodoro Settings
+Strategy
 
 Fail:
 -----
+- Updating objective removes associated activity (non-api issue)
