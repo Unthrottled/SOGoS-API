@@ -1,10 +1,6 @@
 import bodyParser from 'body-parser';
 import express from 'express';
-import {Cursor} from 'mongodb';
-import {Observable} from 'rxjs';
-import {mergeMap, reduce} from 'rxjs/operators';
 import serverless from 'serverless-http';
-import {getConnection} from './Mongo';
 import authenticatedRoutes from './routes/AuthenticatedRoutes';
 import authorizedRoutes from './routes/AuthorizedRoutes';
 import openRoutes from './routes/OpenRoutes';

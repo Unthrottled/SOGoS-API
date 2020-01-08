@@ -1,4 +1,4 @@
-import {response, Router} from 'express';
+import {Router} from 'express';
 import omit from 'lodash/omit';
 import {EMPTY, Observable} from 'rxjs';
 import {fromIterable} from 'rxjs/internal-compatibility';
@@ -78,7 +78,7 @@ tacticalActivityRoutes.get('/', (req, res) => {
     collectList<TacticalActivity>(),
   )
     .subscribe(tacticalActivities => {
-      response.status(200)
+      res.status(200)
         .contentType(APPLICATION_JSON)
         .send(tacticalActivities);
     }, error => {

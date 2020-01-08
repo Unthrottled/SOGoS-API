@@ -1,4 +1,4 @@
-import {response, Router} from 'express';
+import {Router} from 'express';
 import omit = require('lodash/omit');
 import {EMPTY} from 'rxjs';
 import {fromIterable} from 'rxjs/internal-compatibility';
@@ -81,7 +81,7 @@ objectivesRoutes.get('/', ((req, res) => {
     collectList<Objective>(),
   )
     .subscribe(objectives => {
-      response.status(200)
+      res.status(200)
         .contentType(APPLICATION_JSON)
         .send(objectives);
     }, error => {

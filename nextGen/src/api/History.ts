@@ -1,4 +1,4 @@
-import {response, Router} from 'express';
+import {Router} from 'express';
 import {Request, Response} from 'express-serve-static-core';
 import omit = require('lodash/omit');
 import {map, mergeMap, reduce, throwIfEmpty} from 'rxjs/operators';
@@ -72,18 +72,18 @@ historyRouter.post('/:userIdentifier/first/after',
   }));
 
 const SEVEN_DAYZ = 604800000;
-const getFrom = (from: any, meow: number) => {
+const getFrom = (from: string, meow: number): number => {
   const fromNumber = parseInt(from, 10);
   if (!!fromNumber) {
-    return from;
+    return fromNumber;
   } else {
     return meow - SEVEN_DAYZ;
   }
 };
-const getTo = (to: any, meow: number) => {
+const getTo = (to: string, meow: number): number => {
   const toNumber = parseInt(to, 10);
   if (!!toNumber) {
-    return to;
+    return toNumber;
   } else {
     return meow;
   }
@@ -96,7 +96,8 @@ historyRouter.get('/:userIdentifier/feed',
     const meow = rightMeow();
     const queryParameters = req.query;
     const from = getFrom(queryParameters.from, meow);
-    const to = getTo(queryParameters.from, meow);
+    const to = getTo(queryParameters.to, meow);
+    console.log(typeof to, typeof from, typeof 69)
 
     getConnection()
       .pipe(
@@ -109,11 +110,11 @@ historyRouter.get('/:userIdentifier/feed',
                   $lt: to,
                   $gte: from,
                 },
-              }))),
+              }).stream())),
         collectList<Activity>(),
       )
       .subscribe(activities => {
-        response.status(200)
+        res.status(200)
           .contentType(APPLICATION_JSON)
           .send(activities);
       }, error => {
