@@ -3,7 +3,7 @@
   - Auth error handling
   - Versioning
 
-
+----------
 - capture when device last did something.
 - replace current activity only if activities time is greater
 
