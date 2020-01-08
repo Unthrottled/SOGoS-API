@@ -97,7 +97,6 @@ historyRouter.get('/:userIdentifier/feed',
     const queryParameters = req.query;
     const from = getFrom(queryParameters.from, meow);
     const to = getTo(queryParameters.to, meow);
-    console.log(typeof to, typeof from, typeof 69)
 
     getConnection()
       .pipe(

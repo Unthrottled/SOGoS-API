@@ -57,14 +57,14 @@ const createOrUpdatePomodoroSettings = (
   pomoSettings: PomodoroSettings,
   userIdentifier: string,
 ): Observable<SavedPomoSettings> => {
+  const savPomoSett: SavedPomoSettings = {
+    guid: userIdentifier, pomodoroSettings: pomoSettings,
+  };
   return performUpdate<SavedPomoSettings, any>((db, callBackSupplier) =>
     db.collection(TacticalSettingsSchema.COLLECTION)
       .replaceOne({
         [TacticalSettingsSchema.GLOBAL_USER_IDENTIFIER]: userIdentifier,
-      }, {
-        [TacticalSettingsSchema.GLOBAL_USER_IDENTIFIER]: userIdentifier,
-        [TacticalSettingsSchema.POMODORO_SETTINGS]: pomoSettings,
-      }, {upsert: true}),
+      }, savPomoSett, {upsert: true}, callBackSupplier(savPomoSett)),
   ).pipe(
     mergeMap(savedPomoSettings => {
       return createEffect({
