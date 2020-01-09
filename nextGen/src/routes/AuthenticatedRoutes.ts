@@ -1,6 +1,6 @@
 import {Router} from 'express';
 import historyRouter from '../api/HistoryRoutes';
-import {userHandler} from '../api/User';
+import {userHandler} from '../api/UserRoutes';
 
 const authenticatedRoutes = Router();
 
