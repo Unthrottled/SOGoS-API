@@ -1,5 +1,5 @@
 import {Router} from 'express';
-import activityRoutes from '../api/Activity';
+import activityRoutes from '../api/ActivityRoutes';
 import strategyRoutes from '../api/Strategy';
 import tacticalRoutes from '../api/Tactical';
 
