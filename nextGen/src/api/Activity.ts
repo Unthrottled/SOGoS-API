@@ -8,7 +8,8 @@ import {EventTypes} from '../models/EventTypes';
 import {APPLICATION_JSON} from '../routes/OpenRoutes';
 import {findOne} from '../rxjs/Convience';
 import {USER_IDENTIFIER} from '../security/SecurityToolBox';
-import {rightMeow} from '../utils/Utils';
+import {logger, rightMeow} from '../utils/Utils';
+import chalk from "chalk";
 
 const activityRoutes = Router();
 
@@ -53,7 +54,7 @@ activityRoutes.get('/current', ((req, res) => {
         .status(200)
         .send(activity);
     }, error => {
-      // todo: log
+      logger.error(`Unable to get current activity for ${chalk.green(userIdentifier)} for reasons ${error}`);
       res.send(500);
     });
 }));
@@ -66,10 +67,10 @@ activityRoutes.get('/previous', ((req, res) => {
         .status(200)
         .send(activity);
     }, error => {
-      // todo: log
       if (error instanceof NoResultsError) {
         res.send(404);
       } else {
+        logger.error(`Unable to get previous activity for ${chalk.green(userIdentifier)} for reasons ${error}`);
         res.send(500);
       }
     });
@@ -90,7 +91,7 @@ activityRoutes.post('/bulk', ((req, res) => {
     .subscribe(_ => {
       res.send(204);
     }, error => {
-      // todo log
+      logger.error(`Unable to get bulk upload activities for ${chalk.green(userIdentifier)} for reasons ${error}`);
       res.send(500);
     })
   ;
@@ -109,7 +110,7 @@ activityRoutes.post('/', ((req, res) => {
     .subscribe(_ => {
       res.send(204);
     }, error => {
-      // todo: log
+      logger.error(`Unable to get start activity for ${chalk.green(userIdentifier)} for reasons ${error}`);
       res.send(500);
     });
 }));
@@ -128,7 +129,7 @@ activityRoutes.get('/pomodoro/count', ((req, res) => {
       .status(200)
       .send(pomoCount);
   }, error => {
-    // todo error log
+    logger.error(`Unable to get current pomodoro count for ${chalk.green(userIdentifier)} for reasons ${error}`);
     res.send(500);
   });
 }));

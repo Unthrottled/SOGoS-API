@@ -13,12 +13,6 @@ export const UPDATED_OBJECTIVE = 'UPDATED_OBJECTIVE';
 export const REMOVED_OBJECTIVE = 'REMOVED_OBJECTIVE';
 export const FOUND_OBJECTIVES = 'foundObjectives';
 
-const mappings = {
-  CREATED: CREATED_OBJECTIVE,
-  UPDATED: UPDATED_OBJECTIVE,
-  DELETED: REMOVED_OBJECTIVE,
-};
-
 export interface KeyResult {
   id: string;
   objectiveId: string;

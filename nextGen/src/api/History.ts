@@ -8,7 +8,9 @@ import {NoResultsError} from '../models/Errors';
 import {getConnection} from '../Mongo';
 import {APPLICATION_JSON} from '../routes/OpenRoutes';
 import {collectList, mongoToObservable, mongoToStream} from '../rxjs/Convience';
-import {rightMeow} from '../utils/Utils';
+import {logger, rightMeow} from '../utils/Utils';
+import chalk from "chalk";
+import {USER_IDENTIFIER} from "../security/SecurityToolBox";
 
 const historyRouter = Router();
 
@@ -45,7 +47,7 @@ const findActivity = (
         .send(activity);
     }, error => {
       if (!(error instanceof NoResultsError)) {
-        // todo log
+        logger.error(`Unable to find activity for ${chalk.green(userIdentifier)} for reasons ${error}`);
         res.send(500);
       } else {
         res.send(404);
@@ -91,6 +93,7 @@ const getTo = (to: string, meow: number): number => {
 
 historyRouter.get('/:userIdentifier/feed',
   (req, res) => {
+    // todo: log who looked at feed
     const requestParameters = req.params;
     const userIdentifier = requestParameters.userIdentifier;
     const meow = rightMeow();
@@ -117,7 +120,8 @@ historyRouter.get('/:userIdentifier/feed',
           .contentType(APPLICATION_JSON)
           .send(activities);
       }, error => {
-        // todo: error log
+        logger.error(`Unable to get activity feed for ${chalk.green(userIdentifier)} on behalf of ${chalk.cyan(req.header(USER_IDENTIFIER))} for reasons ${error}`);
+        res.send(500);
       });
   });
 

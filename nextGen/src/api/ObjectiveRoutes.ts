@@ -18,15 +18,19 @@ import {
   Objective,
   updateObjective,
 } from '../strategy/Objectives';
+import {logger} from "../utils/Utils";
+import chalk from "chalk";
 
 const objectivesRoutes = Router();
 
 objectivesRoutes.get('/:objectiveId', ((req, res) => {
   const objectiveId = req.params.objectiveId;
+  const userIdentifier = req.header(USER_IDENTIFIER);
   findOne((db, mongoCallback) =>
     db.collection(ObjectiveHistorySchema.COLLECTION)
       .findOne({
         [ObjectiveHistorySchema.IDENTIFIER]: objectiveId,
+        [ObjectiveHistorySchema.GLOBAL_USER_IDENTIFIER]: userIdentifier,
       }, mongoCallback),
   ).pipe(
     throwIfEmpty(() => new NoResultsError()),
@@ -38,7 +42,7 @@ objectivesRoutes.get('/:objectiveId', ((req, res) => {
     if (error instanceof NoResultsError) {
       res.status(404);
     } else {
-      // todo log error
+      logger.error(`Unable to get objective ${chalk.yellow(objectiveId)} for ${chalk.green(userIdentifier)} for reasons ${error}`);
       res.status(500);
     }
   });
@@ -51,7 +55,7 @@ objectivesRoutes.post('/:objectiveId/complete', ((req, res) => {
     .subscribe(_ => {
       res.send(204);
     }, error => {
-      // todo log error
+      logger.error(`Unable to complete objective ${chalk.yellow(req.params.objectiveId)} for ${chalk.green(userIdentifier)} for reasons ${error}`);
       res.send(500);
     });
 }));
@@ -85,7 +89,7 @@ objectivesRoutes.get('/', ((req, res) => {
         .contentType(APPLICATION_JSON)
         .send(objectives);
     }, error => {
-      // todo: log error
+      logger.error(`Unable to get objectives for ${chalk.green(userIdentifier)} for reasons ${error}`);
       res.send(500);
     });
 }));
@@ -97,7 +101,7 @@ objectivesRoutes.post('/', ((req, res) => {
     .subscribe(_ => {
       res.send(204);
     }, error => {
-      // todo: log error
+      logger.error(`Unable to create objective for ${chalk.green(userIdentifier)} for reasons ${error}`);
       res.send(500);
     });
 }));
@@ -127,7 +131,7 @@ objectivesRoutes.post('/bulk', ((req, res) => {
     ).subscribe(_ => {
     res.send(204);
   }, error => {
-    //    todo: log error
+    logger.error(`Unable to bulk upload objectives for ${chalk.green(userIdentifier)} for reasons ${error}`);
     res.send(500);
   });
 }));
@@ -139,7 +143,7 @@ objectivesRoutes.put('/', ((req, res) => {
     .subscribe(_ => {
       res.send(204);
     }, error => {
-      // todo: log error
+      logger.error(`Unable to update objective for ${chalk.green(userIdentifier)} for reasons ${error}`);
       res.send(500);
     });
 }));
@@ -151,7 +155,7 @@ objectivesRoutes.delete('/', ((req, res) => {
     .subscribe(_ => {
       res.send(204);
     }, error => {
-      // todo: log error
+      logger.error(`Unable to delete objective for ${chalk.green(userIdentifier)} for reasons ${error}`);
       res.send(500);
     });
 }));

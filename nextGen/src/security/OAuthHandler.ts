@@ -129,8 +129,8 @@ const parsHeaders = token => {
     } catch (e) {}
   }
   return Promise.reject(401);
-
 };
+
 const combineWithPublicKeys = tokenStuff => getPublicKeys().then(keys => ({
   keys,
   tokenStuff,

@@ -1,3 +1,4 @@
+import chalk from 'chalk';
 import {Db} from 'mongodb';
 import {map, mergeMap, throwIfEmpty} from 'rxjs/operators';
 import uuid from 'uuid/v4';
@@ -11,7 +12,7 @@ import {switchIfEmpty} from '../rxjs/Operators';
 import {extractClaims} from '../security/AuthorizationOperators';
 import {Claims} from '../security/OAuthHandler';
 import {extractUserValidationKey} from '../security/SecurityToolBox';
-import {rightMeow} from '../utils/Utils';
+import {logger, rightMeow} from '../utils/Utils';
 
 interface ClaimsAndStuff {
   request: any;
@@ -104,6 +105,11 @@ export const userHandler = (req, res) => {
     )
     .subscribe(
       user => res.send(user),
-      error => res.status(error.code || 500).end(),
+      error => {
+        if (!error.code) {
+          logger.error(`Unable to get user for request ${chalk.green(req.claims)} for reasons ${error}`);
+        }
+        return res.status(error.code || 500).end();
+      },
     );
 };

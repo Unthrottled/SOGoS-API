@@ -7,7 +7,8 @@ import {APPLICATION_JSON} from '../routes/OpenRoutes';
 import {findOne, performUpdate} from '../rxjs/Convience';
 import {USER_IDENTIFIER} from '../security/SecurityToolBox';
 import tacticalActivityRoutes from '../tactical/TacticalActivity';
-import {rightMeow} from '../utils/Utils';
+import {logger, rightMeow} from '../utils/Utils';
+import chalk from "chalk";
 
 const tacticalRoutes = Router();
 
@@ -41,7 +42,7 @@ tacticalRoutes.get('/pomodoro/settings', ((req, res) => {
         .status(200)
         .send(pomoSettings);
     }, error => {
-      // todo: log error
+      logger.error(`Unable to get pomodoro settings for ${chalk.green(userIdentifier)} for reasons ${error}`);
       res.send(500);
     });
 }));
@@ -91,7 +92,7 @@ tacticalRoutes.post('/pomodoro/settings', ((req, res) => {
         .status(200)
         .send(pomoSettings);
     }, error => {
-      // todo: log error
+      logger.error(`Unable to get update pomodoro settings for ${chalk.green(userIdentifier)} for reasons ${error}`);
       res.send(500);
     });
 }));
