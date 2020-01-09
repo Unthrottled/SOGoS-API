@@ -1,51 +1,37 @@
+import chalk from 'chalk';
 import {Router} from 'express';
-import omit = require('lodash/omit');
-import {EMPTY} from 'rxjs';
-import {fromIterable} from 'rxjs/internal-compatibility';
-import {filter, map, mergeMap, reduce, throwIfEmpty} from 'rxjs/operators';
-import {CurrentObjectiveSchema, ObjectiveHistorySchema} from '../memory/Schemas';
 import {NoResultsError} from '../models/Errors';
-import {EventTypes} from '../models/EventTypes';
 import {APPLICATION_JSON} from '../routes/OpenRoutes';
-import {collectList, findMany, findOne} from '../rxjs/Convience';
 import {USER_IDENTIFIER} from '../security/SecurityToolBox';
+import {findObjectives, findSingleObjective, uploadObjectives} from '../service/Objective';
 import {
   CachedObjective,
   completeObjective,
   createObjective,
   deleteObjective,
-  FOUND_OBJECTIVES,
   Objective,
   updateObjective,
 } from '../strategy/Objectives';
-import {logger} from "../utils/Utils";
-import chalk from "chalk";
+import {logger} from '../utils/Utils';
 
 const objectivesRoutes = Router();
 
 objectivesRoutes.get('/:objectiveId', ((req, res) => {
   const objectiveId = req.params.objectiveId;
   const userIdentifier = req.header(USER_IDENTIFIER);
-  findOne((db, mongoCallback) =>
-    db.collection(ObjectiveHistorySchema.COLLECTION)
-      .findOne({
-        [ObjectiveHistorySchema.IDENTIFIER]: objectiveId,
-        [ObjectiveHistorySchema.GLOBAL_USER_IDENTIFIER]: userIdentifier,
-      }, mongoCallback),
-  ).pipe(
-    throwIfEmpty(() => new NoResultsError()),
-  ).subscribe(objective => {
-    res.contentType(APPLICATION_JSON)
-      .status(200)
-      .send(objective);
-  }, error => {
-    if (error instanceof NoResultsError) {
-      res.status(404);
-    } else {
-      logger.error(`Unable to get objective ${chalk.yellow(objectiveId)} for ${chalk.green(userIdentifier)} for reasons ${error}`);
-      res.status(500);
-    }
-  });
+  findSingleObjective(objectiveId, userIdentifier)
+    .subscribe(objective => {
+      res.contentType(APPLICATION_JSON)
+        .status(200)
+        .send(objective);
+    }, error => {
+      if (error instanceof NoResultsError) {
+        res.status(404);
+      } else {
+        logger.error(`Unable to get objective ${chalk.yellow(objectiveId)} for ${chalk.green(userIdentifier)} for reasons ${error}`);
+        res.status(500);
+      }
+    });
 }));
 
 objectivesRoutes.post('/:objectiveId/complete', ((req, res) => {
@@ -62,28 +48,7 @@ objectivesRoutes.post('/:objectiveId/complete', ((req, res) => {
 
 objectivesRoutes.get('/', ((req, res) => {
   const userIdentifier = req.header(USER_IDENTIFIER);
-  findMany(db =>
-    db.collection(CurrentObjectiveSchema.COLLECTION)
-      .aggregate([
-        {
-          $match: {
-            [CurrentObjectiveSchema.GLOBAL_USER_IDENTIFIER]: userIdentifier,
-          },
-        },
-        {
-          $lookup: {
-            from: ObjectiveHistorySchema.COLLECTION,
-            localField: CurrentObjectiveSchema.OBJECTIVES,
-            foreignField: ObjectiveHistorySchema.IDENTIFIER,
-            as: FOUND_OBJECTIVES,
-          },
-        },
-      ]),
-  ).pipe(
-    mergeMap(foundResult => fromIterable(foundResult[FOUND_OBJECTIVES])),
-    map((objective: Objective) => omit(objective, ['_id'])),
-    collectList<Objective>(),
-  )
+  findObjectives(userIdentifier)
     .subscribe(objectives => {
       res.status(200)
         .contentType(APPLICATION_JSON)
@@ -110,25 +75,7 @@ objectivesRoutes.post('/bulk', ((req, res) => {
   const objectives = req.body as CachedObjective[];
   const userIdentifier = req.header(USER_IDENTIFIER);
 
-  fromIterable(objectives)
-    .pipe(
-      filter(cachedObjective => !!cachedObjective.uploadType),
-      mergeMap(cachedObjective => {
-        switch (cachedObjective.uploadType) {
-          case EventTypes.COMPLETED:
-            return completeObjective(cachedObjective.objective, userIdentifier);
-          case EventTypes.DELETED:
-            return deleteObjective(cachedObjective.objective, userIdentifier);
-          case EventTypes.UPDATED:
-            return updateObjective(cachedObjective.objective, userIdentifier);
-          case EventTypes.CREATED:
-            return createObjective(cachedObjective.objective, userIdentifier);
-          default:
-            return EMPTY;
-        }
-      }),
-      reduce(acc => acc, {}),
-    ).subscribe(_ => {
+  uploadObjectives(objectives, userIdentifier).subscribe(_ => {
     res.send(204);
   }, error => {
     logger.error(`Unable to bulk upload objectives for ${chalk.green(userIdentifier)} for reasons ${error}`);
