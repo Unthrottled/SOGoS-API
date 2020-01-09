@@ -9,7 +9,7 @@ const getLevel = (level: string): string => {
     case 'warn':
       return chalk.yellow(level);
     case 'error':
-      return chalk.redBright(level);
+      return chalk.red(level);
     default:
       return level;
   }

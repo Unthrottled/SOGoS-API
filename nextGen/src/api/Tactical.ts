@@ -74,7 +74,7 @@ const createOrUpdatePomodoroSettings = (
         antecedenceTime: rightMeow(),
         name: UPDATED_POMODORO_SETTINGS,
         content: pomoSettings,
-        meta: {}, // todo: extract meta
+        meta: {},
       }).pipe(map(_ => savedPomoSettings));
     }),
   );

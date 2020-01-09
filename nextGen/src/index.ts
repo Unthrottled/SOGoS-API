@@ -6,6 +6,7 @@ import authorizedRoutes from './routes/AuthorizedRoutes';
 import openRoutes from './routes/OpenRoutes';
 import {jwtHandler, verificationHandler} from './security/OAuthHandler';
 import {corsErrorHandler, corsRequestHandler} from './security/SecurityToolBox';
+import {requestLogger} from './utils/RequestLogger';
 
 const application = express();
 
@@ -13,6 +14,7 @@ application.use(corsRequestHandler);
 application.use(corsErrorHandler);
 application.use(bodyParser.json({strict: false}));
 application.use(bodyParser.urlencoded({extended: true}));
+application.use(requestLogger);
 
 // not secure
 application.use(openRoutes);

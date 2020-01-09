@@ -1,3 +1,4 @@
+import chalk from 'chalk';
 import {Router} from 'express';
 import {defaultIfEmpty, filter, map, mergeMap, throwIfEmpty} from 'rxjs/operators';
 import {Activity, CachedActivity, startActivity, StoredCurrentActivity} from '../activity/Activities';
@@ -9,7 +10,6 @@ import {APPLICATION_JSON} from '../routes/OpenRoutes';
 import {findOne} from '../rxjs/Convience';
 import {USER_IDENTIFIER} from '../security/SecurityToolBox';
 import {logger, rightMeow} from '../utils/Utils';
-import chalk from "chalk";
 
 const activityRoutes = Router();
 
@@ -31,7 +31,7 @@ const findActivity = (
       antecedenceTime: activity.antecedenceTime,
       content: activity.content,
     })),
-    throwIfEmpty(() => new NoResultsError()),
+    throwIfEmpty(() => new NoResultsError('No Activity Found')),
   );
 
 const getCurrentActivity = (userIdentifier: string) => {
