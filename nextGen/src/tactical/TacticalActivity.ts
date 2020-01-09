@@ -10,7 +10,8 @@ import {APPLICATION_JSON} from '../routes/OpenRoutes';
 import {collectList, findMany, performUpdate} from '../rxjs/Convience';
 import {USER_IDENTIFIER} from '../security/SecurityToolBox';
 import {ColorType} from '../strategy/Objectives';
-import {rightMeow} from '../utils/Utils';
+import {logger, rightMeow} from '../utils/Utils';
+import chalk from "chalk";
 
 const tacticalActivityRoutes = Router();
 
@@ -83,7 +84,7 @@ tacticalActivityRoutes.get('/', (req, res) => {
         .contentType(APPLICATION_JSON)
         .send(tacticalActivities);
     }, error => {
-      // todo: log error
+      logger.error(`Unable to get tactical activities for ${chalk.green(userIdentifier)} for reasons ${error}`);
       res.send(500);
     });
 });
@@ -143,7 +144,7 @@ tacticalActivityRoutes.post('/bulk', (req, res) => {
     ).subscribe(_ => {
     res.send(204);
   }, error => {
-    //    todo: log error
+    logger.error(`Unable to bulk upload tactical activities for ${chalk.green(userIdentifier)} for reasons ${error}`);
     res.send(500);
   });
 });
@@ -155,7 +156,7 @@ tacticalActivityRoutes.post('/', (req, res) => {
     .subscribe(_ => {
       res.send(204);
     }, error => {
-      // todo: log error
+      logger.error(`Unable to create tactical activities for ${chalk.green(userIdentifier)} for reasons ${error}`);
       res.send(500);
     });
 });
@@ -172,7 +173,7 @@ tacticalActivityRoutes.put('/bulk', (req, res) => {
     .subscribe(_ => {
       res.send(204);
     }, error => {
-      // todo: log error
+      logger.error(`Unable to bulk update tactical activities for ${chalk.green(userIdentifier)} for reasons ${error}`);
       res.send(500);
     });
 });
@@ -184,7 +185,7 @@ tacticalActivityRoutes.put('/', (req, res) => {
     .subscribe(_ => {
       res.send(204);
     }, error => {
-      // todo: log error
+      logger.error(`Unable to update tactical activities for ${chalk.green(userIdentifier)} for reasons ${error}`);
       res.send(500);
     });
 });
@@ -196,7 +197,7 @@ tacticalActivityRoutes.delete('/', (req, res) => {
     .subscribe(_ => {
       res.send(204);
     }, error => {
-      // todo: log error
+      logger.error(`Unable to remove tactical activities for ${chalk.green(userIdentifier)} for reasons ${error}`);
       res.send(500);
     });
 });

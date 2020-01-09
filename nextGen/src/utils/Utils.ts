@@ -1,13 +1,26 @@
+import chalk from 'chalk';
 import winston from 'winston';
 const { combine, timestamp, label, printf } = winston.format;
 
-const myFormat = printf(({ level, message, label, timestamp }) => {
-  return `${timestamp} [${label}] ${level}: ${message}`;
+const getLevel = (level: string): string => {
+  switch (level) {
+    case 'info':
+      return chalk.green(level);
+    case 'warn':
+      return chalk.yellow(level);
+    case 'error':
+      return chalk.redBright(level);
+    default:
+      return level;
+  }
+};
+
+const myFormat = printf(({ level, message, timestamp }) => {
+  return `[${timestamp}] ${getLevel(level)}: ${message}`;
 });
 
 export const logger = winston.createLogger({
   format: combine(
-    label({ label: 'right meow!' }),
     timestamp(),
     myFormat,
   ),
