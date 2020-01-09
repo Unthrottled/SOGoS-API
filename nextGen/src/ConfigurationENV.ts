@@ -1,6 +1,7 @@
 import {CONFIG} from './config/config';
 
 export const CONNECTION_STRING = process.env.SOGOS_MONGO_CONNECTION || CONFIG.memory.connectionString;
+export const LOGGING_LEVEL = process.env.SOGOS_LOGGING_LEVEL || 'info';
 export const HMAC_KEY = process.env.SOGOS_HMAC_KEY;
 
 if (!HMAC_KEY) {

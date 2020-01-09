@@ -1,9 +1,13 @@
 import chalk from 'chalk';
 import winston from 'winston';
-const { combine, timestamp, label, printf } = winston.format;
+import {LOGGING_LEVEL} from '../ConfigurationENV';
+
+const {combine, timestamp, printf} = winston.format;
 
 const getLevel = (level: string): string => {
   switch (level) {
+    case 'debug':
+      return chalk.cyan(level);
     case 'info':
       return chalk.green(level);
     case 'warn':
@@ -15,11 +19,12 @@ const getLevel = (level: string): string => {
   }
 };
 
-const myFormat = printf(({ level, message, timestamp }) => {
+const myFormat = printf(({level, message, timestamp}) => {
   return `[${timestamp}] ${getLevel(level)}: ${message}`;
 });
 
 export const logger = winston.createLogger({
+  level: LOGGING_LEVEL,
   format: combine(
     timestamp(),
     myFormat,

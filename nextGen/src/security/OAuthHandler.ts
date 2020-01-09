@@ -3,6 +3,8 @@ import jwt from 'jsonwebtoken';
 import jwkToPem, {RSA} from 'jwk-to-pem';
 import {ISSUER, JKWS_URL} from '../ConfigurationENV';
 import {extractUserValidationKey} from './SecurityToolBox';
+import {logger} from "../utils/Utils";
+import chalk from "chalk";
 
 interface TokenHeader {
   kid: string;
@@ -49,6 +51,7 @@ let cachedKeys: MapOfKidToPublicKey;
 
 const getPublicKeys = () => {
   if (!cachedKeys) {
+    logger.debug(chalk.red('Fetching JWKS keys'));
     return axios.get<PublicKeys>(JKWS_URL)
       .then(keyResponse => {
         cachedKeys = keyResponse.data.keys.reduce((accum, nextKey) => {
@@ -64,6 +67,7 @@ const getPublicKeys = () => {
         throw new Error('Unable to fetch public key for reasons ' + e.message);
       });
   } else {
+    logger.debug(chalk.green('Using cached JWKS keys'));
     return Promise.resolve(cachedKeys);
   }
 };

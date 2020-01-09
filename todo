@@ -1,5 +1,4 @@
 - Serverless
-  - Cache miss logging.
   - Auth error handling
   - Versioning
 

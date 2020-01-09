@@ -8,7 +8,7 @@ let connection: MongoClient;
 
 export const getConnection = (): Observable<Db> => {
   if (connection && connection.isConnected()) {
-    logger.info(chalk.green('using cache'));
+    logger.debug(chalk.green('using cached connection'));
     return new Observable<Db>(
       subscriber => {
         subscriber.next(connection.db('DEFAULT_DB'));
@@ -16,7 +16,7 @@ export const getConnection = (): Observable<Db> => {
       },
     );
   } else {
-    logger.info(chalk.red('new connection'));
+    logger.debug(chalk.red('new connection'));
     return new Observable<Db>(subscriber => {
       MongoClient.connect(CONNECTION_STRING, {useNewUrlParser: true}, ((error, result) => {
         if (error) {
