@@ -130,7 +130,7 @@ tacticalActivityRoutes.post('/bulk', (req, res) => {
       filter(cachedTacticalActivity => !!cachedTacticalActivity.uploadType),
       mergeMap(cachedTacticalActivity => {
         switch (cachedTacticalActivity.uploadType) {
-          case EventTypes.DELETED: // todo: remember to pick up antecedence time
+          case EventTypes.DELETED:
             return deleteTacticalActivity(cachedTacticalActivity.activity, userIdentifier);
           case EventTypes.UPDATED:
             return updateTacticalActivity(cachedTacticalActivity.activity, userIdentifier);
@@ -166,7 +166,7 @@ tacticalActivityRoutes.put('/bulk', (req, res) => {
   const userIdentifier = req.header(USER_IDENTIFIER);
   fromIterable(tacticalActivities)
     .pipe(
-      mergeMap(tacticalActivity => // todo use antecedence time.
+      mergeMap(tacticalActivity =>
         updateTacticalActivity(tacticalActivity, userIdentifier)),
       reduce(acc => acc, {}),
     )
