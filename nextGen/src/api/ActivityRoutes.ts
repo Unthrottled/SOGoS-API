@@ -1,10 +1,16 @@
 import chalk from 'chalk';
 import {Router} from 'express';
-import {Activity, CachedActivity, startActivity} from '../activity/Activities';
+import {Activity, CachedActivity} from '../models/Activities';
 import {NoResultsError} from '../models/Errors';
 import {APPLICATION_JSON} from '../routes/OpenRoutes';
 import {USER_IDENTIFIER} from '../security/SecurityToolBox';
-import {findPomodoroCount, getCurrentActivity, getPreviousActivity, uploadActivities} from '../service/Activity';
+import {
+  findPomodoroCount,
+  getCurrentActivity,
+  getPreviousActivity,
+  startActivity,
+  uploadActivities,
+} from '../service/Activity';
 import {logger, rightMeow} from '../utils/Utils';
 
 const activityRoutes = Router();

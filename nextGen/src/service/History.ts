@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import {Request, Response} from 'express-serve-static-core';
 import omit from 'lodash/omit';
 import {map, mergeMap, throwIfEmpty} from 'rxjs/operators';
-import {Activity} from '../activity/Activities';
+import {Activity} from '../models/Activities';
 import {ActivityHistorySchema} from '../memory/Schemas';
 import {NoResultsError} from '../models/Errors';
 import {getConnection} from '../Mongo';

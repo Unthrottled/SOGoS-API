@@ -1,7 +1,7 @@
 import {Db} from 'mongodb';
 import {map, mergeMap, throwIfEmpty} from 'rxjs/operators';
 import uuid from 'uuid/v4';
-import {ActivityTimedType, ActivityType, commenceActivity} from '../activity/Activities';
+import {ActivityTimedType, ActivityType} from '../models/Activities';
 import {dispatchEffect} from '../effects/Dispatch';
 import {UserSchema} from '../memory/Schemas';
 import {RequestError} from '../models/Errors';
@@ -12,6 +12,7 @@ import {extractClaims} from '../security/AuthorizationOperators';
 import {Claims} from '../security/OAuthHandler';
 import {extractUserValidationKey} from '../security/SecurityToolBox';
 import {rightMeow} from '../utils/Utils';
+import {commenceActivity} from "./Activity";
 
 interface ClaimsAndStuff {
     request: any;
@@ -55,6 +56,7 @@ export const createUserIfNecessary = (claimsAndStuff: ClaimsAndStuff,
                     meta: {},
                 })),
             ));
+
 export const constructUserResponse = (claimsAndStuff: ClaimsAndStuff) =>
     user => {
         const claims = claimsAndStuff.claims;
@@ -77,6 +79,7 @@ export const constructUserResponse = (claimsAndStuff: ClaimsAndStuff) =>
             information: userInfo,
         };
     };
+
 export const tryToFindUser = (db: Db,
                               claimsAndStuff: ClaimsAndStuff) =>
     mongoToObservable(callBack =>
@@ -84,6 +87,7 @@ export const tryToFindUser = (db: Db,
             .findOne(
                 {[UserSchema.OAUTH_IDENTIFIERS]: claimsAndStuff.identityProviderId},
                 callBack));
+
 export const findOrCreateUser = req => extractClaims(req)
     .pipe(
         mergeMap(claimsAndStuff =>
