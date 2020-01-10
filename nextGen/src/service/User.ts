@@ -5,7 +5,6 @@ import {ActivityTimedType, ActivityType} from '../models/Activities';
 import {dispatchEffect} from '../effects/Dispatch';
 import {UserSchema} from '../memory/Schemas';
 import {RequestError} from '../models/Errors';
-import {getConnection} from '../Mongo';
 import {mongoToObservable, mongoUpdateToObservable} from '../rxjs/Convience';
 import {switchIfEmpty} from '../rxjs/Operators';
 import {extractClaims} from '../security/AuthorizationOperators';
@@ -13,6 +12,7 @@ import {Claims} from '../security/OAuthHandler';
 import {extractUserValidationKey} from '../security/SecurityToolBox';
 import {rightMeow} from '../utils/Utils';
 import {commenceActivity} from "./Activity";
+import {getConnection} from "../memory/Mongo";
 
 interface ClaimsAndStuff {
     request: any;

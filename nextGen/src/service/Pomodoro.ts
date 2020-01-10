@@ -1,11 +1,11 @@
-import {rightMeow} from "../utils/Utils";
-import {PomodoroCompletionHistorySchema} from "../memory/Schemas";
-import {findOne, performUpdate} from "../rxjs/Convience";
-import {Activity} from "../models/Activities";
-import {Observable} from "rxjs";
-import {defaultIfEmpty, map, mergeMap} from "rxjs/operators";
-import {ReplaceWriteOpResult} from "mongodb";
-import {SavedPomodoro} from "../models/Pomodoro";
+import {ReplaceWriteOpResult} from 'mongodb';
+import {Observable} from 'rxjs';
+import {defaultIfEmpty, map, mergeMap} from 'rxjs/operators';
+import {PomodoroCompletionHistorySchema} from '../memory/Schemas';
+import {Activity} from '../models/Activities';
+import {SavedPomodoro} from '../models/Pomodoro';
+import {findOne, performUpdate} from '../rxjs/Convience';
+import {rightMeow} from '../utils/Utils';
 
 const ONE_DAY = 86400000;
 export const findPomodoro = (userIdentifier: string) => {

@@ -2,8 +2,8 @@ import {Db} from 'mongodb';
 import {Observable} from 'rxjs';
 import {map, mergeMap} from 'rxjs/operators';
 import {EffectSchema} from '../memory/Schemas';
-import {getConnection} from '../Mongo';
 import {mongoToObservable} from '../rxjs/Convience';
+import {getConnection} from "../memory/Mongo";
 
 export interface Effect {
   guid: string;

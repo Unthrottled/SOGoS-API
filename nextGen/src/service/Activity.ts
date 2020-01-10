@@ -6,10 +6,10 @@ import {ActivityHistorySchema, CurrentActivitySchema, PomodoroCompletionHistoryS
 import {Activity, ActivityType, CachedActivity, StoredCurrentActivity} from '../models/Activities';
 import {NoResultsError} from '../models/Errors';
 import {EventTypes} from '../models/EventTypes';
-import {getConnection} from '../Mongo';
 import {findOne, mongoToObservable, toObservable} from '../rxjs/Convience';
 import {rightMeow} from '../utils/Utils';
 import {findPomodoro, writePomodoroCount} from './Pomodoro';
+import {getConnection} from "../memory/Mongo";
 
 const findActivity = (
   userIdentifier: string,

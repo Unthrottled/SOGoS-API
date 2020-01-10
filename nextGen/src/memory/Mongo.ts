@@ -1,8 +1,8 @@
 import chalk from 'chalk';
 import {Db, MongoClient} from 'mongodb';
 import {Observable} from 'rxjs';
-import {CONNECTION_STRING} from './ConfigurationENV';
-import {logger} from './utils/Utils';
+import {CONNECTION_STRING} from '../ConfigurationENV';
+import {logger} from '../utils/Utils';
 
 let connection: MongoClient;
 

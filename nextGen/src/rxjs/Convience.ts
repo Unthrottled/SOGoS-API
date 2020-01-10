@@ -3,7 +3,7 @@ import { Db, MongoCallback} from 'mongodb';
 import {Observable} from 'rxjs';
 import {mergeMap, reduce} from 'rxjs/operators';
 import {Stream} from 'stream';
-import {getConnection} from '../Mongo';
+import {getConnection} from '../memory/Mongo';
 
 export const collectList = <T>() => reduce<T, T[]>((acc, value) => {
   acc.push(value);
