@@ -1,18 +1,18 @@
 import {Db} from 'mongodb';
 import {map, mergeMap, throwIfEmpty} from 'rxjs/operators';
 import uuid from 'uuid/v4';
-import {ActivityTimedType, ActivityType} from '../models/Activities';
 import {dispatchEffect} from '../effects/Dispatch';
+import {getConnection} from '../memory/Mongo';
 import {UserSchema} from '../memory/Schemas';
-import {RequestError} from '../models/Errors';
+import {ActivityTimedType, ActivityType} from '../models/Activities';
+import {RequestError} from '../models/RequestErrors';
 import {mongoToObservable, mongoUpdateToObservable} from '../rxjs/Convience';
 import {switchIfEmpty} from '../rxjs/Operators';
 import {extractClaims} from '../security/AuthorizationOperators';
 import {Claims} from '../security/OAuthHandler';
 import {extractUserValidationKey} from '../security/SecurityToolBox';
 import {rightMeow} from '../utils/Utils';
-import {commenceActivity} from "./Activity";
-import {getConnection} from "../memory/Mongo";
+import {commenceActivity} from './Activity';
 
 interface ClaimsAndStuff {
     request: any;

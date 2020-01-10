@@ -2,6 +2,7 @@ import {Db} from 'mongodb';
 import {Observable} from 'rxjs';
 import {defaultIfEmpty, filter, map, mergeMap, throwIfEmpty} from 'rxjs/operators';
 import {dispatchEffect} from '../effects/Dispatch';
+import {getConnection} from '../memory/Mongo';
 import {ActivityHistorySchema, CurrentActivitySchema, PomodoroCompletionHistorySchema} from '../memory/Schemas';
 import {Activity, ActivityType, CachedActivity, StoredCurrentActivity} from '../models/Activities';
 import {NoResultsError} from '../models/Errors';
@@ -9,7 +10,6 @@ import {EventTypes} from '../models/EventTypes';
 import {findOne, mongoToObservable, toObservable} from '../rxjs/Convience';
 import {rightMeow} from '../utils/Utils';
 import {findPomodoro, writePomodoroCount} from './Pomodoro';
-import {getConnection} from "../memory/Mongo";
 
 const findActivity = (
   userIdentifier: string,

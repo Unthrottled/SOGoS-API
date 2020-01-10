@@ -1,10 +1,10 @@
 import axios from 'axios';
+import chalk from 'chalk';
 import jwt from 'jsonwebtoken';
 import jwkToPem, {RSA} from 'jwk-to-pem';
 import {ISSUER, JKWS_URL} from '../ConfigurationENV';
+import {logger} from '../utils/Utils';
 import {extractUserValidationKey} from './SecurityToolBox';
-import {logger} from "../utils/Utils";
-import chalk from "chalk";
 
 interface TokenHeader {
   kid: string;
@@ -130,7 +130,9 @@ const parsHeaders = token => {
               .toString('utf8'),
           ) as TokenHeader,
       };
-    } catch (e) {}
+    } catch (e) {
+      logger.warn(chalk.yellow(`Unable to parse token: ${chalk.red(token)}`));
+    }
   }
   return Promise.reject(401);
 };

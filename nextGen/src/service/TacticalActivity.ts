@@ -1,13 +1,13 @@
-import {EMPTY, Observable} from "rxjs";
-import {EventTypes} from "../models/EventTypes";
-import {fromIterable} from "rxjs/internal-compatibility";
-import {filter, map, mergeMap, reduce} from "rxjs/operators";
-import {ColorType} from "../strategy/Objectives";
-import {collectList, findMany, performUpdate} from "../rxjs/Convience";
-import {TacticalActivitySchema} from "../memory/Schemas";
-import omit from "lodash/omit";
-import {rightMeow} from "../utils/Utils";
-import {createEffect} from "../effects/Dispatch";
+import omit from 'lodash/omit';
+import {EMPTY, Observable} from 'rxjs';
+import {fromIterable} from 'rxjs/internal-compatibility';
+import {filter, map, mergeMap, reduce} from 'rxjs/operators';
+import {createEffect} from '../effects/Dispatch';
+import {TacticalActivitySchema} from '../memory/Schemas';
+import {EventTypes} from '../models/EventTypes';
+import {collectList, findMany, performUpdate} from '../rxjs/Convience';
+import {ColorType} from '../strategy/Objectives';
+import {rightMeow} from '../utils/Utils';
 
 const CREATED_TACTICAL_ACTIVITY = 'CREATED_TACTICAL_ACTIVITY';  // was STARTED_TACTICAL_ACTIVITY.
 const REMOVED_TACTICAL_ACTIVITY = 'REMOVED_TACTICAL_ACTIVITY';

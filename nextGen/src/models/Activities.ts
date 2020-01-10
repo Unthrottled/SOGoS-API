@@ -1,4 +1,4 @@
-import {EventTypes} from '../models/EventTypes';
+import {EventTypes} from './EventTypes';
 
 export interface StoredCurrentActivity {
   guid: string;
@@ -46,4 +46,3 @@ export interface Activity {
   content: ActivityContent;
   guid: string;
 }
-

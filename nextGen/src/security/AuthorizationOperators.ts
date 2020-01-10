@@ -1,5 +1,5 @@
 import {filter, map, throwIfEmpty} from 'rxjs/operators';
-import {RequestError} from '../models/Errors';
+import {RequestError} from '../models/RequestErrors';
 import {toObservable} from '../rxjs/Convience';
 import {Claims} from './OAuthHandler';
 import {hashString} from './SecurityToolBox';

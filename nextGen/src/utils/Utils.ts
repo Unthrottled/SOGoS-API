@@ -19,8 +19,8 @@ const getLevel = (level: string): string => {
   }
 };
 
-const myFormat = printf(({level, message, timestamp}) => {
-  return `[${timestamp}] ${getLevel(level)}: ${message}`;
+const myFormat = printf(({level, message, timestamp: logTimestamp}) => {
+  return `[${logTimestamp}] ${getLevel(level)}: ${message}`;
 });
 
 export const logger = winston.createLogger({
