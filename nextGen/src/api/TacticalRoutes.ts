@@ -3,8 +3,8 @@ import {Router} from 'express';
 import {APPLICATION_JSON} from '../routes/OpenRoutes';
 import {USER_IDENTIFIER} from '../security/SecurityToolBox';
 import {createOrUpdatePomodoroSettings, getPomodoroSettings, PomodoroSettings} from '../service/Tactical';
-import tacticalActivityRoutes from '../tactical/TacticalActivity';
 import {logger} from '../utils/Utils';
+import tacticalActivityRoutes from './TacticalActivityRoutes';
 
 const tacticalRoutes = Router();
 
