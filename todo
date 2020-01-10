@@ -1,3 +1,7 @@
+Trouble Children
+  - Mongo Connection
+  - JWKs Keys
+
 ----------
 - capture when device last did something.
 - replace current activity only if activities time is greater

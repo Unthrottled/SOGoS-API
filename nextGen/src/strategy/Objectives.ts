@@ -46,11 +46,6 @@ export interface CachedObjective {
   objective: Objective;
 }
 
-export interface ObjectiveCacheEvent {
-  objective: CachedObjective;
-  userGUID: string;
-}
-
 const createOrUpdateObjectiveInHistory = (
   objecto: Objective,
   userIdentifier: string,
