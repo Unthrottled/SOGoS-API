@@ -3,6 +3,7 @@ plugins:
   - serverless-plugin-typescript
   - serverless-domain-manager
   - serverless-dotenv-plugin
+  - serverless-aws-alias
 
 service: sogos-api
 
