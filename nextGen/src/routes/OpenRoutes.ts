@@ -2,7 +2,7 @@ import {Router} from 'express';
 import {
   AUTH_URL,
   CLIENT_ID_UI, ISSUER,
-  LOGOUT_URL,
+  LOGOUT_URL, NATIVE_CLIENT_ID_UI,
   OPENID_PROVIDER_UI,
   PROVIDER,
   TOKEN_URL,
@@ -24,6 +24,7 @@ openRoutes.get('/configurations', (_, res) => {
   res.contentType(APPLICATION_JSON)
     .send({
       clientID: CLIENT_ID_UI,
+      appClientID: NATIVE_CLIENT_ID_UI,
       authorizationEndpoint: AUTH_URL,
       logoutEndpoint: LOGOUT_URL,
       userInfoEndpoint: USER_INFO_URL,

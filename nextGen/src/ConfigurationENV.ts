@@ -8,7 +8,8 @@ if (!HMAC_KEY) {
   throw Error('Required "SOGOS_HMAC_KEY" to be set as an environment variable');
 }
 
-export const CLIENT_ID_UI = process.env.SOGOS_CLIENT_ID_UI || CONFIG.security['App-Client-Id'];
+export const CLIENT_ID_UI = process.env.SOGOS_CLIENT_ID_UI || CONFIG.security['Web-App-Client-Id'];
+export const NATIVE_CLIENT_ID_UI = process.env.SOGOS_NATIVE_CLIENT_ID_UI || CONFIG.security['Native-App-Client-Id'];
 export const OPENID_PROVIDER_UI = process.env.SOGOS_OPENID_PROVIDER_UI || CONFIG.security['OpenId-Connect-Provider'];
 export const PROVIDER = process.env.SOGOS_PROVIDER || CONFIG.security.provider;
 export const ISSUER = process.env.SOGOS_ISSUER || CONFIG.security.issuer;
