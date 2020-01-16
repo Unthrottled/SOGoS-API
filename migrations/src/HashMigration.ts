@@ -8,6 +8,7 @@ export const hashString = (value: string) =>
   crypto.createHmac('SHA256', HMAC_KEY)
     .update(value).digest('hex');
 
+// todo: rxjs to enable known completion of updates
 new Promise((resolve, reject) =>
   MongoClient.connect(mongoUrl, {useUnifiedTopology: true, useNewUrlParser: true}, ((error, result) => {
   if (!error) {

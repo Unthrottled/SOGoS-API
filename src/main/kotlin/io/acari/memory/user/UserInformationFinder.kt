@@ -35,7 +35,7 @@ class UserInformationFinder(private val mongoClient: MongoClient, private val ve
   ): Maybe<JsonObject> {
     return mongoClient.rxFindOne(
       UserSchema.COLLECTION, jsonObjectOf(
-        UserSchema.OAUTH_IDENTIFIERS to jsonArrayOf(openIDUserIdentifier)
+        UserSchema.OAUTH_IDENTIFIERS to openIDUserIdentifier
       ), jsonObjectOf()
     )
   }
