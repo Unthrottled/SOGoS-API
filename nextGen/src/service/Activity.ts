@@ -4,7 +4,7 @@ import {defaultIfEmpty, filter, map, mergeMap, throwIfEmpty} from 'rxjs/operator
 import {dispatchEffect} from '../effects/Dispatch';
 import {getConnection} from '../memory/Mongo';
 import {ActivityHistorySchema, CurrentActivitySchema, PomodoroCompletionHistorySchema} from '../memory/Schemas';
-import {Activity, ActivityType, CachedActivity, StoredCurrentActivity} from '../models/Activities';
+import {Activity, ActivityTimedType, ActivityType, CachedActivity, StoredCurrentActivity} from '../models/Activities';
 import {NoResultsError} from '../models/Errors';
 import {EventTypes} from '../models/EventTypes';
 import {findOne, mongoToObservable, toObservable} from '../rxjs/Convience';
@@ -69,6 +69,7 @@ export const commenceActivity = (act: Activity, db: Db): Observable<any> =>
         }
       }),
     );
+
 const updateCurrentActivity = (newActivity: Activity, db: Db): Observable<Activity> =>
   findCurrentActivity(newActivity.guid, db)
     .pipe(
@@ -82,6 +83,7 @@ const updateCurrentActivity = (newActivity: Activity, db: Db): Observable<Activi
           toObservable(newActivity),
       ),
     );
+
 const writeNewCurrentActivity = (
   previousActivity: Activity,
   newActivity: Activity,
@@ -100,8 +102,10 @@ const writeNewCurrentActivity = (
   ).pipe(
     map(_ => newActivity),
   );
+
 const isOlder = (left: Activity, right: Activity) =>
   left && left.antecedenceTime < right.antecedenceTime;
+
 export const findCurrentActivity = (
   globalUserIdentifier: string,
   db: Db,
@@ -113,13 +117,24 @@ export const findCurrentActivity = (
       }, callBack),
   ).pipe(
     map(storedCurrentActivity => storedCurrentActivity.current),
-    defaultIfEmpty(),
+    defaultIfEmpty({
+      guid: globalUserIdentifier,
+      content: {
+        timedType: ActivityTimedType.NA,
+        name: 'Before First Activity',
+        type: ActivityType.NA,
+        uuid: '#kony_2012',
+      },
+      antecedenceTime: 0,
+    }),
   );
+
 const shouldTime = (activity: Activity) => {
   return activity.content &&
     activity.content.type &&
     activity.content.type === ActivityType.ACTIVE;
 };
+
 const writeActivityLog = (activity: Activity, db: Db): Observable<Activity> =>
   mongoToObservable(callBack =>
     db.collection(ActivityHistorySchema.COLLECTION)

@@ -23,39 +23,39 @@ interface ClaimsAndStuff {
 export const createUserIfNecessary = (claimsAndStuff: ClaimsAndStuff,
                                       db: Db) =>
     switchIfEmpty(
-        mongoUpdateToObservable<any, any>(callBackSupplier => {
-            const guid = uuid();
-            const newUser = {
-                [UserSchema.GLOBAL_USER_IDENTIFIER]: guid,
-                [UserSchema.OAUTH_IDENTIFIERS]: [claimsAndStuff.identityProviderId],
-                [UserSchema.TIME_CREATED]: rightMeow(),
-            };
-            db.collection(UserSchema.COLLECTION)
-                .insertOne(newUser, callBackSupplier(newUser));
-        })
-            .pipe(
-                mergeMap(user =>
-                    commenceActivity({
-                        guid: user[UserSchema.GLOBAL_USER_IDENTIFIER],
-                        antecedenceTime: user[UserSchema.TIME_CREATED],
-                        content: {
-                            name: 'RECOVERY',
-                            type: ActivityType.ACTIVE,
-                            timedType: ActivityTimedType.NONE,
-                            veryFirstActivity: true,
-                            uuid: uuid(),
-                        },
-                    }, db).pipe(map(_ => user)),
-                ),
-                dispatchEffect(db, user => ({
-                    guid: user[UserSchema.GLOBAL_USER_IDENTIFIER],
-                    timeCreated: user[UserSchema.TIME_CREATED],
-                    antecedenceTime: user[UserSchema.TIME_CREATED],
-                    name: 'USER_CREATED',
-                    content: claimsAndStuff.claims,
-                    meta: {},
-                })),
-            ));
+    mongoUpdateToObservable<any, any>(callBackSupplier => {
+      const guid = uuid();
+      const newUser = {
+        [UserSchema.GLOBAL_USER_IDENTIFIER]: guid,
+        [UserSchema.OAUTH_IDENTIFIERS]: [claimsAndStuff.identityProviderId],
+        [UserSchema.TIME_CREATED]: rightMeow(),
+      };
+      db.collection(UserSchema.COLLECTION)
+        .insertOne(newUser, callBackSupplier(newUser));
+    })
+      .pipe(
+        mergeMap(user =>
+          commenceActivity({
+            guid: user[UserSchema.GLOBAL_USER_IDENTIFIER],
+            antecedenceTime: user[UserSchema.TIME_CREATED],
+            content: {
+              name: 'RECOVERY',
+              type: ActivityType.ACTIVE,
+              timedType: ActivityTimedType.NONE,
+              veryFirstActivity: true,
+              uuid: uuid(),
+            },
+          }, db).pipe(map(_ => user)),
+        ),
+        dispatchEffect(db, user => ({
+          guid: user[UserSchema.GLOBAL_USER_IDENTIFIER],
+          timeCreated: user[UserSchema.TIME_CREATED],
+          antecedenceTime: user[UserSchema.TIME_CREATED],
+          name: 'USER_CREATED',
+          content: claimsAndStuff.claims,
+          meta: {},
+        })),
+      ));
 
 export const constructUserResponse = (claimsAndStuff: ClaimsAndStuff) =>
     user => {
