@@ -1,7 +1,6 @@
 plugins:
   - serverless-offline
   - serverless-plugin-typescript
-  - serverless-domain-manager
   - serverless-dotenv-plugin
   - serverless-aws-alias
 
@@ -12,12 +11,6 @@ provider:
   runtime: nodejs12.x
 
 custom:
-  customDomain:
-    domainName: sogos.api.acari.io
-    certificateName: '*.api.acari.io'
-    basePath: ''
-    stage: prd
-    createRoute53Record: true
   serverless-offline:
     port: 8888
     host: 0.0.0.0

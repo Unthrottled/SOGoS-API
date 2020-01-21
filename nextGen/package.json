@@ -52,7 +52,6 @@
     "jest": "^24.8.0",
     "lodash": "^4.17.15",
     "serverless-aws-alias": "^1.8.0",
-    "serverless-domain-manager": "^3.3.0",
     "serverless-dotenv-plugin": "^2.1.1",
     "serverless-offline": "^5.12.1",
     "serverless-plugin-typescript": "^1.1.9",
