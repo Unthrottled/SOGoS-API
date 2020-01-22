@@ -26,6 +26,7 @@ fun attachNonSecuredRoutes(router: Router, configuration: JsonObject): Router {
       .end(
         jsonObjectOf(
           "clientID" to getUIClientId(configuration, securityConfigurations),
+          "appClientID" to getNativeClientId(configuration, securityConfigurations),
           "authorizationEndpoint" to getAuthEndpoint(configuration, securityConfigurations),
           "logoutEndpoint" to getLogoutEndpoint(configuration, securityConfigurations),
           "userInfoEndpoint" to getUserInfoEndpoint(configuration, securityConfigurations),

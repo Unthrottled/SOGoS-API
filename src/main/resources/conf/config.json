@@ -15,7 +15,8 @@
     "issuer": "http://172.17.0.1:8080/auth/realms/master",
     "provider": "KEYCLOAK",
     "Client-Id": "sogos",
-    "App-Client-Id": "sogos-app"
+    "App-Client-Id": "sogos-app",
+    "Native-App-Client-Id": "sogos-app"
   },
   "memory": {
     "host": "127.0.0.1",

@@ -184,6 +184,11 @@ fun getUIClientId(
   securityConfig: JsonObject
 ): String = config.getString(CLIENT_ID_UI) ?: securityConfig.getString("App-Client-Id")
 
+fun getNativeClientId(
+  config: JsonObject,
+  securityConfig: JsonObject
+): String = config.getString(CLIENT_ID_UI) ?: securityConfig.getString("Native-App-Client-Id")
+
 fun getCORSOrigin(
   config: JsonObject,
   securityConfig: JsonObject
