@@ -1,18 +1,18 @@
 {
   "server": {
-    "port": 8889,
+    "port": 8888,
     "Keystore-Path": "keystore.jks",
     "Keystore-Password": "123456",
     "SSL-Enabled": false
   },
   "security": {
-    "allowed-origin": "http://172.21.0.1:3000",
-    "OpenId-Connect-Provider": "http://172.21.0.1:8080/auth/realms/master",
-    "auth-url": "http://172.21.0.1:8080/auth/realms/master/protocol/openid-connect/auth",
-    "token-url": "http://172.21.0.1:8080/auth/realms/master/protocol/openid-connect/token",
-    "user-info-url": "http://172.21.0.1:8080/auth/realms/master/protocol/openid-connect/userinfo",
-    "logout-url": "http://172.21.0.1:8080/auth/realms/master/protocol/openid-connect/logout",
-    "issuer": "http://172.21.0.1:8080/auth/realms/master",
+    "allowed-origin": "http://172.17.0.1:3000",
+    "OpenId-Connect-Provider": "http://172.17.0.1:8080/auth/realms/master",
+    "auth-url": "http://172.17.0.1:8080/auth/realms/master/protocol/openid-connect/auth",
+    "token-url": "http://172.17.0.1:8080/auth/realms/master/protocol/openid-connect/token",
+    "user-info-url": "http://172.17.0.1:8080/auth/realms/master/protocol/openid-connect/userinfo",
+    "logout-url": "http://172.17.0.1:8080/auth/realms/master/protocol/openid-connect/logout",
+    "issuer": "http://172.17.0.1:8080/auth/realms/master",
     "provider": "KEYCLOAK",
     "Client-Id": "sogos",
     "App-Client-Id": "sogos-app"
