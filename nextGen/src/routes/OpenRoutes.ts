@@ -1,8 +1,10 @@
 import {Router} from 'express';
 import {
+  APP_ISSUER,
   AUTH_URL,
-  CLIENT_ID_UI, ISSUER,
-  LOGOUT_URL, NATIVE_CLIENT_ID_UI,
+  CLIENT_ID_UI,
+  LOGOUT_URL,
+  NATIVE_CLIENT_ID_UI,
   OPENID_PROVIDER_UI,
   PROVIDER,
   TOKEN_URL,
@@ -31,7 +33,7 @@ openRoutes.get('/configurations', (_, res) => {
       tokenEndpoint: TOKEN_URL,
       openIDConnectURI: OPENID_PROVIDER_UI,
       provider: PROVIDER,
-      issuer: ISSUER,
+      issuer: APP_ISSUER,
     });
 });
 

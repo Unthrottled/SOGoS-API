@@ -8,6 +8,7 @@ export const CONFIG = {
     'user-info-url': 'http://172.17.0.1:8080/auth/realms/master/protocol/openid-connect/userinfo',
     'logout-url': 'http://172.17.0.1:8080/auth/realms/master/protocol/openid-connect/logout',
     'issuer': 'http://172.17.0.1:8080/auth/realms/master',
+    'appIssuer': 'http://172.17.0.1:8080/auth/realms/master',
     'provider': 'KEYCLOAK',
     'Client-Id': 'sogos',
     'Web-App-Client-Id': 'sogos-app',

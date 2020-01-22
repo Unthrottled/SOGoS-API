@@ -13,6 +13,7 @@ export const NATIVE_CLIENT_ID_UI = process.env.SOGOS_NATIVE_CLIENT_ID_UI || CONF
 export const OPENID_PROVIDER_UI = process.env.SOGOS_OPENID_PROVIDER_UI || CONFIG.security['OpenId-Connect-Provider'];
 export const PROVIDER = process.env.SOGOS_PROVIDER || CONFIG.security.provider;
 export const ISSUER = process.env.SOGOS_ISSUER || CONFIG.security.issuer;
+export const APP_ISSUER = process.env.SOGOS_APP_ISSUER || CONFIG.security.appIssuer;
 export const AUTH_URL = process.env.SOGOS_AUTH_URL || CONFIG.security['auth-url'];
 export const JKWS_URL = process.env.SOGOS_JKWS_URL || CONFIG.security['jwks-url'];
 export const TOKEN_URL = process.env.SOGOS_TOKEN_URL || CONFIG.security['token-url'];
