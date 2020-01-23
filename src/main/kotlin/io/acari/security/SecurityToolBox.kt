@@ -7,6 +7,7 @@ import CORS_ORIGIN_URL
 import HMAC_KEY
 import ISSUER
 import LOGOUT_URL
+import NATIVE_CLIENT_ID_UI
 import OPENID_PROVIDER
 import OPENID_PROVIDER_UI
 import PORT_NUMBER
@@ -187,7 +188,7 @@ fun getUIClientId(
 fun getNativeClientId(
   config: JsonObject,
   securityConfig: JsonObject
-): String = config.getString(CLIENT_ID_UI) ?: securityConfig.getString("Native-App-Client-Id")
+): String = config.getString(NATIVE_CLIENT_ID_UI) ?: securityConfig.getString("Native-App-Client-Id")
 
 fun getCORSOrigin(
   config: JsonObject,
