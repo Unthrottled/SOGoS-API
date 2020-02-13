@@ -66,6 +66,8 @@ fun createHistoryRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
       )
     ).toFlowable()
       .map {
+        it.remove("_id")
+        it.remove("guid")
         val json = Json.encode(it)
         if(asArray) "$json,"
         else json
