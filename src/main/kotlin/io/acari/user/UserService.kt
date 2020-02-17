@@ -44,7 +44,8 @@ class UserService(private val userInformationFinder: UserInformationFinder) {
     userInformationFinder.handle(oauthUserInformation)
       .map { userResponse ->
         jsonObjectOf(
-          UserSchema.GLOBAL_USER_IDENTIFIER to userResponse
+          UserSchema.GLOBAL_USER_IDENTIFIER to userResponse.getString(UserSchema.GLOBAL_USER_IDENTIFIER),
+          UserSchema.MISC_USER_THINGS to userResponse.getJsonObject(UserSchema.MISC_USER_THINGS)
         )
       }
 
@@ -67,7 +68,8 @@ class UserService(private val userInformationFinder: UserInformationFinder) {
 
   private fun extractUser(userInformation: Pair<JsonObject, JsonObject>): String {
     val idToken = userInformation.second
-    val globalUserIdentifier = userInformation.first.getString(UserSchema.GLOBAL_USER_IDENTIFIER)
+    val userJson = userInformation.first
+    val globalUserIdentifier = userJson.getString(UserSchema.GLOBAL_USER_IDENTIFIER)
     val userVerificationKey = extractUserValidationKey(idToken.getString("email"), globalUserIdentifier)
     val userInfo = JsonObject()
       .put("fullName", idToken.getValue("name"))
@@ -80,7 +82,8 @@ class UserService(private val userInformationFinder: UserInformationFinder) {
       .put("verificationKey", userVerificationKey)
     return jsonObjectOf(
       "information" to userInfo,
-      "security" to security
+      "security" to security,
+      "misc" to (userJson.getJsonObject("misc") ?: jsonObjectOf())
     ).encode()
   }
 }

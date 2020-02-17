@@ -4,6 +4,8 @@ import io.acari.http.STARTED_ACTIVITY
 import io.acari.memory.Effect
 import io.acari.memory.UserSchema
 import io.acari.security.extractUserIdentificationKey
+import io.acari.util.toMaybe
+import io.acari.util.toSingle
 import io.reactivex.Maybe
 import io.reactivex.Single
 import io.reactivex.SingleObserver
@@ -17,7 +19,7 @@ import java.util.*
 
 class UserInformationFinder(private val mongoClient: MongoClient, private val vertx: Vertx) {
 
-  fun handle(openIDInformation: JsonObject): Single<String> {
+  fun handle(openIDInformation: JsonObject): Single<JsonObject> {
     return extractUserIdentificationKey(openIDInformation)
       .flatMapSingle { openIDUserIdentifier ->
         findUser(openIDUserIdentifier)
@@ -25,8 +27,6 @@ class UserInformationFinder(private val mongoClient: MongoClient, private val ve
           .switchIfEmpty { singleObserver: SingleObserver<in JsonObject> ->
             singleObserver.onError(IllegalStateException("Unable to find user for $openIDUserIdentifier"))
       }
-      }.map { user ->
-        user.getString(UserSchema.GLOBAL_USER_IDENTIFIER)
       }
   }
 
