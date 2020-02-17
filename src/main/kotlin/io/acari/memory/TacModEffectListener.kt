@@ -35,7 +35,7 @@ class TacModEffectListener(private val mongoClient: MongoClient, private val ver
           jsonObjectOf(UserSchema.GLOBAL_USER_IDENTIFIER to effect.guid),
           jsonObjectOf(
             "\$set" to jsonObjectOf(
-              "misc.$updateType" to true
+              "misc.onboarding.$updateType" to true
             )
           )
         )
