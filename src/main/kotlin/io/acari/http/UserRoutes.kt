@@ -36,6 +36,8 @@ const val TACMOD_THANKED = "TACMOD_THANKED"
 
 fun createOnboardingRouter(vertx: Vertx, mongoClient: MongoClient): Router {
   val router = Router.router(vertx)
+
+  // What else can I say except, "You're Welcome"
   router.post("/welcomed").handler { requestContext ->
     val timeCreated = Instant.now().toEpochMilli()
     val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
@@ -52,7 +54,7 @@ fun createOnboardingRouter(vertx: Vertx, mongoClient: MongoClient): Router {
     requestContext.response().setStatusCode(201).end()
   }
 
-  router.post("/TacMod/notify").handler { requestContext ->
+  router.post("/TacMod/notified").handler { requestContext ->
     val timeCreated = Instant.now().toEpochMilli()
     val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
     vertx.eventBus().publish(
