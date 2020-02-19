@@ -31,7 +31,7 @@ class CompletedPomodoroListener(
     event.body().toSingle()
       .filter { it.name == "STARTED_ACTIVITY" }
       .filter { it.content.getString("name") == "RECOVERY" }
-      .filter { it.content.getBoolean("autoStart") }
+      .filter { it.content.getBoolean("autoStart", false) }
       .flatMapCompletable { writePomodoroCount(it) }
       .subscribe({
 
