@@ -8,7 +8,19 @@ import io.vertx.kotlin.core.json.jsonObjectOf
 import io.vertx.reactivex.ext.web.Router
 import java.time.Instant
 
+const val API_VERSION = "1.1.0"
+
 fun attachNonSecuredRoutes(router: Router, configuration: JsonObject): Router {
+  router.get("/version").handler {
+    it.response()
+      .putHeader(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON)
+      .end(
+        jsonObjectOf(
+          "version" to API_VERSION
+        ).encode()
+      )
+  }
+
   router.get("/time").handler {
     it.response()
       .putHeader(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON)

@@ -24,7 +24,7 @@ EXPOSE 80
 
 COPY --from=packager /app/build/libs /app
 
-ENTRYPOINT ["java", "-jar", "SOGoS-API-1.0.0-BETA-fat.jar"]
+ENTRYPOINT ["java", "-jar", "SOGoS-API-1.1.0-fat.jar"]
 
 
 
