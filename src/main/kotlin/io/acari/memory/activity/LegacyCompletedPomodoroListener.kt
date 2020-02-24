@@ -8,7 +8,6 @@ import io.acari.memory.PomodoroCompletionHistorySchema.GLOBAL_USER_IDENTIFIER
 import io.acari.util.loggerFor
 import io.acari.util.toSingle
 import io.reactivex.Completable
-import io.reactivex.Maybe
 import io.reactivex.MaybeObserver
 import io.vertx.core.Handler
 import io.vertx.core.json.JsonObject
@@ -17,8 +16,6 @@ import io.vertx.kotlin.core.json.jsonObjectOf
 import io.vertx.reactivex.core.Vertx
 import io.vertx.reactivex.core.eventbus.Message
 import io.vertx.reactivex.ext.mongo.MongoClient
-import java.time.Duration
-import java.time.Instant
 
 @Deprecated("Not used anymore because of timezones being a bitch",
   replaceWith = ReplaceWith("CompletedPomodoroListener"))
@@ -44,7 +41,7 @@ class LegacyCompletedPomodoroListener(
 
   private fun writePomodoroCount(completionEffect: Effect): Completable {
     val (currentDay, query, foundPomodoroCount) =
-      pomodoroFinder.findPomodoroCount(completionEffect.guid)
+      pomodoroFinder.legacyFindPomodoroCount(completionEffect.guid)
     return foundPomodoroCount
       .map { item ->
         item.put(COUNT, item.getInteger(COUNT) + 1)

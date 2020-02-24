@@ -2,6 +2,7 @@ package io.acari.http
 
 import io.acari.memory.ActivityHistorySchema
 import io.acari.memory.activity.activityFromJson
+import io.acari.memory.activity.buildToFromQuery
 import io.acari.util.loggerFor
 import io.netty.handler.codec.http.HttpHeaderNames
 import io.vertx.core.json.Json
@@ -59,10 +60,7 @@ fun createHistoryRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
     mongoClient.findBatch(
       ActivityHistorySchema.COLLECTION, jsonObjectOf(
         ActivityHistorySchema.GLOBAL_USER_IDENTIFIER to userIdentifier,
-        ActivityHistorySchema.TIME_OF_ANTECEDENCE to jsonObjectOf(
-          "\$lt" to to, // toot toot motherfucker
-          "\$gte" to from
-        )
+        ActivityHistorySchema.TIME_OF_ANTECEDENCE to buildToFromQuery(to, from)
       )
     ).toFlowable()
       .map {

@@ -1,7 +1,6 @@
 package io.acari.http
 
 import io.acari.memory.Effect
-import io.acari.memory.PomodoroCompletionHistorySchema
 import io.acari.memory.activity.Activity
 import io.acari.memory.activity.CurrentActivityFinder
 import io.acari.memory.activity.PomodoroFinder
@@ -9,12 +8,12 @@ import io.acari.memory.activity.PreviousActivityFinder
 import io.acari.memory.user.EFFECT_CHANNEL
 import io.acari.security.USER_IDENTIFIER
 import io.acari.types.NotFoundException
+import io.acari.util.doOrElse
 import io.acari.util.loggerFor
 import io.acari.util.toOptional
 import io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE
 import io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON
 import io.netty.handler.codec.http.HttpResponseStatus
-import io.reactivex.MaybeObserver
 import io.reactivex.SingleObserver
 import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
@@ -25,6 +24,7 @@ import io.vertx.reactivex.ext.web.Router
 import io.vertx.reactivex.ext.web.Router.router
 import io.vertx.reactivex.ext.web.RoutingContext
 import java.time.Instant
+import java.util.*
 
 private val logger = loggerFor("Activity Routes")
 
@@ -156,30 +156,47 @@ fun createActivityRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
     requestContext.response().putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(200).end()
   }
 
-  // todo: fix this
   val pomodoroFinder = PomodoroFinder(mongoClient)
   router.get("/pomodoro/count").handler { requestContext ->
     val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
-    pomodoroFinder.findPomodoroCount(userIdentifier)
-      .third
-      .map { it.getInteger(PomodoroCompletionHistorySchema.COUNT) }
-      .switchIfEmpty { countObserver: MaybeObserver<in Int> ->
-        countObserver.onSuccess(0)
+    val request = requestContext.request()
+    val possiblyFrom = try {
+      request.getParam("from").toLong().toOptional()
+    } catch (_: Throwable) {
+      Optional.empty<Long>()
+    }
+    val possiblyTo = try {
+      request.getParam("to").toLong().toOptional()
+    } catch (_: Throwable) {
+      Optional.empty<Long>()
+    }
+    possiblyFrom.flatMap { from ->
+      possiblyTo.map { to -> from to to  } // heh
+    }.doOrElse(
+      {
+        val (from, to) = it
+        pomodoroFinder.findPomodoroCount(userIdentifier, from, to)
+          .map {
+            jsonObjectOf(
+              "count" to it
+            )
+          }
+          .subscribe({
+            requestContext.response()
+              .putHeader(CONTENT_TYPE, APPLICATION_JSON)
+              .setStatusCode(200)
+              .end(Json.encode(it))
+          }) {
+            logger.warn("Unable to service pomodoro count request for $userIdentifier", it)
+            requestContext.fail(500)
+          }
+
       }
-      .map {
-        jsonObjectOf(
-          PomodoroCompletionHistorySchema.COUNT to it
-        )
-      }
-      .subscribe({
-        requestContext.response()
-          .putHeader(CONTENT_TYPE, APPLICATION_JSON)
-          .setStatusCode(200)
-          .end(Json.encode(it))
-      }) {
-        logger.warn("Unable to service pomodoro count request for $userIdentifier", it)
-        requestContext.fail(500)
-      }
+    ) {
+      requestContext.response()
+        .setStatusCode(400)
+        .end("Required to and from query parameters to be a number")
+    }
   }
 
 
