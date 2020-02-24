@@ -62,6 +62,7 @@ shadowJar {
   manifest {
     attributes 'Main-Verticle': mainVerticleName
   }
+  archiveName = "${baseName}.${extension}"
   mergeServiceFiles {
     include 'META-INF/services/io.vertx.core.spi.VerticleFactory'
   }
