@@ -13,7 +13,8 @@ object ActivityMemoryWorkers {
   fun registerWorkers(vertx: Vertx, mongoClient: MongoClient): Completable {
     val eventBus = vertx.eventBus()
     eventBus.consumer(EFFECT_CHANNEL, ActivityEffectListener(mongoClient, vertx))
-    eventBus.consumer(EFFECT_CHANNEL, CompletedPomodoroListener(mongoClient, vertx))
+    eventBus.consumer(CURRENT_ACTIVITY_CHANNEL, CompletedPomodoroListener(mongoClient, vertx))
+    eventBus.consumer(EFFECT_CHANNEL, LegacyCompletedPomodoroListener(mongoClient, vertx))
     return Completable.complete()
   }
 }

@@ -4,15 +4,13 @@ import io.acari.http.STARTED_ACTIVITY
 import io.acari.memory.ActivityHistorySchema
 import io.acari.memory.CurrentActivitySchema
 import io.acari.memory.Effect
+import io.acari.memory.UserSchema
 import io.acari.memory.user.UserMemoryWorkers
-import io.acari.util.toMaybe
 import io.acari.util.toOptional
 import io.reactivex.CompletableSource
 import io.reactivex.Maybe
 import io.reactivex.MaybeObserver
-import io.reactivex.SingleObserver
 import io.vertx.core.Handler
-import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.mongo.UpdateOptions
 import io.vertx.kotlin.core.json.jsonObjectOf
@@ -20,6 +18,8 @@ import io.vertx.reactivex.core.Vertx
 import io.vertx.reactivex.core.eventbus.Message
 import io.vertx.reactivex.ext.mongo.MongoClient
 import java.util.*
+
+const val CURRENT_ACTIVITY_CHANNEL = "CURRENT_ACTIVITY_CHANNEL"
 
 class ActivityEffectListener(private val mongoClient: MongoClient, private val vertx: Vertx) :
   Handler<Message<Effect>> {
@@ -45,7 +45,7 @@ class ActivityEffectListener(private val mongoClient: MongoClient, private val v
     )
     val isActivity = isActivity(effect)
     return when {
-      isActivity && shouldTime(effect) -> updateCurrentActivity(effect, activity)
+      isActivity && shouldTime(effect) -> updateCurrentActivity(effect, activity, vertx)
       isActivity -> Maybe.just(activity)
       else -> Maybe.empty()
     }
@@ -53,7 +53,8 @@ class ActivityEffectListener(private val mongoClient: MongoClient, private val v
 
   private fun updateCurrentActivity(
     effect: Effect,
-    activity: JsonObject
+    activity: JsonObject,
+    vertx: Vertx
   ): Maybe<JsonObject> {
     val userIdentifier = effect.guid
     return findCurrentActivity(mongoClient, userIdentifier)
@@ -75,7 +76,13 @@ class ActivityEffectListener(private val mongoClient: MongoClient, private val v
           CurrentActivitySchema.COLLECTION,
           jsonObjectOf(CurrentActivitySchema.GLOBAL_USER_IDENTIFIER to userIdentifier),
           activityScope, UpdateOptions(true)
-        )
+        ).doOnSuccess {
+          vertx.eventBus()
+            .publish(
+              CURRENT_ACTIVITY_CHANNEL,
+              activityScope.put(UserSchema.GLOBAL_USER_IDENTIFIER, userIdentifier)
+            )
+        }
       }.map { activity }
       .toMaybe()
   }
