@@ -28,6 +28,7 @@ object MemoryInitializations {
       .andThen(createCollection(mongoClient, TacticalSettingsSchema.COLLECTION))
       .andThen(createCollection(mongoClient, TacticalActivitySchema.COLLECTION))
       .andThen(createCollection(mongoClient, PomodoroCompletionHistorySchema.COLLECTION))
+      .andThen(createCollection(mongoClient, PomodoroHistorySchema.COLLECTION))
 
   fun registerCodecs(vertx: Vertx): Completable =
     MemoryCodecs.attachCodecsToEventBus(vertx)

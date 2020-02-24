@@ -20,6 +20,8 @@ import io.vertx.reactivex.ext.mongo.MongoClient
 import java.time.Duration
 import java.time.Instant
 
+@Deprecated("Not used anymore because of timezones being a bitch",
+  replaceWith = ReplaceWith("PomodoroHistorySchema"))
 class CompletedPomodoroListener(
   private val mongoClient: MongoClient,
   private val vertx: Vertx

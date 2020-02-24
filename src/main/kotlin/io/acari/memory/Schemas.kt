@@ -61,9 +61,18 @@ object ActivityHistorySchema {
   const val CONTENT: String = "content"
 }
 
+@Deprecated("Not used anymore because of timezones being a bitch",
+  replaceWith = ReplaceWith("PomodoroHistorySchema"))
 object PomodoroCompletionHistorySchema {
   const val COLLECTION: String = "pomodoro"
   const val GLOBAL_USER_IDENTIFIER: String = "guid" // string
   const val DAY: String = "day"
   const val COUNT: String = "count"
+}
+
+object PomodoroHistorySchema {
+  const val COLLECTION: String = "pomodoroHistory"
+  const val GLOBAL_USER_IDENTIFIER: String = "guid" // string
+  const val TIME_OF_ANTECEDENCE: String = "antecedenceTime"
+  const val ACTIVITY_ID: String = "activityId"
 }
