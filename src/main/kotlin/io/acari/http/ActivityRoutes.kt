@@ -1,6 +1,7 @@
 package io.acari.http
 
 import io.acari.memory.Effect
+import io.acari.memory.PomodoroCompletionHistorySchema
 import io.acari.memory.activity.Activity
 import io.acari.memory.activity.CurrentActivityFinder
 import io.acari.memory.activity.PomodoroFinder
@@ -14,11 +15,13 @@ import io.acari.util.toOptional
 import io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE
 import io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON
 import io.netty.handler.codec.http.HttpResponseStatus
+import io.reactivex.MaybeObserver
 import io.reactivex.SingleObserver
 import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.core.json.jsonObjectOf
 import io.vertx.reactivex.core.Vertx
+import io.vertx.reactivex.core.http.HttpServerRequest
 import io.vertx.reactivex.ext.mongo.MongoClient
 import io.vertx.reactivex.ext.web.Router
 import io.vertx.reactivex.ext.web.Router.router
@@ -159,23 +162,39 @@ fun createActivityRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
   val pomodoroFinder = PomodoroFinder(mongoClient)
   router.get("/pomodoro/count").handler { requestContext ->
     val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
+    pomodoroFinder.legacyFindPomodoroCount(userIdentifier)
+      .third
+      .map { it.getInteger(PomodoroCompletionHistorySchema.COUNT) }
+      .switchIfEmpty { countObserver: MaybeObserver<in Int> ->
+        countObserver.onSuccess(0)
+      }
+      .map {
+        jsonObjectOf(
+          PomodoroCompletionHistorySchema.COUNT to it
+        )
+      }
+      .subscribe({
+        requestContext.response()
+          .putHeader(CONTENT_TYPE, APPLICATION_JSON)
+          .setStatusCode(200)
+          .end(Json.encode(it))
+      }) {
+        logger.warn("Unable to service pomodoro count request for $userIdentifier", it)
+        requestContext.fail(500)
+      }
+  }
+
+  router.get("/pomodoro/current/count").handler { requestContext ->
+    val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
     val request = requestContext.request()
-    val possiblyFrom = try {
-      request.getParam("from").toLong().toOptional()
-    } catch (_: Throwable) {
-      Optional.empty<Long>()
-    }
-    val possiblyTo = try {
-      request.getParam("to").toLong().toOptional()
-    } catch (_: Throwable) {
-      Optional.empty<Long>()
-    }
+    val possiblyFrom = extractTime(request, "from")
+    val possiblyTo = extractTime(request, "to")
     possiblyFrom.flatMap { from ->
-      possiblyTo.map { to -> from to to  } // heh
+      possiblyTo.map { to -> from to to } // heh
     }.doOrElse(
       {
         val (from, to) = it
-        pomodoroFinder.findPomodoroCount(userIdentifier, from, to)
+        pomodoroFinder.findCompletedPomodoroCount(userIdentifier, from, to)
           .map {
             jsonObjectOf(
               "count" to it
@@ -190,7 +209,6 @@ fun createActivityRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
             logger.warn("Unable to service pomodoro count request for $userIdentifier", it)
             requestContext.fail(500)
           }
-
       }
     ) {
       requestContext.response()
@@ -199,8 +217,18 @@ fun createActivityRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
     }
   }
 
-
   return router
+}
+
+private fun extractTime(
+  request: HttpServerRequest,
+  parameter: String
+): Optional<Long> {
+  return try {
+    request.getParam(parameter).toLong().toOptional()
+  } catch (_: Throwable) {
+    Optional.empty()
+  }
 }
 
 private val mappings = mapOf(

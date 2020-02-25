@@ -1,6 +1,5 @@
 package io.acari.memory.activity
 
-import io.acari.memory.ActivityHistorySchema
 import io.acari.memory.PomodoroCompletionHistorySchema
 import io.acari.memory.PomodoroHistorySchema
 import io.reactivex.Maybe
@@ -13,7 +12,7 @@ import java.time.Instant
 
 class PomodoroFinder(private val mongoClient: MongoClient) {
 
-  fun findPomodoroCount(guid: String, from: Long, to: Long): Single<Long> {
+  fun findCompletedPomodoroCount(guid: String, from: Long, to: Long): Single<Long> {
     return mongoClient.rxCount(
       PomodoroHistorySchema.COLLECTION,
       jsonObjectOf(
@@ -27,16 +26,16 @@ class PomodoroFinder(private val mongoClient: MongoClient) {
   @Deprecated("Timezones are hard", ReplaceWith("findPomodoroCount"))
   fun legacyFindPomodoroCount(guid: String): Triple<Long, JsonObject, Maybe<JsonObject>> {
     val currentDay = Duration.between(
-        Instant.EPOCH,
-        Instant.now()
+      Instant.EPOCH,
+      Instant.now()
     ).toDays()
     val query = jsonObjectOf(
-        PomodoroCompletionHistorySchema.GLOBAL_USER_IDENTIFIER to guid,
-        PomodoroCompletionHistorySchema.DAY to currentDay
+      PomodoroCompletionHistorySchema.GLOBAL_USER_IDENTIFIER to guid,
+      PomodoroCompletionHistorySchema.DAY to currentDay
     )
     val foundPomodoroCount = mongoClient.rxFindOne(
-        PomodoroCompletionHistorySchema.COLLECTION, query,
-        jsonObjectOf()
+      PomodoroCompletionHistorySchema.COLLECTION, query,
+      jsonObjectOf()
     )
     return Triple(currentDay, query, foundPomodoroCount)
   }
