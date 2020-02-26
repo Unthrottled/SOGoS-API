@@ -110,6 +110,48 @@ fun createOnboardingRouter(vertx: Vertx, mongoClient: MongoClient): Router {
 fun createAuthorizedUserRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
   val router = Router.router(vertx)
   router.mountSubRouter("/onboarding", createOnboardingRouter(vertx, mongoClient))
+  router.mountSubRouter("/share", createSharingRouter(vertx, mongoClient))
+  return router
+}
+
+const val ENABLED_SHARED_DASHBOARD = "ENABLED_SHARED_DASHBOARD"
+const val DISABLED_SHARED_DASHBOARD = "DISABLED_SHARED_DASHBOARD"
+
+fun createSharingRouter(vertx: Vertx, mongoClient: MongoClient): Router {
+  val router = Router.router(vertx)
+
+  router.post("/dashboard/read").handler { requestContext ->
+    val timeCreated = Instant.now().toEpochMilli()
+    val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
+    vertx.eventBus().publish(
+      EFFECT_CHANNEL, Effect(
+        userIdentifier,
+        timeCreated,
+        timeCreated,
+        ENABLED_SHARED_DASHBOARD,
+        JsonObject(),
+        extractValuableHeaders(requestContext)
+      )
+    )
+    requestContext.response().setStatusCode(201).end()
+  }
+
+  router.delete("/dashboard/read").handler { requestContext ->
+    val timeCreated = Instant.now().toEpochMilli()
+    val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
+    vertx.eventBus().publish(
+      EFFECT_CHANNEL, Effect(
+        userIdentifier,
+        timeCreated,
+        timeCreated,
+        DISABLED_SHARED_DASHBOARD,
+        JsonObject(),
+        extractValuableHeaders(requestContext)
+      )
+    )
+    requestContext.response().setStatusCode(204).end()
+  }
+
   return router
 }
 

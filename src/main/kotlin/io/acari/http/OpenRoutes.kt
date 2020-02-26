@@ -1,5 +1,6 @@
 package io.acari.http
 
+import io.acari.memory.HAS_SHARED_DASHBOARD
 import io.acari.memory.UserSchema
 import io.acari.security.*
 import io.acari.types.NotFoundException
@@ -31,7 +32,7 @@ fun attachNonSecuredRoutes(
       ), jsonObjectOf()
     ).filter { user ->
       user.getJsonObject(UserSchema.SECURITY_THINGS, jsonObjectOf())
-        .getBoolean("hasShared", false)
+        .getBoolean(HAS_SHARED_DASHBOARD, false)
     }.map {
       jsonObjectOf(
         "readToken" to hashString(it.getString(UserSchema.GLOBAL_USER_IDENTIFIER))
