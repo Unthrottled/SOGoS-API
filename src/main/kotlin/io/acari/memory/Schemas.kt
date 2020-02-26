@@ -6,6 +6,7 @@ object UserSchema {
   const val OAUTH_IDENTIFIERS: String = "identifiers" // array of string
   const val GLOBAL_USER_IDENTIFIER: String = "guid" // string
   const val MISC_USER_THINGS: String = "misc" // jsonObject
+  const val SECURITY_THINGS: String = "security" // jsonObject
 }
 
 object EffectSchema {

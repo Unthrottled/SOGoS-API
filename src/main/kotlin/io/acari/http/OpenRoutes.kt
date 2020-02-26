@@ -1,16 +1,54 @@
 package io.acari.http
 
+import io.acari.memory.UserSchema
 import io.acari.security.*
+import io.acari.types.NotFoundException
+import io.acari.util.loggerFor
 import io.netty.handler.codec.http.HttpHeaderNames
 import io.netty.handler.codec.http.HttpHeaderValues
+import io.reactivex.Single
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.core.json.jsonObjectOf
+import io.vertx.reactivex.ext.mongo.MongoClient
 import io.vertx.reactivex.ext.web.Router
 import java.time.Instant
 
 const val API_VERSION = "1.1.0"
 
-fun attachNonSecuredRoutes(router: Router, configuration: JsonObject): Router {
+private val logger = loggerFor("openRoutes")
+
+fun attachNonSecuredRoutes(
+  router: Router,
+  configuration: JsonObject,
+  mongoClient: MongoClient
+): Router {
+  router.get("/user/:userIdentifier/view/token").handler { routingContext ->
+    val request = routingContext.request()
+    val userIdentifier = request.getParam("userIdentifier")
+    mongoClient.rxFindOne(
+      UserSchema.COLLECTION, jsonObjectOf(
+        UserSchema.GLOBAL_USER_IDENTIFIER to userIdentifier
+      ), jsonObjectOf()
+    ).filter { user ->
+      user.getJsonObject(UserSchema.SECURITY_THINGS, jsonObjectOf())
+        .getBoolean("hasShared", false)
+    }.map {
+      jsonObjectOf(
+        "readToken" to hashString(it.getString(UserSchema.GLOBAL_USER_IDENTIFIER))
+      )
+    }
+      .switchIfEmpty(Single.error(NotFoundException("User $userIdentifier does not exist")))
+      .subscribe({
+        routingContext.response().setStatusCode(200)
+          .end(it.encode())
+      }, {
+        if (it !is NotFoundException) {
+          logger.error("Unable to get read token for user $userIdentifier for raisins", it)
+        }
+        routingContext.response().setStatusCode(403).end()
+      })
+  }
+
   router.get("/version").handler {
     it.response()
       .putHeader(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON)

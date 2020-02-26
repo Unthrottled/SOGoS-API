@@ -46,7 +46,7 @@ class HttpVerticle : AbstractVerticle() {
         val (oauth2, reactiveMongoClient) = pair
         val router = Router.router(vertx)
         val corsRouter = attachCORSRouter(router, configuration)
-        val configuredRouter = attachNonSecuredRoutes(corsRouter, configuration)
+        val configuredRouter = attachNonSecuredRoutes(corsRouter, configuration, reactiveMongoClient)
         val securedRoute = attachSecurityToRouter(configuredRouter, oauth2, configuration)
         val supplementedRoutes = mountSupportingRoutes(vertx, securedRoute, configuration)
         val apiRouter = mountAPIRoute(vertx, reactiveMongoClient, supplementedRoutes)
