@@ -10,6 +10,8 @@ import io.netty.handler.codec.http.HttpHeaderValues
 import io.reactivex.Single
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.core.json.jsonObjectOf
+import io.vertx.kotlin.ext.jwt.jwtOptionsOf
+import io.vertx.reactivex.ext.auth.jwt.JWTAuth
 import io.vertx.reactivex.ext.mongo.MongoClient
 import io.vertx.reactivex.ext.web.Router
 import java.time.Instant
@@ -21,7 +23,8 @@ private val logger = loggerFor("openRoutes")
 fun attachNonSecuredRoutes(
   router: Router,
   configuration: JsonObject,
-  mongoClient: MongoClient
+  mongoClient: MongoClient,
+  jwtAuth: JWTAuth
 ): Router {
   router.get("/user/:userIdentifier/view/token").handler { routingContext ->
     val request = routingContext.request()
@@ -35,7 +38,10 @@ fun attachNonSecuredRoutes(
         .getBoolean(HAS_SHARED_DASHBOARD, false)
     }.map {
       jsonObjectOf(
-        "readToken" to hashString(it.getString(UserSchema.GLOBAL_USER_IDENTIFIER))
+        "readToken" to jwtAuth.generateToken(it, jwtOptionsOf(
+          expiresInMinutes = 5,
+          issuer = SOGOS_ISSUER
+        ))
       )
     }
       .switchIfEmpty(Single.error(NotFoundException("User $userIdentifier does not exist")))

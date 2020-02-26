@@ -16,7 +16,9 @@
     "provider": "KEYCLOAK",
     "Client-Id": "sogos",
     "App-Client-Id": "sogos-app",
-    "Native-App-Client-Id": "sogos-app"
+    "Native-App-Client-Id": "sogos-app",
+    "Keystore-Path": "keystore.jks",
+    "Keystore-Password": "123456"
   },
   "memory": {
     "host": "127.0.0.1",

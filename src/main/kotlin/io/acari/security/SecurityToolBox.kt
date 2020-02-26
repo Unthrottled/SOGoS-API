@@ -6,6 +6,8 @@ import CLIENT_ID_UI
 import CORS_ORIGIN_URL
 import HMAC_KEY
 import ISSUER
+import KEYSTORE_PASSWORD
+import KEYSTORE_PATH
 import LOGOUT_URL
 import NATIVE_CLIENT_ID_UI
 import OPENID_PROVIDER
@@ -132,6 +134,18 @@ fun createVerificationHandler(): Handler<RoutingContext> = Handler { routingCont
     routingContext.response().setStatusCode(403).end()
   }
 }
+
+const val SOGOS_ISSUER = "SOGoS"
+
+fun getKeystorePassword(
+  config: JsonObject,
+  securityConfig: JsonObject = config.getJsonObject("security")
+): String = config.getString(KEYSTORE_PASSWORD) ?: securityConfig.getString("Keystore-Password")
+
+fun getKeystore(
+  config: JsonObject,
+  securityConfig: JsonObject = config.getJsonObject("security")
+): String = config.getString(KEYSTORE_PATH) ?: securityConfig.getString("Keystore-Path")
 
 fun getClient(
   config: JsonObject,

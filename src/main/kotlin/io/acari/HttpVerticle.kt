@@ -5,10 +5,7 @@ import io.acari.http.attachNonSecuredRoutes
 import io.acari.http.mountAPIRoute
 import io.acari.http.mountSupportingRoutes
 import io.acari.memory.MemoryInitializations
-import io.acari.security.attachCORSRouter
-import io.acari.security.attachSecurityToRouter
-import io.acari.security.getPortNumber
-import io.acari.security.setUpOAuth
+import io.acari.security.*
 import io.acari.util.loggerFor
 import io.acari.util.toOptional
 import io.reactivex.Single
@@ -17,18 +14,21 @@ import io.vertx.core.Future
 import io.vertx.core.http.HttpServerOptions
 import io.vertx.core.net.JksOptions
 import io.vertx.kotlin.core.json.jsonObjectOf
+import io.vertx.kotlin.ext.auth.jwt.jwtAuthOptionsOf
+import io.vertx.kotlin.ext.auth.keyStoreOptionsOf
 import io.vertx.reactivex.core.AbstractVerticle
 import io.vertx.reactivex.core.http.HttpServer
+import io.vertx.reactivex.ext.auth.jwt.JWTAuth.create
 import io.vertx.reactivex.ext.auth.oauth2.OAuth2Auth
 import io.vertx.reactivex.ext.mongo.MongoClient
 import io.vertx.reactivex.ext.web.Router
 
 class HttpVerticle : AbstractVerticle() {
   companion object {
-      private val logger = loggerFor(HttpVerticle::class.java)
+    private val logger = loggerFor(HttpVerticle::class.java)
 
     init {
-        System.setProperty("org.mongodb.async.type", "netty")
+      System.setProperty("org.mongodb.async.type", "netty")
     }
   }
 
@@ -41,12 +41,25 @@ class HttpVerticle : AbstractVerticle() {
     val configuration = config()
     setUpOAuth(vertx, configuration)
       .zipWith(setUpDB(mongoClient).toSingle { mongoClient },
-        BiFunction<OAuth2Auth, MongoClient, Pair<OAuth2Auth, MongoClient>> { oauth2, mongoClientComplet -> Pair(oauth2, mongoClientComplet)})
+        BiFunction<OAuth2Auth, MongoClient, Pair<OAuth2Auth, MongoClient>> { oauth2, mongoClientComplet ->
+          Pair(
+            oauth2,
+            mongoClientComplet
+          )
+        })
       .flatMap { pair ->
         val (oauth2, reactiveMongoClient) = pair
         val router = Router.router(vertx)
         val corsRouter = attachCORSRouter(router, configuration)
-        val configuredRouter = attachNonSecuredRoutes(corsRouter, configuration, reactiveMongoClient)
+        val jwtAuth = create(
+          vertx, jwtAuthOptionsOf(
+            keyStore = keyStoreOptionsOf(
+              password = getKeystorePassword(configuration),
+              path = getKeystore(configuration)
+            )
+          )
+        )
+        val configuredRouter = attachNonSecuredRoutes(corsRouter, configuration, reactiveMongoClient, jwtAuth)
         val securedRoute = attachSecurityToRouter(configuredRouter, oauth2, configuration)
         val supplementedRoutes = mountSupportingRoutes(vertx, securedRoute, configuration)
         val apiRouter = mountAPIRoute(vertx, reactiveMongoClient, supplementedRoutes)
@@ -55,7 +68,12 @@ class HttpVerticle : AbstractVerticle() {
       .subscribe({
         startFuture.complete()
         val serverConfig = configuration.getJsonObject("server")
-        logger.info("HTTP${if(serverConfig.getBoolean("SSL-Enabled"))"S" else ""} server started on port ${getPortNumber(config(), serverConfig)}")
+        logger.info(
+          "HTTP${if (serverConfig.getBoolean("SSL-Enabled")) "S" else ""} server started on port ${getPortNumber(
+            config(),
+            serverConfig
+          )}"
+        )
       }) {
         startFuture.fail("Unable to start HTTP Verticle because ${it.message}")
       }
@@ -66,15 +84,17 @@ class HttpVerticle : AbstractVerticle() {
       .andThen(MemoryInitializations.registerCodecs(vertx))
       .andThen(MemoryInitializations.registerMemoryWorkers(vertx, mongoClient))
 
-  private fun startServer(router: Router): Single<HttpServer>{
+  private fun startServer(router: Router): Single<HttpServer> {
     val serverConfig = config().getJsonObject("server")
     return vertx
       .createHttpServer(
         HttpServerOptions()
-        .setSsl(serverConfig.getBoolean("SSL-Enabled"))
-        .setKeyStoreOptions(JksOptions()
-          .setPassword(serverConfig.getString("Keystore-Password"))
-          .setPath(serverConfig.getString("Keystore-Path")))
+          .setSsl(serverConfig.getBoolean("SSL-Enabled"))
+          .setKeyStoreOptions(
+            JksOptions()
+              .setPassword(serverConfig.getString("Keystore-Password"))
+              .setPath(serverConfig.getString("Keystore-Path"))
+          )
       )
       .requestHandler(router)
       .rxListen(getPortNumber(config(), serverConfig))
