@@ -79,7 +79,7 @@ fun createCORSHandler(config: JsonObject): Handler<RoutingContext>? {
       )
     )
 }
-
+const val IS_READ_ONLY = "readOnlyRequest"
 private val blacklistedReadPaths = setOf("/user")
 fun attachSecurityToRouter(
   router: Router,
@@ -87,7 +87,6 @@ fun attachSecurityToRouter(
   config: JsonObject,
   jwtAuth: JWTAuth
 ): Router {
-
   val oAuth2Handler = create(oAuth2AuthProvider)
   router.route()
     .handler { routingContext ->
@@ -117,6 +116,7 @@ fun attachSecurityToRouter(
               observer.onError(NotAllowedException("No Access"))
             })
             .subscribe({
+              routingContext.data()[IS_READ_ONLY] = true
               routingContext.next()
             }, {
               when (it) {
@@ -163,19 +163,23 @@ fun extractUserValidationKey(emailAddress: String, globalUserIdentifier: String)
 
 const val USER_IDENTIFIER = "User-Identifier"
 
-// todo: should be able to read with read token
 fun createVerificationHandler(): Handler<RoutingContext> = Handler { routingContext ->
+  val isReadOnly = routingContext.data()[IS_READ_ONLY]
+  if (isReadOnly == true || verifyCorrectUser(routingContext)) {
+    routingContext.next()
+  } else {
+    routingContext.response().setStatusCode(403).end()
+  }
+}
+
+private fun verifyCorrectUser(routingContext: RoutingContext): Boolean {
   val user = routingContext.user().delegate as OAuth2TokenImpl
   val headers = routingContext.request().headers()
   val verificationKey = headers.get("Verification") ?: ""
   val globalUserIdentifier = headers.get(USER_IDENTIFIER) ?: ""
   val email = user.accessToken().getString("email") ?: ""
   val generatedVerificationKey = extractUserValidationKey(email, globalUserIdentifier)
-  if (verificationKey == generatedVerificationKey) {
-    routingContext.next()
-  } else {
-    routingContext.response().setStatusCode(403).end()
-  }
+  return verificationKey == generatedVerificationKey
 }
 
 const val SOGOS_ISSUER = "SOGoS"
