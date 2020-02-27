@@ -38,10 +38,14 @@ fun attachNonSecuredRoutes(
         .getBoolean(HAS_SHARED_DASHBOARD, false)
     }.map {
       jsonObjectOf(
-        "readToken" to jwtAuth.generateToken(it, jwtOptionsOf(
-          expiresInMinutes = 5,
-          issuer = SOGOS_ISSUER
-        ))
+        "readToken" to jwtAuth.generateToken(
+          jsonObjectOf(UserSchema.GLOBAL_USER_IDENTIFIER to it.getString(UserSchema.GLOBAL_USER_IDENTIFIER))
+          , jwtOptionsOf(
+            expiresInMinutes = 5,
+            issuer = SOGOS_ISSUER,
+            algorithm = "RS256"
+          )
+        )
       )
     }
       .switchIfEmpty(Single.error(NotFoundException("User $userIdentifier does not exist")))

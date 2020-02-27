@@ -1,8 +1,6 @@
 {
   "server": {
     "port": 8888,
-    "Keystore-Path": "keystore.jks",
-    "Keystore-Password": "123456",
     "SSL-Enabled": false
   },
   "security": {
@@ -17,8 +15,8 @@
     "Client-Id": "sogos",
     "App-Client-Id": "sogos-app",
     "Native-App-Client-Id": "sogos-app",
-    "Keystore-Path": "keystore.jks",
-    "Keystore-Password": "123456"
+    "public-key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2WHzASMxcy111j7LXXm8aBmO8bjOwh9HVZVtDrrMGT+cN2MDLh7iAySAvrijMbmOU8n1pZ5JUmHcZPaI0kwS8Pz76Df90dRJLih6T7Kz17LlouS0WbZPN4S1BdNdWzRwgu7Cw0/MajE7UeJXoE6IwX7JiWzj5/6jPf2TNcN32pqM0EfuBTPhOYUHzUSbgoDQCennl638HYXHwljULTswoAcYEIsMuUI1kv79tWeiu1EHY8qaLr8HY/KqU4l81h+hxazZc2ZUfylEVEx1Whkrn18yxGfeJV8DJ1oedTA6chlYMM4MjDoj5QQPyMAZJm202NJ+659mW8RTB+NMPvHzewIDAQAB",
+    "private-key": "MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDZYfMBIzFzLXXWPstdebxoGY7xuM7CH0dVlW0OuswZP5w3YwMuHuIDJIC+uKMxuY5TyfWlnklSYdxk9ojSTBLw/PvoN/3R1EkuKHpPsrPXsuWi5LRZtk83hLUF011bNHCC7sLDT8xqMTtR4legTojBfsmJbOPn/qM9/ZM1w3famozQR+4FM+E5hQfNRJuCgNAJ6eeXrfwdhcfCWNQtOzCgBxgQiwy5QjWS/v21Z6K7UQdjypouvwdj8qpTiXzWH6HFrNlzZlR/KURUTHVaGSufXzLEZ94lXwMnWh51MDpyGVgwzgyMOiPlBA/IwBkmbbTY0n7rn2ZbxFMH40w+8fN7AgMBAAECggEBALLozIkZH++9cIg98j4inQ/IST9kbLaT66/iZXmD/8qf8cAb+1gQDs+rUVKmv5mDMEKBq2z9kzb8V9m4le8OsWAptmHvAzWY1AnrQo8pcp6KHDkupchYJWZ6EEqVJPaVeCwquZzppkGX90xzTs8fE6q84L38Iq6jglLYyjmrgI8ms1/rpD7YZWyT+BxE+6VL++zL7Np5NHdv5djS4NhzZoxXkTladhU3ywL2/NZopkU2r4fDNTRPveXuPUXoou7bTbuyZ2ykaX1MPE3o6Mf4pGqnYrcbG1vR+3GPrEM5/lCy1tl/5fk2lvWNO44hrDHyOANttPlYA/p7JjTyI2YFnyECgYEA8kDOHznViZ4nCuffe+P1RQXaxbPl3L0P5k080Xm86ZxeyDcEWVlD2ql4IN0RydRsviK74nxO3mrEbSM0pjZUsUGAT9sttE7Qe1F89Uvcxqh13PuTm4Wmx2wZoSEFjrzaf6FkAe/AsQb9UtMN6/pIZ/bEJbdhQ19LPQotl1rKDYkCgYEA5bfaALZoA3/yUAKd6rUcOFfPo7cU8w3HtVo5Ost4SHB6QccTETL9pGEwELbbr8WnhZrEN37Grp4+MxG4Cgv8WqLo3tc5D8+mNPoDzMmvR2FNkXEXh9GnF/TzZxzCKWv6UpVJVU0uj/+tB6YYuJksWAdcyDZkjjgjAXfT3ytmm+MCgYEAmGo/hRPtDs2LQOhMCnWM7iVV1Idv+qaU50/3ENBoFA7G72719IUeFOgE5aBRPcvBswrFbSTKtlM0THoW+PA77t4ILbX3lnbz4nKNjQNy3yZEKYm6/+Fh4hxYL7FH/ttBGYXgFvvSH08HeOHC45IvlgGCvTwYHLxK6ReLQavkbgkCgYAuHS4iHnva2ABol13kE99KYDZKgyIteIKyoR4D83x97jZcpf3p4faQ3QGtGUgYjPEIHP1utoBj5VhPICt1uNo7x6A/u6y0w9Z1pArHPWV2Ss4reCxlE20bngyOknNXpVlm4pkKCqhiN80gT/N+eyEvuqqhdmnRMuu0C734etnqSQKBgCur05aidP+yCL0MYUBeXnTzid744F5zCVAcjSJtLS1MSarrZoYaV2/0LFsjRsAVbJdARmZtO2mGhcC0ujqs4RtgqGdAFuHPRLLvzYnVwQuFO0Xd39gf8jL4zirpEX4cC8N8VwMFAErwzyLXEAN6X/YeTVgijR2RP/pPUV3nJFHg"
   },
   "memory": {
     "host": "127.0.0.1",

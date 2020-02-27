@@ -6,8 +6,8 @@ import CLIENT_ID_UI
 import CORS_ORIGIN_URL
 import HMAC_KEY
 import ISSUER
-import KEYSTORE_PASSWORD
-import KEYSTORE_PATH
+import PRIVATE_KEY
+import PUBLIC_KEY
 import LOGOUT_URL
 import NATIVE_CLIENT_ID_UI
 import OPENID_PROVIDER
@@ -137,15 +137,15 @@ fun createVerificationHandler(): Handler<RoutingContext> = Handler { routingCont
 
 const val SOGOS_ISSUER = "SOGoS"
 
-fun getKeystorePassword(
+fun getPrivateKey(
   config: JsonObject,
   securityConfig: JsonObject = config.getJsonObject("security")
-): String = config.getString(KEYSTORE_PASSWORD) ?: securityConfig.getString("Keystore-Password")
+): String = config.getString(PRIVATE_KEY) ?: securityConfig.getString("private-key")
 
-fun getKeystore(
+fun getPublicKey(
   config: JsonObject,
   securityConfig: JsonObject = config.getJsonObject("security")
-): String = config.getString(KEYSTORE_PATH) ?: securityConfig.getString("Keystore-Path")
+): String = config.getString(PUBLIC_KEY) ?: securityConfig.getString("public-key")
 
 fun getClient(
   config: JsonObject,

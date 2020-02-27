@@ -12,10 +12,9 @@ import io.reactivex.Single
 import io.reactivex.functions.BiFunction
 import io.vertx.core.Future
 import io.vertx.core.http.HttpServerOptions
-import io.vertx.core.net.JksOptions
 import io.vertx.kotlin.core.json.jsonObjectOf
 import io.vertx.kotlin.ext.auth.jwt.jwtAuthOptionsOf
-import io.vertx.kotlin.ext.auth.keyStoreOptionsOf
+import io.vertx.kotlin.ext.auth.pubSecKeyOptionsOf
 import io.vertx.reactivex.core.AbstractVerticle
 import io.vertx.reactivex.core.http.HttpServer
 import io.vertx.reactivex.ext.auth.jwt.JWTAuth.create
@@ -53,9 +52,12 @@ class HttpVerticle : AbstractVerticle() {
         val corsRouter = attachCORSRouter(router, configuration)
         val jwtAuth = create(
           vertx, jwtAuthOptionsOf(
-            keyStore = keyStoreOptionsOf(
-              password = getKeystorePassword(configuration),
-              path = getKeystore(configuration)
+            pubSecKeys = listOf(
+              pubSecKeyOptionsOf(
+                algorithm = "RS256",
+                publicKey = getPublicKey(configuration),
+                secretKey = getPrivateKey(configuration)
+              )
             )
           )
         )
@@ -89,12 +91,6 @@ class HttpVerticle : AbstractVerticle() {
     return vertx
       .createHttpServer(
         HttpServerOptions()
-          .setSsl(serverConfig.getBoolean("SSL-Enabled"))
-          .setKeyStoreOptions(
-            JksOptions()
-              .setPassword(serverConfig.getString("Keystore-Password"))
-              .setPath(serverConfig.getString("Keystore-Path"))
-          )
       )
       .requestHandler(router)
       .rxListen(getPortNumber(config(), serverConfig))
