@@ -6,36 +6,41 @@ import CLIENT_ID_UI
 import CORS_ORIGIN_URL
 import HMAC_KEY
 import ISSUER
-import PRIVATE_KEY
-import PUBLIC_KEY
 import LOGOUT_URL
 import NATIVE_CLIENT_ID_UI
 import OPENID_PROVIDER
 import OPENID_PROVIDER_UI
 import PORT_NUMBER
+import PRIVATE_KEY
 import PROVIDER
+import PUBLIC_KEY
 import TOKEN_URL
 import USER_INFO_URL
 import com.google.common.hash.HashFunction
 import com.google.common.hash.Hashing
+import io.acari.memory.UserSchema
+import io.acari.types.NotAllowedException
+import io.acari.util.doOrElse
 import io.acari.util.toMaybe
 import io.acari.util.toOptional
 import io.reactivex.Maybe
+import io.reactivex.MaybeSource
 import io.reactivex.Single
 import io.vertx.core.Handler
 import io.vertx.core.http.HttpMethod.*
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.auth.oauth2.OAuth2ClientOptions
 import io.vertx.ext.auth.oauth2.impl.OAuth2TokenImpl
+import io.vertx.kotlin.core.json.jsonObjectOf
 import io.vertx.reactivex.SingleHelper
 import io.vertx.reactivex.core.Vertx
+import io.vertx.reactivex.ext.auth.jwt.JWTAuth
 import io.vertx.reactivex.ext.auth.oauth2.OAuth2Auth
 import io.vertx.reactivex.ext.auth.oauth2.providers.OpenIDConnectAuth
 import io.vertx.reactivex.ext.web.Router
 import io.vertx.reactivex.ext.web.RoutingContext
-import io.vertx.reactivex.ext.web.handler.BodyHandler
 import io.vertx.reactivex.ext.web.handler.CorsHandler
-import io.vertx.reactivex.ext.web.handler.OAuth2AuthHandler
+import io.vertx.reactivex.ext.web.handler.OAuth2AuthHandler.create
 
 fun attachCORSRouter(
   router: Router,
@@ -75,17 +80,54 @@ fun createCORSHandler(config: JsonObject): Handler<RoutingContext>? {
     )
 }
 
-
+private val blacklistedReadPaths = setOf("/user")
 fun attachSecurityToRouter(
   router: Router,
   oAuth2AuthProvider: OAuth2Auth,
-  config: JsonObject
+  config: JsonObject,
+  jwtAuth: JWTAuth
 ): Router {
-  router.route()
-    .handler(BodyHandler.create())
 
+  val oAuth2Handler = create(oAuth2AuthProvider)
   router.route()
-    .handler(OAuth2AuthHandler.create(oAuth2AuthProvider))
+    .handler { routingContext ->
+      val request = routingContext.request()
+      request.getHeader("Read-Token").toOptional()
+        .filter { request.method() == GET && !blacklistedReadPaths.contains(request.path().toLowerCase()) }
+        .flatMap { readToken ->
+          request.getHeader(USER_IDENTIFIER).toOptional()
+            .map { userIdentifier -> readToken to userIdentifier }
+        }
+        .doOrElse({ tokenAndId ->
+          val (readToken, userIdentifier) = tokenAndId
+          jwtAuth.rxAuthenticate(
+            jsonObjectOf(
+              "jwt" to readToken,
+              "options" to jsonObjectOf(
+                "issuer" to SOGOS_ISSUER
+              )
+            )
+          )
+            .filter { user ->
+              val globalUserIdentifier = user.principal().getString(UserSchema.GLOBAL_USER_IDENTIFIER) ?: ""
+              globalUserIdentifier.isNotEmpty() &&
+                globalUserIdentifier == userIdentifier
+            }
+            .switchIfEmpty(MaybeSource { observer ->
+              observer.onError(NotAllowedException("No Access"))
+            })
+            .subscribe({
+              routingContext.next()
+            }, {
+              when (it) {
+                is NotAllowedException -> routingContext.response().setStatusCode(403).end()
+                else -> routingContext.response().setStatusCode(401).end()
+              }
+            })
+        }) {
+          oAuth2Handler.handle(routingContext)
+        }
+    }
 
   return router
 }
@@ -121,6 +163,7 @@ fun extractUserValidationKey(emailAddress: String, globalUserIdentifier: String)
 
 const val USER_IDENTIFIER = "User-Identifier"
 
+// todo: should be able to read with read token
 fun createVerificationHandler(): Handler<RoutingContext> = Handler { routingContext ->
   val user = routingContext.user().delegate as OAuth2TokenImpl
   val headers = routingContext.request().headers()

@@ -14,6 +14,7 @@ import io.vertx.kotlin.ext.jwt.jwtOptionsOf
 import io.vertx.reactivex.ext.auth.jwt.JWTAuth
 import io.vertx.reactivex.ext.mongo.MongoClient
 import io.vertx.reactivex.ext.web.Router
+import io.vertx.reactivex.ext.web.handler.BodyHandler
 import java.time.Instant
 
 const val API_VERSION = "1.1.0"
@@ -26,6 +27,9 @@ fun attachNonSecuredRoutes(
   mongoClient: MongoClient,
   jwtAuth: JWTAuth
 ): Router {
+  router.route()
+    .handler(BodyHandler.create())
+
   router.get("/user/:userIdentifier/view/token").handler { routingContext ->
     val request = routingContext.request()
     val userIdentifier = request.getParam("userIdentifier")

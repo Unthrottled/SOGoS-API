@@ -48,8 +48,6 @@ class HttpVerticle : AbstractVerticle() {
         })
       .flatMap { pair ->
         val (oauth2, reactiveMongoClient) = pair
-        val router = Router.router(vertx)
-        val corsRouter = attachCORSRouter(router, configuration)
         val jwtAuth = create(
           vertx, jwtAuthOptionsOf(
             pubSecKeys = listOf(
@@ -61,8 +59,10 @@ class HttpVerticle : AbstractVerticle() {
             )
           )
         )
+        val router = Router.router(vertx)
+        val corsRouter = attachCORSRouter(router, configuration)
         val configuredRouter = attachNonSecuredRoutes(corsRouter, configuration, reactiveMongoClient, jwtAuth)
-        val securedRoute = attachSecurityToRouter(configuredRouter, oauth2, configuration)
+        val securedRoute = attachSecurityToRouter(configuredRouter, oauth2, configuration, jwtAuth)
         val supplementedRoutes = mountSupportingRoutes(vertx, securedRoute, configuration)
         val apiRouter = mountAPIRoute(vertx, reactiveMongoClient, supplementedRoutes)
         startServer(apiRouter)
