@@ -68,6 +68,7 @@ fun createCORSHandler(config: JsonObject): Handler<RoutingContext>? {
 
         //SOGoS Things
         "Authorization",
+        "Read-Token",
         "Verification",
         "User-Identifier",
         "User-Agent"
