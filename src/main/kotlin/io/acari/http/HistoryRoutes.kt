@@ -1,7 +1,6 @@
 package io.acari.http
 
 import io.acari.memory.ActivityHistorySchema
-import io.acari.memory.activity.activityFromJson
 import io.acari.memory.activity.buildToFromQuery
 import io.acari.util.loggerFor
 import io.netty.handler.codec.http.HttpHeaderNames
@@ -23,12 +22,12 @@ const val JSON = "application/json"
 
 fun createHistoryRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
   val router = Router.router(vertx)
-  router.post("/:userIdentifier/first/before").handler { requestContext ->
+  router.get("/:userIdentifier/first/before").handler { requestContext ->
     val sortOrder = -1
     val comparisonString = "\$lt"
     handleFirstRequest(requestContext, mongoClient, sortOrder, comparisonString)
   }
-  router.post("/:userIdentifier/first/after").handler { requestContext ->
+  router.get("/:userIdentifier/first/after").handler { requestContext ->
     val sortOrder = 1
     val comparisonString = "\$gte"
     handleFirstRequest(requestContext, mongoClient, sortOrder, comparisonString)
@@ -53,8 +52,8 @@ fun createHistoryRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
     val asArray = requestContext.request().params().get("asArray") == "true"
 
     response.isChunked = true
-    response.putHeader(HttpHeaderNames.CONTENT_TYPE, if(asArray) JSON else JSON_STREAM)
-    if(asArray){
+    response.putHeader(HttpHeaderNames.CONTENT_TYPE, if (asArray) JSON else JSON_STREAM)
+    if (asArray) {
       response.write("[")
     }
     mongoClient.findBatch(
@@ -67,7 +66,7 @@ fun createHistoryRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
         it.remove("_id")
         it.remove("guid")
         val json = Json.encode(it)
-        if(asArray) "$json,"
+        if (asArray) "$json,"
         else json
       }
       .subscribe({
@@ -75,7 +74,7 @@ fun createHistoryRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
       }, {
         logger.warn("Unable to fetch activity feed for $userIdentifier because reasons.", it)
       }, {
-        if(asArray){
+        if (asArray) {
           response.write("]")
         }
         response.end()
@@ -94,36 +93,32 @@ private fun handleFirstRequest(
   val userIdentifier = request.getParam("userIdentifier")
   val response = requestContext.response()
   try {
-    val bodyAsJson = requestContext.bodyAsJson
+    val relativeTime = request.getParam("relativeTime").toLong(10)
 
-    val relativeTime = bodyAsJson.getLong("relativeTime")
-    if (relativeTime != null) {
-      mongoClient.rxFindWithOptions(
-        ActivityHistorySchema.COLLECTION, jsonObjectOf(
-          ActivityHistorySchema.GLOBAL_USER_IDENTIFIER to userIdentifier,
-          ActivityHistorySchema.TIME_OF_ANTECEDENCE to jsonObjectOf(
-            comparisonString to relativeTime
-          )
-        ),
-        findOptionsOf(sort = jsonObjectOf(ActivityHistorySchema.TIME_OF_ANTECEDENCE to sortOrder), limit = 1)
-      )
-        .map { it.firstOrNull() }
-        .filter(Objects::nonNull)
-        .map {
-          it.remove("_id")
-          it.remove(ActivityHistorySchema.GLOBAL_USER_IDENTIFIER)
-          it
-        }
-        .subscribe({
-          response.putHeader(HttpHeaderNames.CONTENT_TYPE, JSON)
-          response
-            .setStatusCode(200)
-            .end(Json.encode(it))
-        }, {
-          response.setStatusCode(404).end()
-        })
-
-    }
+    mongoClient.rxFindWithOptions(
+      ActivityHistorySchema.COLLECTION, jsonObjectOf(
+        ActivityHistorySchema.GLOBAL_USER_IDENTIFIER to userIdentifier,
+        ActivityHistorySchema.TIME_OF_ANTECEDENCE to jsonObjectOf(
+          comparisonString to relativeTime
+        )
+      ),
+      findOptionsOf(sort = jsonObjectOf(ActivityHistorySchema.TIME_OF_ANTECEDENCE to sortOrder), limit = 1)
+    )
+      .map { it.firstOrNull() }
+      .filter(Objects::nonNull)
+      .map {
+        it.remove("_id")
+        it.remove(ActivityHistorySchema.GLOBAL_USER_IDENTIFIER)
+        it
+      }
+      .subscribe({
+        response.putHeader(HttpHeaderNames.CONTENT_TYPE, JSON)
+        response
+          .setStatusCode(200)
+          .end(Json.encode(it))
+      }, {
+        response.setStatusCode(404).end()
+      })
   } catch (e: Throwable) {
     response.setStatusCode(400).end("""Expected "relativeTime" with a number of long type in request """)
   }
