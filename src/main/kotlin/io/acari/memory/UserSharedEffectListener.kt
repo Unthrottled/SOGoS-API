@@ -34,7 +34,8 @@ class UserSharedEffectListener(private val mongoClient: MongoClient, private val
           jsonObjectOf(UserSchema.GLOBAL_USER_IDENTIFIER to effect.guid),
           jsonObjectOf(
             "\$set" to jsonObjectOf(
-              "security.$HAS_SHARED_DASHBOARD" to sharedValue
+              "security.$HAS_SHARED_DASHBOARD" to sharedValue,
+              "profile" to message.body().content
             )
           )
         )
