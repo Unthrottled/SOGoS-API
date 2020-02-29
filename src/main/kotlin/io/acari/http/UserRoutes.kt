@@ -1,14 +1,18 @@
 package io.acari.http
 
 import io.acari.memory.Effect
+import io.acari.memory.UserSchema
 import io.acari.memory.user.EFFECT_CHANNEL
 import io.acari.security.USER_IDENTIFIER
+import io.acari.types.NotFoundException
 import io.acari.user.UserService
 import io.acari.util.loggerFor
 import io.netty.handler.codec.http.HttpHeaderNames
 import io.netty.handler.codec.http.HttpHeaderValues
+import io.reactivex.Single
 import io.vertx.core.Handler
 import io.vertx.core.json.JsonObject
+import io.vertx.kotlin.core.json.jsonObjectOf
 import io.vertx.reactivex.core.Vertx
 import io.vertx.reactivex.ext.mongo.MongoClient
 import io.vertx.reactivex.ext.web.Router
@@ -111,6 +115,33 @@ fun createAuthorizedUserRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
   val router = Router.router(vertx)
   router.mountSubRouter("/onboarding", createOnboardingRouter(vertx, mongoClient))
   router.mountSubRouter("/share", createSharingRouter(vertx, mongoClient))
+
+  router.get("/:userIdentifier/profile").handler { requestContext ->
+    val userIdentifier = requestContext.request().getParam("userIdentifier")
+
+    mongoClient.rxFindOne(
+      UserSchema.COLLECTION, jsonObjectOf(
+        UserSchema.GLOBAL_USER_IDENTIFIER to userIdentifier
+      ), jsonObjectOf()
+    )
+      .switchIfEmpty(Single.create { it.onError(NotFoundException("Could not Find User")) })
+      .subscribe({ user ->
+        requestContext.response()
+          .setStatusCode(200)
+          .putHeader("Content-Type", "application/json")
+          .end(
+            user.getJsonObject("profile", jsonObjectOf()).encode()
+          )
+      }) {
+        if (it !is NotFoundException) {
+          logger.error("Unable to retrieve $userIdentifier for raisins", it)
+        }
+        requestContext.response().setStatusCode(404).end()
+      }
+  }
+
+
+
   return router
 }
 
