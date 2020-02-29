@@ -154,13 +154,14 @@ fun createSharingRouter(vertx: Vertx, mongoClient: MongoClient): Router {
   router.post("/dashboard/read").handler { requestContext ->
     val timeCreated = Instant.now().toEpochMilli()
     val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
+    val requestBody = requestContext.bodyAsJson
     vertx.eventBus().publish(
       EFFECT_CHANNEL, Effect(
         userIdentifier,
         timeCreated,
         timeCreated,
         ENABLED_SHARED_DASHBOARD,
-        JsonObject(),
+        requestBody ?: jsonObjectOf(),
         extractValuableHeaders(requestContext)
       )
     )
