@@ -45,7 +45,8 @@ class UserService(private val userInformationFinder: UserInformationFinder) {
       .map { userResponse ->
         jsonObjectOf(
           UserSchema.GLOBAL_USER_IDENTIFIER to userResponse.getString(UserSchema.GLOBAL_USER_IDENTIFIER),
-          UserSchema.MISC_USER_THINGS to userResponse.getJsonObject(UserSchema.MISC_USER_THINGS)
+          UserSchema.MISC_USER_THINGS to userResponse.getJsonObject(UserSchema.MISC_USER_THINGS),
+          UserSchema.SECURITY_THINGS to userResponse.getJsonObject(UserSchema.SECURITY_THINGS)
         )
       }
 
@@ -80,6 +81,7 @@ class UserService(private val userInformationFinder: UserInformationFinder) {
       .put(UserSchema.GLOBAL_USER_IDENTIFIER, globalUserIdentifier)
     val security = JsonObject()
       .put("verificationKey", userVerificationKey)
+      .mergeIn(userJson.getJsonObject(UserSchema.SECURITY_THINGS, jsonObjectOf()))
     return jsonObjectOf(
       "information" to userInfo,
       "security" to security,
