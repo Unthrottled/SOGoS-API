@@ -1,5 +1,6 @@
 package io.acari.http
 
+import io.acari.memory.AVATAR_UPLOADED_FIELD
 import io.acari.memory.BUCKET_NAME
 import io.acari.memory.Effect
 import io.acari.memory.UserSchema
@@ -7,6 +8,7 @@ import io.acari.memory.user.EFFECT_CHANNEL
 import io.acari.security.USER_IDENTIFIER
 import io.acari.types.NotFoundException
 import io.acari.user.UserService
+import io.acari.user.getPresignedUrl
 import io.acari.util.loggerFor
 import io.netty.handler.codec.http.HttpHeaderNames
 import io.netty.handler.codec.http.HttpHeaderValues
@@ -136,11 +138,20 @@ fun createAuthorizedUserRoutes(
       )
       .switchIfEmpty(Single.create { it.onError(NotFoundException("Could not Find User")) })
       .subscribe({ user ->
+
+        val userProfile = user.getJsonObject("profile", jsonObjectOf())
+        val misc = user.getJsonObject("misc") ?: jsonObjectOf()
+        if (misc.getBoolean(AVATAR_UPLOADED_FIELD, false)) {
+          getPresignedUrl(presigner, userIdentifier)
+            .ifPresent {
+                presignedUrl -> userProfile.put("avatar", presignedUrl)
+            }
+        }
         requestContext.response()
           .setStatusCode(200)
           .putHeader("Content-Type", "application/json")
           .end(
-            user.getJsonObject("profile", jsonObjectOf()).encode()
+            userProfile.encode()
           )
       }) {
         if (it !is NotFoundException) {

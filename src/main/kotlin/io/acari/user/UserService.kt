@@ -92,7 +92,7 @@ class UserService(
       .mergeIn(userJson.getJsonObject(UserSchema.SECURITY_THINGS, jsonObjectOf()))
     val misc = userJson.getJsonObject("misc") ?: jsonObjectOf()
     if (misc.getBoolean(AVATAR_UPLOADED_FIELD, false)) {
-      getPresignedUrl(globalUserIdentifier)
+      getPresignedUrl(presigner, globalUserIdentifier)
         .ifPresent {
           presignedUrl -> userInfo.put("avatar", presignedUrl)
         }
@@ -104,17 +104,17 @@ class UserService(
     ).encode()
   }
 
-  private fun getPresignedUrl(globalUserIdentifier: String?): Optional<String> {
-    return try {
-      presigner.presignGetObject { presignRequest ->
-        presignRequest.getObjectRequest { request ->
-          request
-            .bucket(BUCKET_NAME)
-            .key(globalUserIdentifier)
-        }.signatureDuration(Duration.ofMinutes(60))
-      }.url().toString().toOptional()
-    } catch (e: Exception) {
-      Optional.empty()
-    }
+}
+fun getPresignedUrl(presigner: S3Presigner, globalUserIdentifier: String?): Optional<String> {
+  return try {
+    presigner.presignGetObject { presignRequest ->
+      presignRequest.getObjectRequest { request ->
+        request
+          .bucket(BUCKET_NAME)
+          .key(globalUserIdentifier)
+      }.signatureDuration(Duration.ofMinutes(60))
+    }.url().toString().toOptional()
+  } catch (e: Exception) {
+    Optional.empty()
   }
 }
