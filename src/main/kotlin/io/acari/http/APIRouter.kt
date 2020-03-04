@@ -40,7 +40,7 @@ fun createAPIRoute(
   presigner: S3Presigner
 ): Router {
   val router = Router.router(vertx)
-  router.get("/user").handler(createUserHandler(UserService(UserInformationFinder(mongoClient, vertx))))
+  router.get("/user").handler(createUserHandler(UserService(UserInformationFinder(mongoClient, vertx), presigner)))
   router.mountSubRouter("/history", createHistoryRoutes(vertx, mongoClient))
   router.route().handler(createVerificationHandler())// order is important here
   router.mountSubRouter("/user", createAuthorizedUserRoutes(vertx, mongoClient, presigner))

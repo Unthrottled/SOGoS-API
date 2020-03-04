@@ -1,5 +1,7 @@
 package io.acari.user
 
+import io.acari.memory.AVATAR_UPLOADED_FIELD
+import io.acari.memory.BUCKET_NAME
 import io.acari.memory.UserSchema
 import io.acari.memory.user.UserInformationFinder
 import io.acari.security.extractUserValidationKey
@@ -12,8 +14,14 @@ import io.vertx.ext.auth.oauth2.AccessToken
 import io.vertx.kotlin.core.json.jsonObjectOf
 import io.vertx.reactivex.MaybeHelper
 import io.vertx.reactivex.ext.auth.User
+import software.amazon.awssdk.services.s3.presigner.S3Presigner
+import java.time.Duration
+import java.util.*
 
-class UserService(private val userInformationFinder: UserInformationFinder) {
+class UserService(
+  private val userInformationFinder: UserInformationFinder,
+  private val presigner: S3Presigner
+) {
 
   private val log = loggerFor(javaClass)
 
@@ -82,10 +90,31 @@ class UserService(private val userInformationFinder: UserInformationFinder) {
     val security = JsonObject()
       .put("verificationKey", userVerificationKey)
       .mergeIn(userJson.getJsonObject(UserSchema.SECURITY_THINGS, jsonObjectOf()))
+    val misc = userJson.getJsonObject("misc") ?: jsonObjectOf()
+    if (misc.getBoolean(AVATAR_UPLOADED_FIELD, false)) {
+      getPresignedUrl(globalUserIdentifier)
+        .ifPresent {
+          presignedUrl -> userInfo.put("avatar", presignedUrl)
+        }
+    }
     return jsonObjectOf(
       "information" to userInfo,
       "security" to security,
-      "misc" to (userJson.getJsonObject("misc") ?: jsonObjectOf())
+      "misc" to misc
     ).encode()
+  }
+
+  private fun getPresignedUrl(globalUserIdentifier: String?): Optional<String> {
+    return try {
+      presigner.presignGetObject { presignRequest ->
+        presignRequest.getObjectRequest { request ->
+          request
+            .bucket(BUCKET_NAME)
+            .key(globalUserIdentifier)
+        }.signatureDuration(Duration.ofMinutes(60))
+      }.url().toString().toOptional()
+    } catch (e: Exception) {
+      Optional.empty()
+    }
   }
 }

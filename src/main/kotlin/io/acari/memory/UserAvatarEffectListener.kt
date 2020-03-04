@@ -11,7 +11,7 @@ import io.vertx.reactivex.core.eventbus.Message
 import io.vertx.reactivex.ext.mongo.MongoClient
 import java.util.*
 
-
+const val AVATAR_UPLOADED_FIELD = "avatarUploaded"
 class UserAvatarEffectListener(private val mongoClient: MongoClient, private val vertx: Vertx) :
   Handler<Message<Effect>> {
   companion object {
@@ -32,7 +32,7 @@ class UserAvatarEffectListener(private val mongoClient: MongoClient, private val
             jsonObjectOf(UserSchema.GLOBAL_USER_IDENTIFIER to effect.guid),
             jsonObjectOf(
               "\$set" to jsonObjectOf(
-                "misc.avatarUploaded" to true
+                "misc.$AVATAR_UPLOADED_FIELD" to true
               )
             )
           )
