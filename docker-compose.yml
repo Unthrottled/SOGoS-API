@@ -1,4 +1,4 @@
-version: "3"
+version: "3.7"
 services:
   sogos:
     image: sogos
@@ -44,7 +44,20 @@ services:
       - POSTGRES_DB=keycloak
     volumes:
       - postgres-volume:/var/lib/postgresql/data
+  localstack-s3:
+    image: localstack/localstack:latest
+    environment:
+      - SERVICES=s3:5002
+      - DEFAULT_REGION=eu-west-2
+      - DATA_DIR=/tmp/localstack/data
+    ports:
+      - "5002:5002"
+      - "9999:8080"
+    volumes:
+      - localstack-data:/tmp/localstack
 
 volumes:
+  localstack-data:
+    name: localstack-data
   postgres-volume:
   mongo-volume:
