@@ -89,7 +89,7 @@ class UserService(
       .put(UserSchema.GLOBAL_USER_IDENTIFIER, globalUserIdentifier)
     val security = JsonObject()
       .put("verificationKey", userVerificationKey)
-      .mergeIn(userJson.getJsonObject(UserSchema.SECURITY_THINGS, jsonObjectOf()))
+      .mergeIn(userJson.getJsonObject(UserSchema.SECURITY_THINGS, jsonObjectOf()) ?: jsonObjectOf())
     val misc = userJson.getJsonObject("misc") ?: jsonObjectOf()
     if (misc.getBoolean(AVATAR_UPLOADED_FIELD, false)) {
       getPresignedUrl(presigner, globalUserIdentifier)
