@@ -1,7 +1,9 @@
 package io.acari.http
 
+import io.acari.memory.Effect
 import io.acari.memory.HAS_SHARED_DASHBOARD
 import io.acari.memory.UserSchema
+import io.acari.memory.user.EFFECT_CHANNEL
 import io.acari.security.*
 import io.acari.types.NotFoundException
 import io.acari.util.loggerFor
@@ -11,6 +13,7 @@ import io.reactivex.Single
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.core.json.jsonObjectOf
 import io.vertx.kotlin.ext.jwt.jwtOptionsOf
+import io.vertx.reactivex.core.Vertx
 import io.vertx.reactivex.ext.auth.jwt.JWTAuth
 import io.vertx.reactivex.ext.mongo.MongoClient
 import io.vertx.reactivex.ext.web.Router
@@ -21,11 +24,15 @@ const val API_VERSION = "1.1.0"
 
 private val logger = loggerFor("openRoutes")
 
+const val ISSUED_READ_TOKEN = "ISSUED_READ_TOKEN"
+const val REJECTED_READ_TOKEN_REQUEST = "REJECTED_READ_TOKEN_REQUEST"
+
 fun attachNonSecuredRoutes(
   router: Router,
   configuration: JsonObject,
   mongoClient: MongoClient,
-  jwtAuth: JWTAuth
+  jwtAuth: JWTAuth,
+  vertx: Vertx
 ): Router {
   router.route()
     .handler(BodyHandler.create())
@@ -54,11 +61,35 @@ fun attachNonSecuredRoutes(
     }
       .switchIfEmpty(Single.error(NotFoundException("User $userIdentifier does not exist")))
       .subscribe({
+        val timeCreated = Instant.now().toEpochMilli()
+        vertx.eventBus().publish(
+          EFFECT_CHANNEL, Effect(
+            userIdentifier,
+            timeCreated,
+            timeCreated,
+            ISSUED_READ_TOKEN,
+            jsonObjectOf(),
+            extractValuableHeaders(routingContext)
+          )
+        )
+
         routingContext.response().setStatusCode(200)
           .end(it.encode())
       }, {
         if (it !is NotFoundException) {
           logger.error("Unable to get read token for user $userIdentifier for raisins", it)
+        } else {
+          val timeCreated = Instant.now().toEpochMilli()
+          vertx.eventBus().publish(
+            EFFECT_CHANNEL, Effect(
+              userIdentifier,
+              timeCreated,
+              timeCreated,
+              REJECTED_READ_TOKEN_REQUEST,
+              jsonObjectOf(),
+              extractValuableHeaders(routingContext)
+            )
+          )
         }
         routingContext.response().setStatusCode(403).end()
       })

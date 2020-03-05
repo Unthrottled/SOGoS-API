@@ -64,7 +64,7 @@ class HttpVerticle : AbstractVerticle() {
         createS3Client()
         val router = Router.router(vertx)
         val corsRouter = attachCORSRouter(router, configuration)
-        val configuredRouter = attachNonSecuredRoutes(corsRouter, configuration, reactiveMongoClient, jwtAuth)
+        val configuredRouter = attachNonSecuredRoutes(corsRouter, configuration, reactiveMongoClient, jwtAuth, vertx)
         val securedRoute = attachSecurityToRouter(configuredRouter, oauth2, configuration, jwtAuth)
         val supplementedRoutes = mountSupportingRoutes(vertx, securedRoute, configuration)
         val presigner = createS3Presigner()
