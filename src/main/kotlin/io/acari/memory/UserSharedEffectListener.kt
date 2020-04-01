@@ -10,9 +10,11 @@ import io.vertx.kotlin.core.json.jsonObjectOf
 import io.vertx.reactivex.core.Vertx
 import io.vertx.reactivex.core.eventbus.Message
 import io.vertx.reactivex.ext.mongo.MongoClient
+import java.time.Instant
 import java.util.*
 
 const val HAS_SHARED_DASHBOARD = "hasShared"
+const val SHARED_BRIDGE_CODE = "shareCode"
 
 class UserSharedEffectListener(private val mongoClient: MongoClient, private val vertx: Vertx) :
   Handler<Message<Effect>> {
@@ -35,6 +37,7 @@ class UserSharedEffectListener(private val mongoClient: MongoClient, private val
           jsonObjectOf(
             "\$set" to jsonObjectOf(
               "security.$HAS_SHARED_DASHBOARD" to sharedValue,
+              "security.$SHARED_BRIDGE_CODE" to createShareCode(effect.guid),
               "profile" to message.body().content
             )
           )
@@ -44,6 +47,9 @@ class UserSharedEffectListener(private val mongoClient: MongoClient, private val
           }
       }
   }
+
+  private fun createShareCode(guid: String): String =
+    "${Instant.now().toEpochMilli().toString(36)}${guid.substringBefore('-')}"
 
   private fun extractUpdateType(effect: Effect): Optional<Boolean> {
     return effect.toOptional()
