@@ -2,6 +2,7 @@ package io.acari.http
 
 import io.acari.memory.Effect
 import io.acari.memory.HAS_SHARED_DASHBOARD
+import io.acari.memory.SHARED_BRIDGE_CODE
 import io.acari.memory.UserSchema
 import io.acari.memory.user.EFFECT_CHANNEL
 import io.acari.security.*
@@ -25,7 +26,6 @@ const val API_VERSION = "1.1.0"
 private val logger = loggerFor("openRoutes")
 
 const val ISSUED_READ_TOKEN = "ISSUED_READ_TOKEN"
-const val REJECTED_READ_TOKEN_REQUEST = "REJECTED_READ_TOKEN_REQUEST"
 
 fun attachNonSecuredRoutes(
   router: Router,
@@ -37,18 +37,19 @@ fun attachNonSecuredRoutes(
   router.route()
     .handler(BodyHandler.create())
 
-  router.get("/user/:userIdentifier/view/token").handler { routingContext ->
+  router.get("/user/:shareCode/view/token").handler { routingContext ->
     val request = routingContext.request()
-    val userIdentifier = request.getParam("userIdentifier")
+    val shareCode = request.getParam("shareCode")
     mongoClient.rxFindOne(
       UserSchema.COLLECTION, jsonObjectOf(
-        UserSchema.GLOBAL_USER_IDENTIFIER to userIdentifier
+        "security.$SHARED_BRIDGE_CODE" to shareCode
       ), jsonObjectOf()
     ).filter { user ->
       user.getJsonObject(UserSchema.SECURITY_THINGS, jsonObjectOf())
         .getBoolean(HAS_SHARED_DASHBOARD, false)
     }.map {
       jsonObjectOf(
+        "userIdentifier" to it.getString(UserSchema.GLOBAL_USER_IDENTIFIER),
         "readToken" to jwtAuth.generateToken(
           jsonObjectOf(UserSchema.GLOBAL_USER_IDENTIFIER to it.getString(UserSchema.GLOBAL_USER_IDENTIFIER))
           , jwtOptionsOf(
@@ -59,12 +60,12 @@ fun attachNonSecuredRoutes(
         )
       )
     }
-      .switchIfEmpty(Single.error(NotFoundException("User $userIdentifier does not exist")))
+      .switchIfEmpty(Single.error(NotFoundException("Share code $shareCode does not exist")))
       .subscribe({
         val timeCreated = Instant.now().toEpochMilli()
         vertx.eventBus().publish(
           EFFECT_CHANNEL, Effect(
-            userIdentifier,
+            it.getString("userIdentifier"),
             timeCreated,
             timeCreated,
             ISSUED_READ_TOKEN,
@@ -77,19 +78,7 @@ fun attachNonSecuredRoutes(
           .end(it.encode())
       }, {
         if (it !is NotFoundException) {
-          logger.error("Unable to get read token for user $userIdentifier for raisins", it)
-        } else {
-          val timeCreated = Instant.now().toEpochMilli()
-          vertx.eventBus().publish(
-            EFFECT_CHANNEL, Effect(
-              userIdentifier,
-              timeCreated,
-              timeCreated,
-              REJECTED_READ_TOKEN_REQUEST,
-              jsonObjectOf(),
-              extractValuableHeaders(routingContext)
-            )
-          )
+          logger.error("Unable to get read token for share code $shareCode for raisins", it)
         }
         routingContext.response().setStatusCode(403).end()
       })
