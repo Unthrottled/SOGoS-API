@@ -1,7 +1,9 @@
+- Send do not cache to open gets
 - Legacy before and after activity support
 - Plagiarism
 - bucket file size limit
 
+- Do not save junk user data
 - Indexing
   - index on share code
 

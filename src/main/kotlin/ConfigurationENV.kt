@@ -1,5 +1,3 @@
-const val CLIENT_SECRET = "sogos.client.secret"
-
 const val CONNECTION_STRING = "sogos.mongo.connection"
 const val HMAC_KEY = "sogos.hmac.key"
 const val CLIENT_ID = "sogos.client.id"

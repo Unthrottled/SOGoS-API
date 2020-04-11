@@ -75,6 +75,8 @@ fun attachNonSecuredRoutes(
         )
 
         routingContext.response().setStatusCode(200)
+          .putHeader(HttpHeaderNames.CACHE_CONTROL, "max-age=0, no-cache, must-revalidate, proxy-revalidate")
+          .putHeader(HttpHeaderNames.EXPIRES, Instant.EPOCH.)
           .end(it.encode())
       }, {
         if (it !is NotFoundException) {
@@ -87,6 +89,7 @@ fun attachNonSecuredRoutes(
   router.get("/version").handler {
     it.response()
       .putHeader(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON)
+      .putHeader(HttpHeaderNames.CACHE_CONTROL, "max-age=0, no-cache, must-revalidate, proxy-revalidate")
       .end(
         jsonObjectOf(
           "version" to API_VERSION
@@ -96,6 +99,8 @@ fun attachNonSecuredRoutes(
 
   router.get("/time").handler {
     it.response()
+      .putHeader(HttpHeaderNames.CACHE_CONTROL, "max-age=0, no-cache, must-revalidate, proxy-revalidate")
+      .putHeader(HttpHeaderNames.EXPIRES, Instant.EPOCH.)
       .putHeader(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON)
       .end(
         jsonObjectOf(
@@ -107,6 +112,8 @@ fun attachNonSecuredRoutes(
   router.get("/configurations").handler {
     val securityConfigurations = configuration.getJsonObject("security")
     it.response()
+      .putHeader(HttpHeaderNames.CACHE_CONTROL, "max-age=0, no-cache, must-revalidate, proxy-revalidate")
+      .putHeader(HttpHeaderNames.EXPIRES, Instant.EPOCH.)
       .putHeader(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON)
       .end(
         jsonObjectOf(
