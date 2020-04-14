@@ -22,13 +22,25 @@ const val JSON = "application/json"
 
 fun createHistoryRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
   val router = Router.router(vertx)
-  // todo: legacy migration
   router.get("/:userIdentifier/first/before").handler { requestContext ->
     val sortOrder = -1
     val comparisonString = "\$lt"
     handleFirstRequest(requestContext, mongoClient, sortOrder, comparisonString)
   }
   router.get("/:userIdentifier/first/after").handler { requestContext ->
+    val sortOrder = 1
+    val comparisonString = "\$gte"
+    handleFirstRequest(requestContext, mongoClient, sortOrder, comparisonString)
+  }
+
+  // todo: remove me
+  router.post("/:userIdentifier/first/before").handler { requestContext ->
+    val sortOrder = -1
+    val comparisonString = "\$lt"
+    handleFirstRequest(requestContext, mongoClient, sortOrder, comparisonString)
+  }
+  // todo: remove me
+  router.post("/:userIdentifier/first/after").handler { requestContext ->
     val sortOrder = 1
     val comparisonString = "\$gte"
     handleFirstRequest(requestContext, mongoClient, sortOrder, comparisonString)

@@ -42,7 +42,6 @@ private fun mapTypeToEffect(uploadType: String): String =
 fun createObjectiveRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
   val router = router(vertx)
 
-  // todo: should be shareable
   router.get("/:objectiveId").handler { requestContext ->
     val objectiveId = requestContext.request().getParam("objectiveId")
     val response = requestContext.response()
@@ -85,7 +84,6 @@ fun createObjectiveRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
     requestContext.response().putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(200).end()
   }
 
-  // todo: should be shareable
   router.get("/").handler { requestContext ->
     val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
     val asArray = requestContext.request().params().get("asArray") == "true"
