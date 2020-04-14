@@ -15,4 +15,7 @@ const val USER_INFO_URL = "sogos.user.info.url"
 const val LOGOUT_URL = "sogos.logout.url"
 const val CORS_ORIGIN_URL = "sogos.allowed.origin"
 
+const val AWS_ACCESS_KEY = "sogos.aws.access.key"
+const val AWS_SECRET_ACCESS = "sogos.aws.access.secret"
+
 const val PORT_NUMBER = "sogos.port"

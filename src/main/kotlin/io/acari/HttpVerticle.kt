@@ -5,7 +5,6 @@ import io.acari.http.attachNonSecuredRoutes
 import io.acari.http.mountAPIRoute
 import io.acari.http.mountSupportingRoutes
 import io.acari.memory.MemoryInitializations
-import io.acari.memory.createS3Client
 import io.acari.memory.createS3Presigner
 import io.acari.security.*
 import io.acari.util.loggerFor
@@ -61,13 +60,12 @@ class HttpVerticle : AbstractVerticle() {
             )
           )
         )
-        createS3Client()
         val router = Router.router(vertx)
         val corsRouter = attachCORSRouter(router, configuration)
         val configuredRouter = attachNonSecuredRoutes(corsRouter, configuration, reactiveMongoClient, jwtAuth, vertx)
         val securedRoute = attachSecurityToRouter(configuredRouter, oauth2, configuration, jwtAuth)
         val supplementedRoutes = mountSupportingRoutes(vertx, securedRoute, configuration)
-        val presigner = createS3Presigner()
+        val presigner = createS3Presigner(configuration)
         val apiRouter = mountAPIRoute(vertx, reactiveMongoClient, supplementedRoutes, presigner)
         startServer(apiRouter)
       }
