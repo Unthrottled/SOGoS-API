@@ -1,14 +1,16 @@
 - Legacy before and after activity support
 - bucket file size limit
 
-- Do not save junk user data
 - Indexing
   - index on share code
 
+Serverless lessons:
+------
 Trouble Children
   - Mongo Connection
   - JWKs Keys
 
+Post MVP
 ----------
 - capture when device last did something.
 - replace current activity only if activities time is greater

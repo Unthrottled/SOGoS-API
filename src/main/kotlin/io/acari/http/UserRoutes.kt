@@ -225,6 +225,7 @@ fun createProfileRouter(
 
 const val ENABLED_SHARED_DASHBOARD = "ENABLED_SHARED_DASHBOARD"
 const val DISABLED_SHARED_DASHBOARD = "DISABLED_SHARED_DASHBOARD"
+private val acceptedFields = setOf("firstName", "lastName", "email", "fullName", "userName")
 
 fun createSharingRouter(vertx: Vertx, mongoClient: MongoClient): Router {
   val router = Router.router(vertx)
@@ -232,14 +233,20 @@ fun createSharingRouter(vertx: Vertx, mongoClient: MongoClient): Router {
   router.post("/dashboard/read").handler { requestContext ->
     val timeCreated = Instant.now().toEpochMilli()
     val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
-    val requestBody = requestContext.bodyAsJson
+    val requestBody = requestContext.bodyAsJson ?: jsonObjectOf()
+    val cleanBody= JsonObject.mapFrom(requestBody.fieldNames()
+      .filter {
+        acceptedFields.contains(it)
+      }.map {
+        it to requestBody.getString(it)
+      }.toMap())
     vertx.eventBus().publish(
       EFFECT_CHANNEL, Effect(
         userIdentifier,
         timeCreated,
         timeCreated,
         ENABLED_SHARED_DASHBOARD,
-        requestBody ?: jsonObjectOf(),
+        cleanBody,
         extractValuableHeaders(requestContext)
       )
     )
