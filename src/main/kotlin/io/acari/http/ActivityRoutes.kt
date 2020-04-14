@@ -2,6 +2,7 @@ package io.acari.http
 
 import io.acari.memory.Effect
 import io.acari.memory.PomodoroCompletionHistorySchema
+import io.acari.memory.UserSchema
 import io.acari.memory.activity.Activity
 import io.acari.memory.activity.CurrentActivityFinder
 import io.acari.memory.activity.PomodoroFinder
@@ -26,6 +27,7 @@ import io.vertx.reactivex.ext.mongo.MongoClient
 import io.vertx.reactivex.ext.web.Router
 import io.vertx.reactivex.ext.web.Router.router
 import io.vertx.reactivex.ext.web.RoutingContext
+import java.time.Duration
 import java.time.Instant
 import java.util.*
 
@@ -39,6 +41,7 @@ const val CREATED = "CREATED"
 const val UPDATED = "UPDATED"
 const val DELETED = "DELETED"
 val uploadStatus = setOf(CREATED, UPDATED, DELETED)
+const val THREE_WEEKS_IN_MINUTES = 30240L
 
 fun createActivityRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
   val router = router(vertx)
@@ -86,26 +89,53 @@ fun createActivityRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
   router.post("/bulk").handler { requestContext ->
     val bodyAsJsonArray = requestContext.bodyAsJsonArray
     val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
-    bodyAsJsonArray.stream()
-      .map { it as JsonObject }
-      .filter { cachedActivity ->
-        uploadStatus.contains(cachedActivity.getString("uploadType"))
+    mongoClient.rxFindOne(
+      UserSchema.COLLECTION,
+      jsonObjectOf(
+        UserSchema.GLOBAL_USER_IDENTIFIER to userIdentifier
+      )
+      , jsonObjectOf(
+        UserSchema.TIME_CREATED to 1
+      )
+    )
+      .map { Instant.ofEpochMilli(it.getLong(UserSchema.TIME_CREATED)) }
+      .subscribe({ userTimeCreated ->
+        bodyAsJsonArray.stream()
+          .map { it as JsonObject }
+          .filter { it.containsKey("activity") }
+          .filter { cachedActivity ->
+            val meow = Instant.now()
+            val antecedenceTime = Instant.ofEpochMilli(
+              cachedActivity.getJsonObject("activity")
+                .getLong("antecedenceTime", 0L)
+            )
+            val duration = Duration.between(antecedenceTime, meow).toMinutes()
+
+            duration in 0..THREE_WEEKS_IN_MINUTES &&
+              userTimeCreated.isBefore(antecedenceTime) &&
+              uploadStatus.contains(cachedActivity.getString("uploadType"))
+          }
+          .forEach { cachedActivity ->
+            val activity = cachedActivity.getJsonObject("activity")
+            vertx.eventBus().publish(
+              EFFECT_CHANNEL,
+              Effect(
+                userIdentifier,
+                Instant.now().toEpochMilli(),
+                activity.getLong("antecedenceTime"),
+                mapTypeToEffect(cachedActivity.getString("uploadType")),
+                activity.getJsonObject("content") ?: JsonObject(),
+                extractValuableHeaders(requestContext)
+              )
+            )
+          }
+        requestContext.response().putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(200).end()
+      }, {
+        logger.error("Unable to bulk upload for user $userIdentifier for raisins", it)
+        requestContext.response().putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(500).end()
+      }) {
+        requestContext.response().putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(200).end()
       }
-      .forEach { cachedActivity ->
-        val activity = cachedActivity.getJsonObject("activity")
-        vertx.eventBus().publish(
-          EFFECT_CHANNEL,
-          Effect(
-            userIdentifier,
-            Instant.now().toEpochMilli(),
-            activity.getLong("antecedenceTime"),
-            mapTypeToEffect(cachedActivity.getString("uploadType")),
-            activity.getJsonObject("content") ?: JsonObject(),
-            extractValuableHeaders(requestContext)
-          )
-        )
-      }
-    requestContext.response().putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(200).end()
   }
 
   router.post("/").handler { requestContext ->
