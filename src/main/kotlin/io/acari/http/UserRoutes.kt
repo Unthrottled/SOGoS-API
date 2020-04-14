@@ -183,7 +183,6 @@ fun createProfileRouter(
           .signatureDuration(Duration.ofMinutes(2))
       }
 
-      // todo: consume event and add to user
       vertx.eventBus().publish(
         EFFECT_CHANNEL, Effect(
           userIdentifier,
