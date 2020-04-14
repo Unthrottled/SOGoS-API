@@ -173,33 +173,40 @@ fun createProfileRouter(
   router.post("/avatar/create").handler { requestContext ->
     val timeCreated = Instant.now().toEpochMilli()
     val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
+    val requestBody = requestContext.bodyAsJson
 
-    try {
-      val presignedUrl = presigner.presignPutObject { presignRequest ->
-        presignRequest.putObjectRequest { objectRequest ->
+    if(requestBody.containsKey("contentLength") && requestBody.getLong("contentLength") < 1e7) {
+      try {
+        val presignedUrl = presigner.presignPutObject { presignRequest ->
+          presignRequest.putObjectRequest { objectRequest ->
             objectRequest.bucket(BUCKET_NAME)
+              .contentLength(requestBody.getLong("contentLength"))
               .key(userIdentifier)
           }
-          .signatureDuration(Duration.ofMinutes(2))
+            .signatureDuration(Duration.ofMinutes(2))
+        }
+
+        vertx.eventBus().publish(
+          EFFECT_CHANNEL, Effect(
+            userIdentifier,
+            timeCreated,
+            timeCreated,
+            AVATAR_UPLOAD_REQUESTED,
+            jsonObjectOf(
+              "key" to userIdentifier
+            ),
+            extractValuableHeaders(requestContext)
+          )
+        )
+        requestContext.response().setStatusCode(200).end(
+          presignedUrl.url().toString()
+        )
+      } catch (e: Exception) {
+        requestContext.response().setStatusCode(500).end()
       }
 
-      vertx.eventBus().publish(
-        EFFECT_CHANNEL, Effect(
-          userIdentifier,
-          timeCreated,
-          timeCreated,
-          AVATAR_UPLOAD_REQUESTED,
-          jsonObjectOf(
-            "key" to userIdentifier
-          ),
-          extractValuableHeaders(requestContext)
-        )
-      )
-      requestContext.response().setStatusCode(200).end(
-        presignedUrl.url().toString()
-      )
-    } catch (e: Exception) {
-      requestContext.response().setStatusCode(500).end()
+    } else {
+      requestContext.response().setStatusCode(400).end("Expected contentLength to be present or is too beeg!")
     }
   }
 
