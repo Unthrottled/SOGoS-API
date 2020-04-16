@@ -21,7 +21,7 @@ import io.vertx.reactivex.ext.web.Router
 import io.vertx.reactivex.ext.web.handler.BodyHandler
 import java.time.Instant
 
-const val API_VERSION = "1.1.0"
+const val API_VERSION = "2.0.0"
 
 private val logger = loggerFor("openRoutes")
 
