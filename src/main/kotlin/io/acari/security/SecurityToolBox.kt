@@ -180,7 +180,8 @@ private fun verifyCorrectUser(routingContext: RoutingContext): Boolean {
   val globalUserIdentifier = headers.get(USER_IDENTIFIER) ?: ""
   val email = user.accessToken().getString("email") ?: ""
   val generatedVerificationKey = extractUserValidationKey(email, globalUserIdentifier)
-  return verificationKey == generatedVerificationKey
+  return verificationKey == generatedVerificationKey &&
+    email.isNotBlank()
 }
 
 const val SOGOS_ISSUER = "SOGoS"

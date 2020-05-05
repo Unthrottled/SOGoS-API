@@ -15,6 +15,7 @@ import io.netty.handler.codec.http.HttpHeaderValues
 import io.reactivex.Single
 import io.vertx.core.Handler
 import io.vertx.core.json.JsonObject
+import io.vertx.ext.auth.oauth2.impl.OAuth2TokenImpl
 import io.vertx.kotlin.core.json.jsonObjectOf
 import io.vertx.reactivex.core.Vertx
 import io.vertx.reactivex.ext.mongo.MongoClient
@@ -246,6 +247,9 @@ fun createSharingRouter(vertx: Vertx, mongoClient: MongoClient): Router {
       }.map {
         it to requestBody.getString(it)
       }.toMap())
+    val user = requestContext.user().delegate as OAuth2TokenImpl
+    cleanBody.put("email", user.accessToken().getString("email"))
+
     vertx.eventBus().publish(
       EFFECT_CHANNEL, Effect(
         userIdentifier,
