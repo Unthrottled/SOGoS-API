@@ -33,19 +33,6 @@ fun createHistoryRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
     handleFirstRequest(requestContext, mongoClient, sortOrder, comparisonString)
   }
 
-  // todo: remove me
-  router.post("/:userIdentifier/first/before").handler { requestContext ->
-    val sortOrder = -1
-    val comparisonString = "\$lt"
-    handleFirstRequest(requestContext, mongoClient, sortOrder, comparisonString)
-  }
-  // todo: remove me
-  router.post("/:userIdentifier/first/after").handler { requestContext ->
-    val sortOrder = 1
-    val comparisonString = "\$gte"
-    handleFirstRequest(requestContext, mongoClient, sortOrder, comparisonString)
-  }
-
   router.get("/:userIdentifier/feed").handler { requestContext ->
     val request = requestContext.request()
     val userIdentifier = request.getParam("userIdentifier")
