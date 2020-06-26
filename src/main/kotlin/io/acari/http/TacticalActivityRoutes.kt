@@ -40,8 +40,8 @@ fun createTacticalActivityRoutes(vertx: Vertx, mongoClient: MongoClient): Router
     val response = requestContext.response()
 
     response.isChunked = true
-    response.putHeader(HttpHeaderNames.CONTENT_TYPE, if(asArray) JSON else JSON_STREAM)
-    if(asArray){
+    response.putHeader(HttpHeaderNames.CONTENT_TYPE, if (asArray) JSON else JSON_STREAM)
+    if (asArray) {
       response.write("[")
     }
     mongoClient.findBatch(
@@ -54,7 +54,7 @@ fun createTacticalActivityRoutes(vertx: Vertx, mongoClient: MongoClient): Router
         it.remove("_id")
         it.remove(TacticalActivitySchema.REMOVED)
         val json = Json.encode(it)
-        if(asArray) "$json,"
+        if (asArray) "$json,"
         else json
       }
       .subscribe({
@@ -62,7 +62,7 @@ fun createTacticalActivityRoutes(vertx: Vertx, mongoClient: MongoClient): Router
       }, {
         logger.warn("Unable to fetch activity feed for $userIdentifier because reasons.", it)
       }, {
-        if(asArray){
+        if (asArray) {
           response.write("]")
         }
 
@@ -134,7 +134,6 @@ fun createTacticalActivityRoutes(vertx: Vertx, mongoClient: MongoClient): Router
       .putHeader(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON)
       .setStatusCode(204).end()
   }
-
 
   router.put("/").handler { requestContext ->
     val bodyAsJson = requestContext.bodyAsJson

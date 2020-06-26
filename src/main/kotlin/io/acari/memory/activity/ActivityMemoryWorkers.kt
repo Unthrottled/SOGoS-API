@@ -17,5 +17,3 @@ object ActivityMemoryWorkers {
     return Completable.complete()
   }
 }
-
-

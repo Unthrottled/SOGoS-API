@@ -6,7 +6,6 @@ import io.acari.memory.ObjectiveHistorySchema
 import io.acari.memory.user.EFFECT_CHANNEL
 import io.acari.security.USER_IDENTIFIER
 import io.acari.util.loggerFor
-import io.netty.handler.codec.http.HttpHeaderNames
 import io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE
 import io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON
 import io.reactivex.Flowable
@@ -64,7 +63,6 @@ fun createObjectiveRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
         logger.info("Unable to find for objective $objectiveId because reasons.", it)
         response.setStatusCode(500).end()
       }
-
   }
 
   router.post("/:objectiveId/complete").handler { requestContext ->
@@ -90,8 +88,8 @@ fun createObjectiveRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
     val response = requestContext.response()
 
     response.isChunked = true
-    response.putHeader(CONTENT_TYPE, if(asArray) JSON else JSON_STREAM)
-    if(asArray){
+    response.putHeader(CONTENT_TYPE, if (asArray) JSON else JSON_STREAM)
+    if (asArray) {
       response.write("[")
     }
     mongoClient.aggregate(
@@ -121,7 +119,7 @@ fun createObjectiveRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
       }
       .map {
         val json = Json.encodePrettily(it)
-        if(asArray) "$json,"
+        if (asArray) "$json,"
         else json
       }
       .subscribe({
@@ -130,12 +128,11 @@ fun createObjectiveRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
         logger.warn("Unable to fetch objectives for $userIdentifier because reasons.", it)
         response.setStatusCode(500).end()
       }, {
-        if(asArray){
+        if (asArray) {
           response.write("]")
         }
         response.end()
       })
-
   }
 
   router.post("/").handler { requestContext ->
@@ -154,7 +151,6 @@ fun createObjectiveRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
     )
     requestContext.response().putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(200).end()
   }
-
 
   /**
    * Should be used to assimilate any offline objectives that may have

@@ -41,7 +41,6 @@ class StrategyEffectListener(private val mongoClient: MongoClient, private val v
     return effect.name == UPDATED_OBJECTIVE
   }
 
-
   private fun writeCurrentObjective(objectiveEffect: Effect): Maybe<JsonObject>? {
     val objectiveContent = objectiveEffect.content
     val objective = objectiveContent.mapTo(Objective::class.java)
@@ -92,7 +91,6 @@ class StrategyEffectListener(private val mongoClient: MongoClient, private val v
 }
 
 const val MAX_OBJECTIVES = 5
-
 
 fun createOrUpdateObjective(
   mongoClient: MongoClient,

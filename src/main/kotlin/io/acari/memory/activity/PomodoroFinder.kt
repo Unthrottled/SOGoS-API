@@ -20,11 +20,9 @@ class PomodoroFinder(private val mongoClient: MongoClient) {
   }
 }
 
-
 fun buildToFromQuery(to: Long, from: Long): JsonObject {
   return jsonObjectOf(
     "\$lt" to to, // toot toot motherfucker
     "\$gte" to from
   )
 }
-

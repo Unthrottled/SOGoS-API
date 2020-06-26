@@ -4,8 +4,6 @@ import io.acari.http.STARTED_ACTIVITY
 import io.acari.memory.Effect
 import io.acari.memory.UserSchema
 import io.acari.security.extractUserIdentificationKey
-import io.acari.util.toMaybe
-import io.acari.util.toSingle
 import io.reactivex.Maybe
 import io.reactivex.Single
 import io.reactivex.SingleObserver

@@ -22,7 +22,6 @@ class UserAvatarEffectListener(private val mongoClient: MongoClient, private val
       )
   }
 
-
   override fun handle(message: Message<Effect>) {
     val effect = message.body()
     extractUpdateType(effect)

@@ -41,4 +41,3 @@ class PomodoroSettingsEffectListener(private val mongoClient: MongoClient, priva
   private fun isPomodoroSettings(effect: Effect) =
     effect.name == UPDATED_POMODORO_SETTINGS
 }
-

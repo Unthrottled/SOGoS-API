@@ -12,8 +12,7 @@ fun main() {
     configuredVertx.deployVerticle(DeploymentVerticle(), it)
   }.subscribe({
     logger.info("Succeeded in launching application! \uD83D\uDE80")
-  }){
+  }) {
     logger.fatal("Houston, we have a problem.", it)
   }
-
 }

@@ -40,7 +40,7 @@ fun createTacticalRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
         requestContext.fail(500)
       })
   }
-  router.post("/pomodoro/settings").handler {requestContext->
+  router.post("/pomodoro/settings").handler { requestContext ->
     val bodyAsJson = requestContext.bodyAsJson
     val timeCreated = Instant.now().toEpochMilli()
     val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)

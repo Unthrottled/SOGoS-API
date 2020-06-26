@@ -12,10 +12,10 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner
 private val logger = loggerFor("APIRouter")
 
 fun mountAPIRoute(
-    vertx: Vertx,
-    mongoClient: MongoClient,
-    router: Router,
-    presigner: S3Presigner
+  vertx: Vertx,
+  mongoClient: MongoClient,
+  router: Router,
+  presigner: S3Presigner
 ): Router {
   router.mountSubRouter("/", createAPIRoute(vertx, mongoClient, presigner))
 
@@ -23,7 +23,7 @@ fun mountAPIRoute(
   router.get("/*")
     .failureHandler { routingContext ->
       val statusCode = routingContext.statusCode()
-      if(statusCode != 401 && statusCode != 403){
+      if (statusCode != 401 && statusCode != 403) {
         routingContext.reroute("/")
       } else {
         routingContext.response().setStatusCode(404).end()
@@ -33,7 +33,6 @@ fun mountAPIRoute(
   return router
 }
 
-
 fun createAPIRoute(
   vertx: Vertx,
   mongoClient: MongoClient,
@@ -42,7 +41,7 @@ fun createAPIRoute(
   val router = Router.router(vertx)
   router.get("/user").handler(createUserHandler(UserService(UserInformationFinder(mongoClient, vertx), presigner)))
   router.mountSubRouter("/history", createHistoryRoutes(vertx, mongoClient))
-  router.route().handler(createVerificationHandler())// order is important here
+  router.route().handler(createVerificationHandler()) // order is important here
   router.mountSubRouter("/user", createAuthorizedUserRoutes(vertx, mongoClient, presigner))
   router.mountSubRouter("/activity", createActivityRoutes(vertx, mongoClient))
   router.mountSubRouter("/strategy", createStrategyRoutes(vertx, mongoClient))

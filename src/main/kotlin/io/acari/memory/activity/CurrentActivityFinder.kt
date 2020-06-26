@@ -24,7 +24,7 @@ class CurrentActivityFinder(private val mongoClient: MongoClient) {
   fun handle(userIdentifier: String): Single<Activity> {
     return findCurrentActivity(mongoClient, userIdentifier)
       .map {
-        //TODO: REMOVE ONCE DATA IS LESS JANKY.
+        // TODO: REMOVE ONCE DATA IS LESS JANKY.
         if (it.containsKey(CurrentActivitySchema.CURRENT)) {
           it.getJsonObject(CurrentActivitySchema.CURRENT)
         } else {
