@@ -103,7 +103,6 @@ class UserService(
       "misc" to misc
     ).encode()
   }
-
 }
 fun getPresignedUrl(presigner: S3Presigner, globalUserIdentifier: String?): Optional<String> {
   return try {

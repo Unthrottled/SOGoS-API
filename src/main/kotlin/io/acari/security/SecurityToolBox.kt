@@ -66,7 +66,7 @@ fun createCORSHandler(config: JsonObject): Handler<RoutingContext>? {
         "X-Amz-Security-Token",
         "Sec-Fetch-Mode",
 
-        //SOGoS Things
+        // SOGoS Things
         "Authorization",
         "Read-Token",
         "Verification",
@@ -138,7 +138,7 @@ fun setUpOAuth(vertx: Vertx, config: JsonObject): Single<OAuth2Auth> =
     val securityConfig = config.getJsonObject("security")
     val openIdProvider =
       getOpenIdProvider(config, securityConfig)
-    val clientId = getClient(config, securityConfig)//todo: consolidate client ids since not confidential anymoar
+    val clientId = getClient(config, securityConfig) // todo: consolidate client ids since not confidential anymoar
     OpenIDConnectAuth.discover(
       vertx, OAuth2ClientOptions()
         .setSite(openIdProvider)

@@ -80,7 +80,6 @@ fun createOnboardingRouter(vertx: Vertx, mongoClient: MongoClient): Router {
       )
     )
     requestContext.response().setStatusCode(201).end()
-
   }
 
   router.post("/TacMod/downloaded").handler { requestContext ->
@@ -97,7 +96,6 @@ fun createOnboardingRouter(vertx: Vertx, mongoClient: MongoClient): Router {
       )
     )
     requestContext.response().setStatusCode(201).end()
-
   }
 
   router.post("/TacMod/thanked").handler { requestContext ->
@@ -176,7 +174,7 @@ fun createProfileRouter(
     val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
     val requestBody = requestContext.bodyAsJson
 
-    if(requestBody.containsKey("contentLength") && requestBody.getLong("contentLength") < 1e7) {
+    if (requestBody.containsKey("contentLength") && requestBody.getLong("contentLength") < 1e7) {
       try {
         val presignedUrl = presigner.presignPutObject { presignRequest ->
           presignRequest.putObjectRequest { objectRequest ->
@@ -205,7 +203,6 @@ fun createProfileRouter(
       } catch (e: Exception) {
         requestContext.response().setStatusCode(500).end()
       }
-
     } else {
       requestContext.response().setStatusCode(400).end("Expected contentLength to be present or is too beeg!")
     }
@@ -241,7 +238,7 @@ fun createSharingRouter(vertx: Vertx, mongoClient: MongoClient): Router {
     val timeCreated = Instant.now().toEpochMilli()
     val userIdentifier = requestContext.request().headers().get(USER_IDENTIFIER)
     val requestBody = requestContext.bodyAsJson ?: jsonObjectOf()
-    val cleanBody= JsonObject.mapFrom(requestBody.fieldNames()
+    val cleanBody = JsonObject.mapFrom(requestBody.fieldNames()
       .filter {
         acceptedFields.contains(it)
       }.map {
@@ -281,4 +278,3 @@ fun createSharingRouter(vertx: Vertx, mongoClient: MongoClient): Router {
 
   return router
 }
-

@@ -12,7 +12,6 @@ import io.vertx.reactivex.core.eventbus.Message
 import io.vertx.reactivex.ext.mongo.MongoClient
 import java.util.*
 
-
 class TacModEffectListener(private val mongoClient: MongoClient, private val vertx: Vertx) :
   Handler<Message<Effect>> {
   companion object {
@@ -23,7 +22,6 @@ class TacModEffectListener(private val mongoClient: MongoClient, private val ver
         TACMOD_THANKED to "TacModThanked"
       )
   }
-
 
   override fun handle(message: Message<Effect>) {
     val effect = message.body()
@@ -47,7 +45,7 @@ class TacModEffectListener(private val mongoClient: MongoClient, private val ver
 
   private fun extractUpdateType(effect: Effect): Optional<String> {
     return effect.toOptional()
-      .filter { tacModEffectMappings.containsKey(effect.name)  }
+      .filter { tacModEffectMappings.containsKey(effect.name) }
       .map {
         tacModEffectMappings[effect.name]
       }

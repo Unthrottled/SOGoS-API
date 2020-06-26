@@ -2,7 +2,6 @@ package io.acari.memory
 
 import io.acari.http.DISABLED_SHARED_DASHBOARD
 import io.acari.http.ENABLED_SHARED_DASHBOARD
-import io.acari.http.USER_WELCOMED
 import io.acari.memory.user.UserMemoryWorkers
 import io.acari.util.toOptional
 import io.vertx.core.Handler
@@ -25,7 +24,6 @@ class UserSharedEffectListener(private val mongoClient: MongoClient, private val
         DISABLED_SHARED_DASHBOARD to false
       )
   }
-
 
   override fun handle(message: Message<Effect>) {
     val effect = message.body()

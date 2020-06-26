@@ -6,9 +6,11 @@ import io.vertx.core.json.JsonObject
 
 const val INT_LENGTH = 4
 
-open class POKOCodec<T>(private val serializer: (JsonObject, T) -> JsonObject,
-                        private val deserializer: (JsonObject) -> T,
-                        private val name: String) : MessageCodec<T, T> {
+open class POKOCodec<T>(
+  private val serializer: (JsonObject, T) -> JsonObject,
+  private val deserializer: (JsonObject) -> T,
+  private val name: String
+) : MessageCodec<T, T> {
   override fun decodeFromWire(pos: Int, buffer: Buffer): T {
     val messageLength = buffer.getInt(pos)
     val startPosition = pos + INT_LENGTH
@@ -31,5 +33,4 @@ open class POKOCodec<T>(private val serializer: (JsonObject, T) -> JsonObject,
   override fun transform(t: T): T = t
 
   override fun name(): String = name
-
 }

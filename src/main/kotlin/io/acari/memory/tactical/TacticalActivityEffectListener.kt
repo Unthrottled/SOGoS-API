@@ -15,7 +15,6 @@ import io.vertx.reactivex.core.Vertx
 import io.vertx.reactivex.core.eventbus.Message
 import io.vertx.reactivex.ext.mongo.MongoClient
 
-
 abstract class TacticalActivityEffectListener(
   private val mongoClient: MongoClient,
   private val vertx: Vertx
@@ -65,4 +64,3 @@ class TacticalActivityDeletionEffectListener(mongoClient: MongoClient, vertx: Ve
 
   override fun isRemoved(): Boolean = true
 }
-

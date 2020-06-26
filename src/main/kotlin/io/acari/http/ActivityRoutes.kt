@@ -91,8 +91,7 @@ fun createActivityRoutes(vertx: Vertx, mongoClient: MongoClient): Router {
       UserSchema.COLLECTION,
       jsonObjectOf(
         UserSchema.GLOBAL_USER_IDENTIFIER to userIdentifier
-      )
-      , jsonObjectOf(
+      ), jsonObjectOf(
         UserSchema.TIME_CREATED to 1
       )
     )

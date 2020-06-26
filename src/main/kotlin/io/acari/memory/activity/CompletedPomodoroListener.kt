@@ -9,7 +9,6 @@ import io.acari.util.toSingle
 import io.reactivex.Completable
 import io.vertx.core.Handler
 import io.vertx.core.json.JsonObject
-import io.vertx.ext.mongo.UpdateOptions
 import io.vertx.kotlin.core.json.jsonObjectOf
 import io.vertx.reactivex.core.Vertx
 import io.vertx.reactivex.core.eventbus.Message
@@ -46,4 +45,3 @@ class CompletedPomodoroListener(
       .ignoreElement()
   }
 }
-

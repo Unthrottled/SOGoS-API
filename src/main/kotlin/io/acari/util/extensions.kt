@@ -24,4 +24,3 @@ fun <T> Optional<T>.doOrElse(present: (T) -> Unit, notThere: () -> Unit) =
 fun <T> T?.toSingle(): Single<T?> = Single.just(this)
 fun <T> T?.toMaybe(): Maybe<T?> = Maybe.just(this)
 fun <T> T?.toSingletonList(): MutableList<T?> = Collections.singletonList(this)
-

@@ -37,7 +37,7 @@ class ObjectiveDeletionEffectListener(private val mongoClient: MongoClient, priv
     createOrUpdateObjective(mongoClient, modifyObjective(objective, objectiveEffect), objectiveEffect.guid)
 
   private fun modifyObjective(objective: JsonObject, objectiveEffect: Effect): JsonObject =
-    if(isCompletion(objectiveEffect)) {
+    if (isCompletion(objectiveEffect)) {
       objective.put("completionTime", objectiveEffect.antecedenceTime)
     } else {
       objective.put("removalTime", objectiveEffect.antecedenceTime)
@@ -87,4 +87,3 @@ class ObjectiveDeletionEffectListener(private val mongoClient: MongoClient, priv
 
   private fun isCompletion(effect: Effect): Boolean = effect.name == COMPLETED_OBJECTIVE
 }
-
