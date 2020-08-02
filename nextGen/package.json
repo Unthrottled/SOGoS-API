@@ -50,7 +50,7 @@
     "eslint-plugin-promise": "^4.1.1",
     "eslint-plugin-standard": "^4.0.0",
     "jest": "^24.8.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "serverless-aws-alias": "^1.8.0",
     "serverless-dotenv-plugin": "^2.1.1",
     "serverless-offline": "^5.12.1",
